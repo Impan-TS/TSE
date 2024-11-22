@@ -1,0 +1,376 @@
+Flask
+Flask-SocketIO
+opcua
+Flask-SocketIO opcua
+flask flask-socketio opcua chart.js
+dash
+pip install cryptography
+
+
+
+<button id="departments" class="module-button">
+            <i class="fa-solid fa-building"></i> Departments
+        </button>
+        <div id="departmentsSubmodules" class="submodule-container">
+
+            <button class="submodule-button">
+                Cards
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('cardsSubmodules', this)"></i>
+            </button>
+            <div id="cardsSubmodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Knitting
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('knittingSubmodules', this)"></i>
+            </button>
+            <div id="knittingSubmodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i> {{ submodule }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Preparatory
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('preparatorySubmodules', this)"></i>
+            </button>
+            <div id="preparatorySubmodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Spinning 1
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('spinning1Submodules', this)"></i>
+            </button>
+            <div id="spinning1Submodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button" onclick="window.location.href='/spinning2'">
+                Spinning 2
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('spinning2Submodules', this)"></i>
+            </button>
+            <div id="spinning2Submodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Winding
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('windingSubmodules', this)"></i>
+            </button>
+            <div id="windingSubmodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Spinning1 Unit2
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('spinning1unit2Submodules', this)"></i>
+            </button>
+            <div id="spinning1unit2Submodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Spinning2 Unit2
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('spinning2unit2Submodules', this)"></i>
+            </button>
+            <div id="spinning2unit2Submodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+
+            <button class="submodule-button">
+                Winding Unit2
+                <i class="fa-solid fa-chevron-down dropdown-icon"
+                    onclick="toggleSubmodules('windingunit2Submodules', this)"></i>
+            </button>
+            <div id="windingunit2Submodules" class="submodule-container">
+                {% for submodule in allowed_submodules %}
+                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                    }}</button>
+                {% endfor %}
+            </div>
+        </div>
+
+
+
+dashboard.html(automated)
+
+{% extends "iot/tse.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Moment.js (for date handling) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Include Chart.js Moment.js adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Include Plotly -->
+
+    <style>
+        .common-container {
+            border: 1px solid black;
+            border-radius: 15px;
+            width: 45%;
+            height: 490px;
+            padding: 8px;
+            background: linear-gradient(#0076CE 0%, #ADD8E6 58%);
+            margin: 20px 1%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .chart-container {
+            width: 86%;
+            height: 250px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 20px;
+        }
+
+        .gauge-container {
+            display: flex;
+            justify-content: space-between;
+            width: 91%;
+            margin-bottom: 10px;
+            background-color: white;
+            border-radius: 20px;
+        }
+
+        .gauge-box {
+            width: 45%;
+            height: 130px;
+            padding-bottom: 50px;
+        }
+
+        .sensor-data {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background-color: #002366;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        body {
+            padding-top: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background-color: #e3f4ff;
+            overflow: hidden;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            height: 100%;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        {% for department, html_file in submodules.items() %}
+        <div class="common-container">
+            <h2>{{ department }}</h2>
+            <div class="sensor-data" id="sensorData{{ loop.index }}">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-weight: bold;">
+                    <div style="margin-right: 70px;">Temperature : <span id="temperature{{ loop.index }}">0</span>°C</div>
+                    <div>Humidity : <span id="humidity{{ loop.index }}">0</span>%</div>
+                </div>
+            </div>
+
+            <div class="gauge-container">
+                <div class="gauge-box"><canvas id="randomGauge{{ loop.index }}" width="220" height="150"></canvas></div>
+                <div class="gauge-box"><canvas id="counterGauge{{ loop.index }}" width="220" height="150"></canvas></div>
+            </div>
+            <div class="chart-container">
+                <canvas id="myChart{{ loop.index }}"></canvas>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        {% for department, html_file in submodules.items() %}
+        function setupDepartment{{ loop.index }}() {
+            var ctx = document.getElementById("myChart{{ loop.index }}").getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Temperature',
+                            backgroundColor: 'rgba(255, 148, 112)',
+                            borderColor: 'rgba(255, 148, 112)',
+                            data: []
+                        },
+                        {
+                            label: 'Humidity',
+                            backgroundColor: 'rgba(40, 67, 135)',
+                            borderColor: 'rgba(40, 67, 135)',
+                            data: []
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'second',
+                                stepSize: 5,
+                            },
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 10,
+                                callback: function (value) {
+                                    return moment(value).format('HH:mm:ss');
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            var socket = io.connect('http://127.0.0.1:7005');
+
+            socket.on('update', function (data) {
+                var currentTime = new Date();
+                chart.data.labels.push(currentTime);
+                chart.data.datasets[0].data.push(data.Random);
+                chart.data.datasets[1].data.push(data.Counter);
+
+                document.getElementById("temperature{{ loop.index }}").textContent = data.Random.toFixed(2);
+                document.getElementById("humidity{{ loop.index }}").textContent = data.Counter.toFixed(2);
+
+                if (chart.data.labels.length > 20) {
+                    chart.data.labels.shift();
+                    chart.data.datasets.forEach(dataset => dataset.data.shift());
+                }
+                chart.update();
+            });
+
+            socket.on('gauge_update', function (data) {
+                var randomValue = data.Random;
+                var counterValue = data.Counter;
+
+                drawNeedleGauge('randomGauge{{ loop.index }}', randomValue);
+                drawNeedleGauge('counterGauge{{ loop.index }}', counterValue);
+            });
+
+            function drawNeedleGauge(elementId, value) {
+                const canvas = document.getElementById(elementId);
+                if (!canvas) return; 
+                const ctx = canvas.getContext('2d');
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height * 0.9;
+                const radius = Math.min(canvas.width / 2, canvas.height / 2) - 10;
+                const angle = value * (Math.PI / 50);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
+                ctx.strokeStyle = "#ddd";
+                ctx.lineWidth = 10;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, Math.PI, Math.PI + angle);
+                ctx.strokeStyle = "#FF0000";
+                ctx.lineWidth = 10;
+                ctx.stroke();
+            }
+        }
+        
+        {% endfor %}
+        
+        // Call each setup function for each department
+        {% for department, html_file in submodules.items() %}
+        setupDepartment{{ loop.index }}();
+        {% endfor %}
+    </script>
+</body>
+
+</html>
+
+{% endblock %}
