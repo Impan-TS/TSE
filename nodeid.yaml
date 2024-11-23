@@ -1,0 +1,10 @@
+node_ids:
+  Spg2_iVa_DPG_RDF: "ns=6;s=::Spg2:iVa_DPG_RDF"
+  Spg2_iVa_UPSS_Output_RAF: "ns=6;s=::Spg2:iVa_UPSS_Output_RAF"
+  Spg2_iVa_WTC_Output: "ns=6;s=::Spg2:iVa_WTC_Output"
+  Spg2_iVa_Act_WoT: "ns=6;s=::Spg2:iVa_Act_WoT"
+  Spg2_iVa_UPSS_Output_SAF: "ns=6;s=::Spg2:iVa_UPSS_Output_SAF"
+  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"
+  Spg2_iVa_Act_Temp: "ns=6;s=::Spg2:iVa_Act_Temp"
+  Spg2_iMi_Set_RH: "ns=6;s=::Spg2:iMi_Set_RH"
+  Spg2_iMi_Set_Temp: "ns=6;s=::Spg2:iMi_Set_Temp"

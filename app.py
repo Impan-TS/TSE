@@ -88,26 +88,28 @@ client = Client(OPC_UA_URL)
 # Global variable to hold the latest values
 latest_values = {}
 
+# Load Node IDs from the YAML file
+def load_node_ids():
+    yaml_path = os.path.join(os.path.dirname(__file__), "nodeid.yaml")
+    with open(yaml_path, "r") as f:
+        data = yaml.safe_load(f)
+        return data.get("node_ids", {})
+
 def read_values_periodically():
     global latest_values
     while True:
         try:
             client.connect()  # Connect to the OPC UA server
             
-            # Define Node IDs here
-            node_ids = {
-                "Spg2_iVa_DPG_RDF": "ns=6;s=::Spg2:iVa_DPG_RDF",
-                "Spg2_iVa_UPSS_Output_RAF": "ns=6;s=::Spg2:iVa_UPSS_Output_RAF",
-                "Spg2_iVa_WTC_Output": "ns=6;s=::Spg2:iVa_WTC_Output",
-                "Spg2_iVa_Act_WoT": "ns=6;s=::Spg2:iVa_Act_WoT",
-                "Spg2_iVa_UPSS_Output_SAF": "ns=6;s=::Spg2:iVa_UPSS_Output_SAF",
-                "Spg2_iVa_Act_RH": "ns=6;s=::Spg2:iVa_Act_RH",
-                "Spg2_iVa_Act_Temp": "ns=6;s=::Spg2:iVa_Act_Temp"
-            }
+            # Load Node IDs from YAML file
+            node_ids = load_node_ids()
             
             for name, node_id in node_ids.items():
-                node = client.get_node(node_id)
-                latest_values[name] = node.get_value()  # Read the value
+                try:
+                    node = client.get_node(node_id)
+                    latest_values[name] = node.get_value()  # Read the value
+                except Exception as e:
+                    print(f"Error reading node {name}: {e}")
             
             # Emit the latest values to all connected clients
             socketio.emit('update', latest_values)
@@ -124,16 +126,41 @@ def read_values_periodically():
             print(f"Error reading values: {str(e)}")
             time.sleep(1)  # Wait before retrying in case of error
 
+# @app.route('/')
+# def home():
+#     departments = load_data()
+#     return render_template('iot/dashboard.html', departments=departments)  # Render the HTML template
+
+@app.route('/setpoint')
+def setpoint():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
+
 @app.route('/')
 def home():
     departments = load_data()
-    return render_template('iot/dashboard.html', departments=departments)  # Render the HTML template
+    seen = set()
+    allowed_submodules = [
+        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+        if not (submodule in seen or seen.add(submodule))
+    ]
+    return render_template('iot/dashboard.html', departments=departments,allowed_submodules=allowed_submodules)  # Render the HTML template
+
+# @app.route('/dashboard')
+# def dashboard():
+#     if 'userloggedin' not in session:
+#         return redirect(url_for('user_login'))
+#     allowed_submodules = session.get('allowed_submodules', [])
+#     return render_template('iot/dashboard.html', allowed_submodules=allowed_submodules)
 
 @app.route('/dashboard')
 def dashboard():
-    if 'userloggedin' not in session:
-        return redirect(url_for('user_login'))
-    allowed_submodules = session.get('allowed_submodules', [])
+    # Remove duplicates while preserving order
+    seen = set()
+    allowed_submodules = [
+        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+        if not (submodule in seen or seen.add(submodule))
+    ]
     return render_template('iot/dashboard.html', allowed_submodules=allowed_submodules)
 
 # Function to load the data from the YAML file
@@ -141,6 +168,8 @@ def load_data():
     yaml_path = os.path.join(os.path.dirname(__file__), "input.yaml")
     with open(yaml_path, "r") as f:
         return yaml.safe_load(f)
+
+
 
 # Inject submodules and client name into templates for consistent access
 @app.context_processor
@@ -159,10 +188,35 @@ def inject_context():
     }
 
 
+# @app.route('/<submodule>')
+# def render_submodule(submodule):
+#     # Load the submodule to template mapping
+#     submodules = load_data()["submodules"]
+
+#     # Find the template associated with the submodule
+#     template_name = submodules.get(submodule)
+#     if template_name:
+#         template_path = os.path.join("templates", "iot", template_name)
+#         if os.path.exists(template_path):
+#             # Pass the latest values from the OPC UA server (or other data)
+#             msg = {"payload": latest_values}  # Replace latest_values with your data
+#             return render_template(f"iot/{template_name}", msg=msg, allowed_submodules=session.get('allowed_submodules', []))
+
+#     return "Page not found", 404
+
+
 @app.route('/<submodule>')
 def render_submodule(submodule):
     # Load the submodule to template mapping
     submodules = load_data()["submodules"]
+
+    seen = set()
+    allowed_submodules = [
+        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+        if not (submodule in seen or seen.add(submodule))
+    ]
+
+    session['allowed_submodules'] = allowed_submodules
 
     # Find the template associated with the submodule
     template_name = submodules.get(submodule)
@@ -171,7 +225,7 @@ def render_submodule(submodule):
         if os.path.exists(template_path):
             # Pass the latest values from the OPC UA server (or other data)
             msg = {"payload": latest_values}  # Replace latest_values with your data
-            return render_template(f"iot/{template_name}", msg=msg, allowed_submodules=session.get('allowed_submodules', []))
+            return render_template(f"iot/{template_name}", msg=msg, allowed_submodules=allowed_submodules)
 
     return "Page not found", 404
 
