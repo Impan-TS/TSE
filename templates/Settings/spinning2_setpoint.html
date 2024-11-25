@@ -8,7 +8,7 @@
   <style>
     body { background: #dcdcdc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 0; }
     .dialog-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 2px solid #ccc; border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); width: 400px; z-index: 1000; }
-    .dialog-header { background: rgba(0, 0, 0, 0.74); color: white; padding: 10px; font-weight: bold; }
+    .dialog-header { background: #3a3a3a; color: white; padding: 10px; font-weight: bold; }
     .dialog-header .close-button { float: right; color: white; background: #f44336; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
     .dialog-body { padding: 15px; }
     .dialog-body table { width: 100%; border-collapse: collapse; }
@@ -29,8 +29,8 @@
     <div class="dialog-body">
       <table>
         <tr><th></th><th>Actual</th><th>Set</th></tr>
-        <tr><td>% RH</td><td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_RH'] }}</span></td><td><span class="set-box">{{ msg.payload['Spg2_iMi_Set_RH'] }}</span></td></tr>
-        <tr><td>°C</td><td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_Temp'] }}</span></td><td><span class="set-box">{{ msg.payload['Spg2_iMi_Set_Temp'] }}</span></td></tr>
+        <tr><td>% RH</td><td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_RH'] }}</span></td><td><span class="set-box">{{ msg.payload['Spg2_iVa_Act_RH'] }}</span></td></tr>
+        <tr><td>°C</td><td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_Temp'] }}</span></td><td><span class="set-box">{{ msg.payload['Spg2_iVa_Act_RH'] }}</span></td></tr>
       </table>
     </div>
     <div class="dialog-footer text-end p-2">
