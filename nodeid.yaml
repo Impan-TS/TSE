@@ -1,10 +1,51 @@
 node_ids:
-  Spg2_iVa_DPG_RDF: "ns=6;s=::Spg2:iVa_DPG_RDF"
+  Spg2_iVa_DPG_RDF: "ns=6;s=::Spg2:iVa_DPG_RDF"                       #Diagram
   Spg2_iVa_UPSS_Output_RAF: "ns=6;s=::Spg2:iVa_UPSS_Output_RAF"
   Spg2_iVa_WTC_Output: "ns=6;s=::Spg2:iVa_WTC_Output"
   Spg2_iVa_Act_WoT: "ns=6;s=::Spg2:iVa_Act_WoT"
   Spg2_iVa_UPSS_Output_SAF: "ns=6;s=::Spg2:iVa_UPSS_Output_SAF"
-  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"
+
+  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"                          #Setpoint           
   Spg2_iVa_Act_Temp: "ns=6;s=::Spg2:iVa_Act_Temp"
   Spg2_iMi_Set_RH: "ns=6;s=::Spg2:iMi_Set_RH"
   Spg2_iMi_Set_Temp: "ns=6;s=::Spg2:iMi_Set_Temp"
+
+  DI_Spg2_iFl_RDF1_ON: "ns=6;s=::DI_Spg2:iFl_RDF1_ON"                  #Digital input
+  DI_Spg2_iFl_RDF2_ON: "ns=6;s=::DI_Spg2:iFl_RDF2_ON"
+  DI_Spg2_iFl_DCF1_ON: "ns=6;s=::DI_Spg2:iFl_DCF1_ON"
+  DI_Spg2_iFl_DCF2_ON: "ns=6;s=::DI_Spg2:iFl_DCF2_ON"
+  DI_Spg2_iFl_ScrewCompactor1_ON: "ns=6;s=::DI_Spg2:iFl_ScrewCompactor1_ON"
+  DI_Spg2_iFl_ScrewCompactor2_ON: "ns=6;s=::DI_Spg2:iFl_ScrewCompactor2_ON"
+  DI_Spg2_iFl_RetAFan1_ON: "ns=6;s=::DI_Spg2:iFl_RetAFan1_ON"
+  DI_Spg2_iFl_RetAFan2_ON: "ns=6;s=::DI_Spg2:iFl_RetAFan2_ON"
+  DI_Spg2_iFl_SAFan1_ON: "ns=6;s=::DI_Spg2:iFl_SAFan1_ON"
+  DI_Spg2_iFl_SAFan2_ON: "ns=6;s=::DI_Spg2:iFl_SAFan2_ON"
+  DI_Spg2_iFl_WasherPump1_ON: "ns=6;s=::DI_Spg2:iFl_WasherPump1_ON"
+  DI_Spg2_iFl_WasherPump2_ON: "ns=6;s=::DI_Spg2:iFl_WasherPump2_ON"
+
+  Spg2_DO_Pump_Act: "ns=6;s=::Spg2:DO_Pump_Act"                        #Digital output
+  Spg2_DO_Pump_Act2: "ns=6;s=::Spg2:DO_Pump_Act2"
+  Spg2_iMi_DO_Man: "ns=6;s=::Spg2:iMi_DO_Man"
+  Spg2_iMi_DO_Man2: "ns=6;s=::Spg2:iMi_DO_Man2"
+
+  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"                          #Analog input
+  Spg2_iVa_Act_Temp: "ns=6;s=::Spg2:iVa_Act_Temp"
+  Spg2_iVa_Act_WoT: "ns=6;s=::Spg2:iVa_Act_WoT"
+  Spg2_iVa_DPG_RDF: "ns=6;s=::Spg2:iVa_DPG_RDF"
+  Spg2_iMi_Set_RH_Man_Ref: "ns=6;s=::Spg2:iMi_Set_RH_Man_Ref"
+  Spg2_iMi_Set_Temp_Man_Ref: "ns=6;s=::Spg2:iMi_Set_Temp_Man_Ref"
+  Spg2_iMi_Set_WoT_Man_Ref: "ns=6;s=::Spg2:iMi_Set_WoT_Man_Ref"
+  Spg2_iMi_Set_DPG_Man_REF: "ns=6;s=::Spg2:iMi_Set_DPG_Man_REF"
+
+  Spg2_iVa_WTC_Output: "ns=6;s=::Spg2:iVa_WTC_Output"                  #Analog output
+  Spg2_iVa_WTC_Output2: "ns=6;s=::Spg2:iVa_WTC_Output2"
+  Spg2_iVa_Damper_Output: "ns=6;s=::Spg2:iVa_Damper_Output"
+  Spg2_iVa_Min_Humd_Output: "ns=6;s=::Spg2:iVa_Min_Humd_Output"
+  Spg2_iVa_Min_Humd_Output: "ns=6;s=::Spg2:iVa_Min_Humd_Output"
+  Spg2_iVa_Min_Damper_Output: "ns=6;s=::Spg2:iVa_Min_Damper_Output"
+  Spg2_iVa_Max_Humid_Output: "ns=6;s=::Spg2:iVa_Max_Humid_Output"
+  Spg2_iVa_Max_Humid_Output: "ns=6;s=::Spg2:iVa_Max_Humid_Output"
+  Spg2_iVa_Max_Damper_Output: "ns=6;s=::Spg2:iVa_Max_Damper_Output"
+  Spg2_iVa_Humid_Output_Man_Ref: "ns=6;s=::Spg2:iVa_Humid_Output_Man_Ref"
+  Spg2_iVa_Humid_Output_Man_Ref2: "ns=6;s=::Spg2:iVa_Humid_Output_Man_Ref2"
+  Spg2_iVa_Damper_Output_Man_Ref: "ns=6;s=::Spg2:iVa_Damper_Output_Man_Ref"

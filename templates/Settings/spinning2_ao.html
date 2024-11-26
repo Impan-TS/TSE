@@ -17,9 +17,10 @@
             padding: 20px;
             margin: auto;
             box-sizing: border-box;
-            position: relative; /* Needed for absolute positioning of the close icon */
+            position: relative;
+            /* Needed for absolute positioning of the close icon */
         }
-    
+
         .header {
             background-color: #0c609d;
             color: white;
@@ -30,14 +31,14 @@
             border-radius: 8px;
             margin-bottom: 15px;
         }
-    
+
         .row-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 8px;
             margin-bottom: 8px;
         }
-    
+
         .parameter,
         .value {
             width: 100%;
@@ -52,18 +53,20 @@
             background-color: #c9f6ff;
             color: black;
         }
-    
+
         .value {
             background-color: #007bff;
             color: white;
         }
-    
+
         /* New rule to change the background color of M VALUE row */
         .m-value-row .value {
-            background-color: #28a745; /* Green background */
-            color: white; /* White text for visibility */
+            background-color: #28a745;
+            /* Green background */
+            color: white;
+            /* White text for visibility */
         }
-    
+
         .close-icon {
             position: absolute;
             top: 3px;
@@ -84,35 +87,77 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s, background-color 0.2s;
         }
-    
+
         .close-icon:hover {
-            background-color: #a71d2a; /* Darker red when hovered */
-            transform: scale(1.1); /* Slightly enlarge on hover */
+            background-color: #a71d2a;
+            /* Darker red when hovered */
+            transform: scale(1.1);
+            /* Slightly enlarge on hover */
         }
-    
+
         @media (max-width: 768px) {
             .header {
                 font-size: 18px;
             }
-    
+
             .parameter,
             .value {
                 font-size: 10px;
                 height: 35px;
             }
         }
+
+        .set-box input {
+            width: 70px;
+            padding: 10px;
+            background: #4caf50;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .set-box input:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.8);
+        }
+
+        .dialog-footer {
+            padding: 15px;
+            text-align: right;
+            background: #f8f9fa;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .dialog-footer button {
+            margin-left: 10px;
+        }
+
+        .dialog-footer {
+            padding: 15px;
+            text-align: right;
+            background: #f8f9fa;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .dialog-footer button {
+            margin-left: 10px;
+        }
     </style>
-    
+
 </head>
 
 <body>
     <div class="dialog-box mt-5">
         <!-- Close Button -->
         <button class="close-icon" onclick="closeDialog()">&times;</button>
-    
+
         <!-- Header -->
         <div class="header">ANALOG OUTPUTS</div>
-    
+
         <!-- Row 1 -->
         <div class="row-container">
             <div class="parameter">PARAMETER</div>
@@ -122,43 +167,93 @@
         </div>
         <div class="row-container">
             <div class="parameter">VALUE</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
+            <div class="value">{{ msg.payload.Spg2_iVa_WTC_Output }}</div>
+            <div class="value">{{ msg.payload.Spg2_iVa_WTC_Output2 }}</div>
+            <div class="value">{{ msg.payload.Spg2_iVa_Damper_Output }}</div>
         </div>
 
-        <div class="row-container m-value-row"> <!-- Added class here -->
+        <div class="row-container m-value-row">
+            <!-- Added class here -->
             <div class="parameter">Min</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Min_Humd_Output"
+                    value="{{ msg.payload['Spg2_iVa_Min_Humd_Output'] }}" /></div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Min_Humd_Output"
+                    value="{{ msg.payload['Spg2_iVa_Min_Humd_Output'] }}" /></div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Min_Damper_Output"
+                    value="{{ msg.payload['Spg2_iVa_Min_Damper_Output'] }}" /></div>
         </div>
 
-        <div class="row-container m-value-row"> <!-- Added class here -->
+        <div class="row-container m-value-row">
+            <!-- Added class here -->
             <div class="parameter">Max</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Max_Humid_Output"
+                    value="{{ msg.payload['Spg2_iVa_Max_Humid_Output'] }}" /></div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Max_Humid_Output"
+                    value="{{ msg.payload['Spg2_iVa_Max_Humid_Output'] }}" /></div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Max_Damper_Output"
+                    value="{{ msg.payload['Spg2_iVa_Max_Damper_Output'] }}" /></div>
         </div>
-    
+
         <!-- Row 2 -->
-        <div class="row-container m-value-row"> <!-- Added class here -->
+        <div class="row-container m-value-row">
+            <!-- Added class here -->
             <div class="parameter">M VALUE</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Humid_Output_Man_Ref"
+                    value="{{ msg.payload['Spg2_iVa_Humid_Output_Man_Ref'] }}" /></div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Humid_Output_Man_Ref2"
+                    value="{{ msg.payload['Spg2_iVa_Humid_Output_Man_Ref2'] }}" /></div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Damper_Output_Man_Ref"
+                    value="{{ msg.payload['Spg2_iVa_Damper_Output_Man_Ref'] }}" /></div>
         </div>
-    
+
         <!-- Row 3 -->
         <div class="row-container">
             <div class="parameter">MODE</div>
         </div>
+
+        <div class="dialog-footer">
+            <button class="btn btn-success" onclick="updateSettings()">Update</button>
+        </div>
     </div>
-    
+
 
     <!-- Include Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+
+        function updateSettings() {
+            const setpoints = {
+                Spg2_iVa_WTC_Output: document.getElementById('Spg2_iVa_WTC_Output').value,
+                Spg2_iVa_WTC_Output2: document.getElementById('Spg2_iVa_WTC_Output2').value,
+                Spg2_iVa_Damper_Output: document.getElementById('Spg2_iVa_Damper_Output').value,
+                Spg2_iVa_Min_Humd_Output: document.getElementById('Spg2_iVa_Min_Humd_Output').value,
+                Spg2_iVa_Min_Humd_Output: document.getElementById('Spg2_iVa_Min_Humd_Output').value,
+                Spg2_iVa_Min_Damper_Output: document.getElementById('Spg2_iVa_Min_Damper_Output').value,
+                Spg2_iVa_Max_Humid_Output: document.getElementById('Spg2_iVa_Max_Humid_Output').value,
+                Spg2_iVa_Max_Humid_Output: document.getElementById('Spg2_iVa_Max_Humid_Output').value,
+                Spg2_iVa_Max_Damper_Output: document.getElementById('Spg2_iVa_Max_Damper_Output').value,
+                Spg2_iVa_Humid_Output_Man_Ref: document.getElementById('Spg2_iVa_Humid_Output_Man_Ref').value,
+                Spg2_iVa_Humid_Output_Man_Ref2: document.getElementById('Spg2_iVa_Humid_Output_Man_Ref2').value,
+                Spg2_iVa_Damper_Output_Man_Ref: document.getElementById('Spg2_iVa_Damper_Output_Man_Ref').value,
+            };
+
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings updated successfully!');
+                    } else {
+                        alert('Failed to update settings.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+
         function closeDialog() {
             const dialogBox = document.querySelector('.dialog-box');
             dialogBox.style.display = 'none';

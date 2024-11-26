@@ -114,13 +114,14 @@
             <div class="parameter">DustCollectorFan-1</div>
             <div class="parameter">DustCollectorFan-2</div>
         </div>
+        
         <div class="row-container">
-            <div class="parameter">VALUE</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-        </div>
+                <div class="parameter">VALUE</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_RDF1_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_RDF2_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_DCF1_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_DCF2_ON | default(0, true) }}</div>
+            </div>
 
         <!-- Row 2 -->
         <div class="row-container">
@@ -131,12 +132,13 @@
             <div class="parameter">ReturnAirFan-2</div>
         </div>
         <div class="row-container">
-            <div class="parameter">VALUE</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-        </div>
+                <div class="parameter">VALUE</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_ScrewCompactor1_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_ScrewCompactor2_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan1_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan2_ON | default(0, true) }}</div>
+            </div>
+        
 
         <!-- Row 3 -->
         <div class="row-container">
@@ -146,13 +148,15 @@
             <div class="parameter">WasherPump-1</div>
             <div class="parameter">WasherPump-2</div>
         </div>
+
         <div class="row-container">
-            <div class="parameter">VALUE</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-            <div class="value">0</div>
-        </div>
+                <div class="parameter">VALUE</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan1_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan2_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_WasherPump1_ON | default(0, true) }}</div>
+                <div class="value">{{ msg.payload.DI_Spg2_iFl_WasherPump2_ON | default(0, true) }}</div>
+            </div>
+        
     </div>
 
     <!-- Include Bootstrap JS -->
