@@ -166,6 +166,46 @@ def setpoint():
     msg = {"payload": latest_values}
     return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
 
+@app.route('/di')
+def di():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
+
+@app.route('/do')
+def do():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_do.html', msg=msg)  # Render the HTML template
+
+@app.route('/ai')
+def ai():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_ai.html', msg=msg)  # Render the HTML template
+
+@app.route('/ao')
+def ao():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_ao.html', msg=msg)  # Render the HTML template
+
+@app.route('/pv')
+def pv():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_pv.html', msg=msg)  # Render the HTML template
+
+@app.route('/ti')
+def ti():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_ti.html', msg=msg)  # Render the HTML template
+
+@app.route('/co')
+def co():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_co.html', msg=msg)  # Render the HTML template
+
+@app.route('/up')
+def up():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_up.html', msg=msg)  # Render the HTML template
+
 @app.route('/')
 def home():
     departments = load_data()
