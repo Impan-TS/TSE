@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash
+from opcua import Client, ua
 import os
 import json
 import yaml
@@ -125,6 +126,35 @@ def read_values_periodically():
         except Exception as e:
             print(f"Error reading values: {str(e)}")
             time.sleep(1)  # Wait before retrying in case of error
+
+@app.route('/write_setpoints', methods=['POST'])
+def write_setpoints():
+    data = request.get_json()
+    set_rh = data.get('set_rh')
+    set_temp = data.get('set_temp')
+
+    try:
+        client.connect()  # Connect to the OPC UA server
+        node_ids = load_node_ids()
+
+        if set_rh is not None:
+            node_rh = client.get_node(node_ids["Spg2_iMi_Set_RH"])
+            dv_rh = ua.DataValue(ua.Variant(float(set_rh), ua.VariantType.Float))
+            node_rh.set_value(dv_rh)  # Write the RH value explicitly
+        
+        if set_temp is not None:
+            node_temp = client.get_node(node_ids["Spg2_iMi_Set_Temp"])
+            dv_temp = ua.DataValue(ua.Variant(float(set_temp), ua.VariantType.Float))
+            node_temp.set_value(dv_temp)  # Write the Temp value explicitly
+        
+        client.disconnect()  # Disconnect from the server
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        print(f"Error writing set points: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 
 # @app.route('/')
 # def home():
