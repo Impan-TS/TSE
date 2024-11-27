@@ -165,6 +165,11 @@ def write():
 #     departments = load_data()
 #     return render_template('iot/dashboard.html', departments=departments)  # Render the HTML template
 
+@app.route('/alarms')
+def alarms():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
+
 @app.route('/setpoint')
 def setpoint():
     msg = {"payload": latest_values}
