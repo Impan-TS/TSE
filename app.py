@@ -210,6 +210,11 @@ def up():
     msg = {"payload": latest_values}
     return render_template('Settings/spinning2_up.html', msg=msg)  # Render the HTML template
 
+@app.route('/pu')
+def pu():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_pu.html', msg=msg)  # Render the HTML template
+
 @app.route('/')
 def home():
     departments = load_data()

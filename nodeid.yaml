@@ -49,3 +49,39 @@ node_ids:
   Spg2_iVa_Humid_Output_Man_Ref: "ns=6;s=::Spg2:iVa_Humid_Output_Man_Ref"
   Spg2_iVa_Humid_Output_Man_Ref2: "ns=6;s=::Spg2:iVa_Humid_Output_Man_Ref2"
   Spg2_iVa_Damper_Output_Man_Ref: "ns=6;s=::Spg2:iVa_Damper_Output_Man_Ref"
+
+  Spg2_iVa_Pump_Start_REF: "ns=6;s=::Spg2:iVa_Pump_Start_REF"           #Preset values
+  Spg2_iVa_Pump_Stop_REF: "ns=6;s=::Spg2:iVa_Pump_Stop_REF"
+
+  Spg2_iTime_Start_Pump: "ns=6;s=::Spg2:iTime_Start_Pump"               #Timers
+  Spg2_iTime_Stop_Pump: "ns=6;s=::Spg2:iTime_Stop_Pump"
+
+  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"                           #Controllers
+  Spg2_iVa_Act_Temp: "ns=6;s=::Spg2:iVa_Act_Temp"
+  Spg2_iVa_Act_WoT: "ns=6;s=::Spg2:iVa_Act_WoT"
+  Spg2_iMi_Set_RH: "ns=6;s=::Spg2:iMi_Set_RH"
+  Spg2_iMi_Set_Temp: "ns=6;s=::Spg2:iMi_Set_Temp"
+  Spg2_iVa_Set_Temp_WoT: "ns=6;s=::Spg2:iVa_Set_Temp_WoT"
+  Spg2_Humidity_Pid_Para_Gain: "ns=6;s=::Spg2:Humidity_Pid_Para.Gain"
+  Spg2_Temp_Pid_Para_Gain: "ns=6;s=::Spg2:Temp_Pid_Para.Gain"
+  Spg2_Damper_Pid_Para_Gain: "ns=6;s=::Spg2:Damper_Pid_Para.Gain"
+  Spg2_Humidity_Pid_Para_IntegrationTime: "ns=6;s=::Spg2:Humidity_Pid_Para.IntegrationTime"
+  Spg2_Temp_Pid_Para_IntegrationTime: "ns=6;s=::Spg2:Temp_Pid_Para.IntegrationTime"
+  Spg2_Damper_Pid_Para_IntegrationTime: "ns=6;s=::Spg2:Damper_Pid_Para.IntegrationTime"
+  Spg2_iVa_Humid_Pid_Out: "ns=6;s=::Spg2:iVa_Humid_Pid_Out"
+  Spg2_iVa_Temp_Pid_Output: "ns=6;s=::Spg2:iVa_Temp_Pid_Output"
+  Spg2_iVa_Damper_Pid_Output: "ns=6;s=::Spg2:iVa_Damper_Pid_Output"
+
+  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"                           #UPSS
+  Spg2_iVa_UPSS_Output_SAF: "ns=6;s=::Spg2:iVa_UPSS_Output_SAF"
+  Spg2_iMi_Set_RH: "ns=6;s=::Spg2:iMi_Set_RH"
+  Spg2_iVa_Min_SAF_UPSS: "ns=6;s=::Spg2:iVa_Min_SAF_UPSS"
+  Spg2_UPSS_Pid_Para_Gain: "ns=6;s=::Spg2:UPSS_Pid_Para.Gain"
+  Spg2_iVa_Max_SAF_UPSS: "ns=6;s=::Spg2:iVa_Max_SAF_UPSS"
+  Spg2_UPSS_Pid_Para_IntegrationTime: "ns=6;s=::Spg2:UPSS_Pid_Para.IntegrationTime"
+  Spg2_iVa_UPSS_Output_RAF: "ns=6;s=::Spg2:iVa_UPSS_Output_RAF"
+  Spg2_iVa_Pid_Output_UPSS: "ns=6;s=::Spg2:iVa_Pid_Output_UPSS"
+  Spg2_iVa_Max_RAF_UPSS: "ns=6;s=::Spg2:iVa_Max_RAF_UPSS"
+
+  Spg2_iVa_Min_Pump_Output: "ns=6;s=::Spg2:iVa_Min_Pump_Output"          #Pump Setting UPSS
+  Spg2_iVa_WTC_Output: "ns=6;s=::Spg2:iVa_WTC_Output"

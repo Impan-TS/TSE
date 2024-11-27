@@ -101,6 +101,46 @@
                 height: 35px;
             }
         }
+
+        .set-box input {
+            width: 70px;
+            padding: 10px;
+            background: #4caf50;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .set-box input:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.8);
+        }
+
+        .dialog-footer {
+            padding: 15px;
+            text-align: right;
+            background: #f8f9fa;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .dialog-footer button {
+            margin-left: 10px;
+        }
+
+        .dialog-footer {
+            padding: 15px;
+            text-align: right;
+            background: #f8f9fa;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .dialog-footer button {
+            margin-left: 10px;
+        }
     </style>
     
 </head>
@@ -122,38 +162,49 @@
         </div>
         <div class="row-container">
             <div class="parameter">Act RH</div>
-            <div class="value">0</div>
+            <div class="value">{{ msg.payload.Spg2_iVa_Act_RH }}</div>
             <div class="parameter">SAF Act Output</div>
-            <div class="value">0</div>
+            <div class="value">{{ msg.payload.Spg2_iVa_UPSS_Output_SAF }}</div>
         </div>
 
         <div class="row-container m-value-row"> <!-- Added class here -->
             <div class="parameter">Set RH</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iMi_Set_RH" value="{{ msg.payload['Spg2_iMi_Set_RH'] }}" /></div>
             <div class="parameter">SAF Min - Set</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Min_SAF_UPSS" value="{{ msg.payload['Spg2_iVa_Min_SAF_UPSS'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row"> <!-- Added class here -->
             <div class="parameter">P Gain</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_UPSS_Pid_Para_Gain" value="{{ msg.payload['Spg2_UPSS_Pid_Para_Gain'] }}" /></div>
             <div class="parameter">SAF Max - Set</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Max_SAF_UPSS" value="{{ msg.payload['Spg2_iVa_Max_SAF_UPSS'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row"> <!-- Added class here -->
             <div class="parameter">Integral Tn</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_UPSS_Pid_Para_IntegrationTime" value="{{ msg.payload['Spg2_UPSS_Pid_Para_IntegrationTime'] }}" /></div>
             <div class="parameter">RetAF Act Output</div>
-            <div class="value">0</div>
+            <div class="value" style="background: #007bff">{{ msg.payload.Spg2_iVa_UPSS_Output_RAF }}</div>
         </div>
 
         <div class="row-container"> <!-- Added class here -->
             <div class="parameter">Output(Y)</div>
-            <div class="value">0</div>
+            <div class="value">{{ msg.payload.Spg2_iVa_Pid_Output_UPSS }}</div>
             <div class="parameter">RetAF Min - Set</div>
-            <div class="value">0</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Pid_Output_UPSS" value="{{ msg.payload['Spg2_iVa_Pid_Output_UPSS'] }}" /></div>
         </div>
+
+        <div class="row-container m-value-row"> <!-- Added class here -->
+            <div></div>
+            <div></div>
+            <div class="parameter">RetAF Max - Set</div>
+            <div class="set-box"><input type="number" id="Spg2_iVa_Max_RAF_UPSS" value="{{ msg.payload['Spg2_iVa_Max_RAF_UPSS'] }}" /></div>
+        </div>
+
+        <div class="dialog-footer">
+                <button class="btn btn-success" onclick="updateSettings()">Update</button>
+            </div>
     
     </div>
     
@@ -161,6 +212,34 @@
     <!-- Include Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function updateSettings() {
+            const setpoints = {
+                Spg2_iMi_Set_RH: document.getElementById('Spg2_iMi_Set_RH').value,
+                Spg2_iVa_Min_SAF_UPSS: document.getElementById('Spg2_iVa_Min_SAF_UPSS').value,
+                Spg2_UPSS_Pid_Para_Gain: document.getElementById('Spg2_UPSS_Pid_Para_Gain').value,
+                Spg2_iVa_Max_SAF_UPSS: document.getElementById('Spg2_iVa_Max_SAF_UPSS').value,
+                Spg2_UPSS_Pid_Para_IntegrationTime: document.getElementById('Spg2_UPSS_Pid_Para_IntegrationTime').value,
+                Spg2_iVa_Pid_Output_UPSS: document.getElementById('Spg2_iVa_Pid_Output_UPSS').value,
+                Spg2_iVa_Max_RAF_UPSS: document.getElementById('Spg2_iVa_Max_RAF_UPSS').value,
+                
+            };
+
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings updated successfully!');
+                    } else {
+                        alert('Failed to update settings.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
         function closeDialog() {
             const dialogBox = document.querySelector('.dialog-box');
             dialogBox.style.display = 'none';
