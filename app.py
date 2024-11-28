@@ -160,10 +160,53 @@ def write():
 
 
 
+# Load alarms and node mappings
+with open("alarms.yaml") as f:
+    alarms_data = yaml.safe_load(f)["alarms"]
+
+active_alarms = []
+
+@app.route("/alarms")
+def get_alarms():
+    # Generate mock active alarms for demonstration
+    global active_alarms
+    active_alarms = [
+        {
+            "alarm": alarms_data[node]["alarm"],
+            "name": alarms_data[node]["name"],
+            "message": alarms_data[node]["message"],
+            "code": alarms_data[node]["code"],
+            "severity": alarms_data[node]["severity"],
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            # "status": "Active",
+        }
+        for node in alarms_data
+        if node.endswith("TRIP")  # Simulating active alarms
+    ]
+    return jsonify(active_alarms)
+
+
+@app.route('/alarmslist')
+def alarmslist():
+    departments = load_data()
+    seen = set()
+    allowed_submodules = [
+        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+        if not (submodule in seen or seen.add(submodule))
+    ]
+    return render_template('iot/alarmslist.html', departments=departments,allowed_submodules=allowed_submodules)  # Render the HTML template
+
+
+
 # @app.route('/')
 # def home():
 #     departments = load_data()
 #     return render_template('iot/dashboard.html', departments=departments)  # Render the HTML template
+
+# @app.route('/alarms')
+# def alarms():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
 
 @app.route('/setpoint')
 def setpoint():

@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TSE Control System{% endblock %}</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+
     <style>
         body {
             margin: 0;
@@ -163,6 +164,7 @@
             flex-grow: 1;
             text-align: center;
             color: white;
+            margin-left: 10%;
         }
 
         .client-name {
@@ -375,6 +377,235 @@
             color: lightgray;
             /* Optional: Change color on hover */
         }
+
+        /* Bell icon container */
+        .bell-container {
+            position: relative;
+        }
+
+        .bell-button {
+            background-color: #0c609d;
+            margin-top: 6px;
+            margin-right: 18px;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: 1px solid black;
+        }
+
+        .bell-button i {
+            font-size: 20px;
+        }
+
+        /* Notification badge */
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 3px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            display: none;
+            /* Hidden by default */
+        }
+
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, -50%);
+            /* This ensures the modal is centered */
+            background-color: #0c609d;
+            border-radius: 6px;
+            /* Transparent background */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+            width: 50%;
+            /* Increase the modal width */
+            max-width: 1200px;
+            /* Optional: Set a maximum width */
+            left: 53%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #0c609d;
+            /* Add a red outer border */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content {
+            width: 100%;
+            text-align: center;
+            border-radius: 5px;
+            /* Apply 5px rounded corners to the outer modal container */
+            overflow: hidden;
+            /* Ensures child elements respect the border radius */
+            /* border: 2px solid red; */
+        }
+
+        /* Modal header with blue background */
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #0c609d;
+            /* Blue background */
+            color: white;
+            /* White text */
+            padding: 15px;
+            margin: 0;
+            border-radius: 10px 10px 0 0;
+            /* Rounded top corners */
+            text-align: center;
+        }
+
+        /* Modal body - Remove spacing and set consistent background */
+        .modal-body {
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .modal-body p:first-child {
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+
+        .modal-body p:last-child {
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        /* Style for the alarm time */
+        .alarm-time {
+            /* font-weight: bold; */
+            margin-right: 50px;
+            color: #0c609d;
+            /* Change the color of the time if needed */
+        }
+
+        /* Optional: Style the rest of the alarm message */
+        .modal-body p {
+            margin: 0;
+            padding: 15px;
+            background-color: #e3f4ff;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+
+        /* Alternate background color for even items */
+        .modal-body p:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        /* Red circle with white X */
+        .modal-close-circle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: red;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .modal-close-circle:hover {
+            background-color: darkred;
+        }
+
+        /* Apply blur effect to the whole page when modal is open */
+        body.modal-open {
+            position: relative;
+            /* Ensures the modal can be layered above */
+        }
+
+        /* Apply the blur to the background when the modal is open */
+        body.modal-open::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent background */
+            backdrop-filter: blur(5px);
+            /* Blur effect */
+            pointer-events: none;
+            /* Prevent interaction with the background */
+            z-index: 1;
+            /* Place the blur layer behind the modal */
+        }
+
+        /* Ensure the modal stays unaffected by the blur */
+        body.modal-open .modal {
+            filter: none;
+            /* No blur on modal */
+            pointer-events: all;
+            /* Allow interaction with the modal */
+            z-index: 2000;
+            /* Ensure the modal appears above the blurred background */
+        }
+
+        /* Optional: Style for the modal content */
+        .modal {
+            /* Modal specific styles */
+        }
+
+        /* Simple popup styling */
+        .simple-popup {
+            display: none;
+            position: fixed;
+            top: 13.5%;
+            left: 55%;
+            transform: translate(-50%, -50%);
+            /* Centers the popup */
+            background-color: rgba(76, 175, 80, 0.8);
+            /* Green background with 70% opacity */
+            color: white;
+            padding: 16px 24px;
+            /* Adds padding around the text */
+            border-radius: 8px;
+            /* Rounded corners for a smooth appearance */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            /* Drop shadow for better visibility */
+            z-index: 1001;
+            font-size: 16px;
+            /* Larger text for readability */
+            min-width: 250px;
+            /* Ensures a minimum width */
+            text-align: left;
+            font-weight: bold;
+        }
+
+        /* Popup with an icon */
+        .simple-popup i {
+            margin-right: 15px;
+            /* More space between icon and text */
+            font-size: 20px;
+            /* Larger icon */
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
@@ -393,6 +624,22 @@
             </div>
         </div>
         <div class="right-section">
+            <!-- Alarm Notification Icon -->
+            <!-- Button to trigger the alarm modal -->
+            <div class="bell-container">
+                <button class="bell-button" onclick="showAlarmslist()">
+                    <i class="fa fa-bell"></i>
+                    <span id="alarm-count" class="badge">0</span>
+                </button>
+            </div>
+
+            <!-- Simple popup for automatic alerts -->
+            <div id="simplePopup" class="simple-popup">
+                <i class="fa fa-exclamation-circle"></i>
+                <span id="simplePopupMessage">Alarm!</span>
+            </div>
+
+
             {% if session['userloggedin'] %}
             <div class="dropdown">
                 <button class="profile-icon" onclick="toggleDropdown()">
@@ -415,6 +662,19 @@
         </div>
     </div>
 
+    <div class="modal" id="alarmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Alarm Notifications
+                <span class="modal-close-circle" onclick="closeModal()">&#10005;</span>
+            </div>
+            <div class="modal-body" id="alarm-modal-body">
+                <!-- Alarm messages will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+
     <div class="sidebar">
         <button id="home" class="module-button" onclick="window.location.href='/dashboard'">
             <i class="fa-solid fa-house"></i> Home
@@ -422,25 +682,25 @@
         <div id="homeSubmodules" class="submodule-container"></div>
 
         <!-- <button id="departments" class="module-button">
-            <i class="fa-solid fa-building"></i> Departments
-        </button> -->
+                <i class="fa-solid fa-building"></i> Departments
+            </button> -->
 
         <!-- <div id="departmentsSubmodules" class="submodule-container">
-            {% for submodule in submodules %}
-            <button class="submodule-button"
-                onclick="window.location.href='/{{ submodule | lower | replace(' ', '') }}'">
-                {{ submodule }}
-                <i class="fa-solid fa-chevron-down dropdown-icon"></i>
-            </button>
-            {% endfor %}
-
-            <div id="dropdownSubmodules" class="submodule-container">
-                {% for submodule in allowed_submodules %}
-                <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
-                    }}</button>
+                {% for submodule in submodules %}
+                <button class="submodule-button"
+                    onclick="window.location.href='/{{ submodule | lower | replace(' ', '') }}'">
+                    {{ submodule }}
+                    <i class="fa-solid fa-chevron-down dropdown-icon"></i>
+                </button>
                 {% endfor %}
-            </div>
-        </div> -->
+    
+                <div id="dropdownSubmodules" class="submodule-container">
+                    {% for submodule in allowed_submodules %}
+                    <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
+                        }}</button>
+                    {% endfor %}
+                </div>
+            </div> -->
 
         <button id="departments" class="module-button">
             <i class="fa-solid fa-building"></i> Departments
@@ -454,15 +714,16 @@
                 <i class="fa-solid fa-chevron-down dropdown-icon"
                     onclick="toggleSubmodules('{{ submodule | replace(' ', '_') }}Submodules', this)"></i>
             </button>
-        
+
             <div id="{{ submodule | replace(' ', '_') }}Submodules" class="submodule-container">
                 <!-- Conditionally display the Dashboard button -->
                 {% if dashboard_name %}
                 <button class="submodule-button bg">
-                    <i class="fa-solid fa-home" style="font-size: 9px; margin-left: 5px; padding-right: 5px;"></i> {{ dashboard_name }}
+                    <i class="fa-solid fa-home" style="font-size: 9px; margin-left: 5px; padding-right: 5px;"></i>
+                    {{ dashboard_name }}
                 </button>
                 {% endif %}
-        
+
                 <!-- Add submodule options here -->
                 {% for submodule_option in allowed_submodules %}
                 <button class="submodule-button bg">
@@ -471,17 +732,14 @@
                 {% endfor %}
             </div>
             {% endfor %}
-        </div>        
+        </div>
 
 
-        <button id="alarms" class="module-button">
+        <button id="alarms" class="module-button" onclick="window.location.href='/alarmslist'">
             <i class="fa-solid fa-triangle-exclamation"></i> Alarms
         </button>
-        <div id="alarmsSubmodules" class="submodule-container">
-            <button class="submodule-button">High Temperature</button>
-            <button class="submodule-button">High Pressure</button>
-            <button class="submodule-button">System Error</button>
-        </div>
+        <div id="alarmsSubmodules" class="submodule-container"></div>
+
 
         <button id="reports" class="module-button">
             <i class="fa-solid fa-file"></i> Analytics
@@ -524,6 +782,158 @@
     </div>
 
     <script>
+        let previousAlarms = [];
+
+        function fetchAlarmCount() {
+            fetch("/alarms")
+                .then(response => response.json())
+                .then(data => {
+                    const alarmCountElement = document.getElementById("alarm-count");
+                    const alarmCount = data.length;
+
+                    if (alarmCount > 0) {
+                        // Show the badge and update the count
+                        alarmCountElement.style.display = "inline-block";
+                        alarmCountElement.innerText = alarmCount;
+                    } else {
+                        // Hide the badge
+                        alarmCountElement.style.display = "none";
+                    }
+
+                    // Check for new alarms and display simple popups
+                    const newAlarms = data.filter(alarm => !previousAlarms.some(a => a.alarm === alarm.alarm));
+                    if (newAlarms.length > 0) {
+                        // Show simple popup for each new alarm
+                        showSimplePopups(newAlarms);
+                    }
+
+                    previousAlarms = data;
+                });
+        }
+
+        // Function to show simple popup alerts for 2 seconds each
+        function showSimplePopups(alarms) {
+            let index = 0;
+            const popupDisplayInterval = 2000; // 2 seconds for each popup
+
+            function showNextPopup() {
+                if (index < alarms.length) {
+                    const alarm = alarms[index];
+                    const popupMessage = `${alarm.message} (${alarm.name})`;
+
+                    // Set the popup message
+                    document.getElementById("simplePopupMessage").innerText = popupMessage;
+
+                    // Show the popup
+                    const popup = document.getElementById("simplePopup");
+                    popup.style.display = "block";
+
+                    // Auto-hide after 2 seconds
+                    setTimeout(() => {
+                        popup.style.display = "none"; // Hide the popup
+                        index++; // Move to the next alarm
+                        setTimeout(showNextPopup, 500); // 500ms delay before showing the next popup
+                    }, popupDisplayInterval);
+                }
+            }
+
+            // Start showing the popups
+            showNextPopup();
+        }
+
+
+        function showAlarmsSequentially(alarms) {
+            let index = 0;
+            const alarmDisplayInterval = 2000; // 2 seconds interval
+
+            function showNextAlarm() {
+                if (index < alarms.length) {
+                    // Get the current alarm with time
+                    const alarm = alarms[index];
+                    const alarmMessage = `
+                <p>
+                    <span class="alarm-time">${alarm.time}</span>
+                    ${alarm.message} (${alarm.name})
+                </p>
+            `;
+
+                    // Display the current alarm in the modal body
+                    document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
+
+                    // Show the modal
+                    document.getElementById("alarmModal").style.display = "flex";
+
+                    // Add the modal-open class to the body
+                    document.body.classList.add("modal-open");
+
+                    // Increase the index and set the timeout for the next alarm
+                    index++;
+
+                    // Auto-close after 2 seconds and show the next alarm
+                    setTimeout(() => {
+                        closeModal();
+                        setTimeout(showNextAlarm, 500); // 500ms delay before showing the next one
+                    }, alarmDisplayInterval);
+                }
+            }
+
+            // Start displaying the alarms one by one
+            showNextAlarm();
+        }
+
+        function showAlarmslist() {
+            // Reset alarm count to 0 when modal is opened
+            document.getElementById("alarm-count").innerText = 0;
+
+            // Fetch alarms and update the modal body
+            fetch("/alarms")
+                .then(response => response.json())
+                .then(data => {
+                    let alarmMessage = "";
+
+                    if (data.length === 0) {
+                        alarmMessage = "<p>No alarm notifications yet.</p>";
+                    } else {
+                        // Loop through data and format each alarm with alternating styles
+                        alarmMessage = data.map((a, index) => {
+                            const className = (index % 2 === 0) ? 'even' : 'odd';
+                            return `
+                        <p class="${className}">
+                            <span class="alarm-time">${a.time}</span>
+                            ${a.message} (${a.name})
+                        </p>
+                    `;
+                        }).join("");
+                    }
+
+                    // Update modal body with alarm messages
+                    document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
+
+                    // Show the modal
+                    document.getElementById("alarmModal").style.display = "flex";
+
+                    // Add the modal-open class to the body
+                    document.body.classList.add("modal-open");
+                });
+        }
+
+        function closeModal() {
+            // Hide the modal
+            document.getElementById("alarmModal").style.display = "none";
+
+            // Remove the modal-open class from the body
+            document.body.classList.remove("modal-open");
+
+            // Reset the alarm count and hide the badge when the modal is closed
+            const alarmCountElement = document.getElementById("alarm-count");
+            alarmCountElement.style.display = "none"; // Hide the badge
+            alarmCountElement.innerText = "0"; // Reset the count to 0
+        }
+
+        // Call the function periodically to check for new alarms
+        setInterval(fetchAlarmCount, 10000);
+
+
         var iframe = document.getElementById('reportIframe');
         iframe.style.display = 'none';
 
