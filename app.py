@@ -203,10 +203,17 @@ def alarmslist():
 #     departments = load_data()
 #     return render_template('iot/dashboard.html', departments=departments)  # Render the HTML template
 
+<<<<<<< HEAD
 # @app.route('/alarms')
 # def alarms():
 #     msg = {"payload": latest_values}
 #     return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
+=======
+@app.route('/alarms')
+def alarms():
+    msg = {"payload": latest_values}
+    return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
+>>>>>>> 5646455a506c6e07580a35da132e371028a87e2d
 
 @app.route('/setpoint')
 def setpoint():
