@@ -17,7 +17,7 @@ from wtforms.validators import DataRequired, ValidationError
 import bcrypt
 from datetime import datetime
 from cryptography.fernet import Fernet
-
+from threading import Thread
 
 app = Flask(__name__)
 app.secret_key = 'xyzsdfg'
@@ -81,7 +81,7 @@ def validate_user(username, password):
     return None
 
 # OPC UA server URL
-OPC_UA_URL = "opc.tcp://192.168.0.18:4840"
+OPC_UA_URL = "opc.tcp://127.0.0.1:4840"
 
 # Create an OPC UA client instance
 client = Client(OPC_UA_URL)
@@ -116,9 +116,8 @@ def read_values_periodically():
             socketio.emit('update', latest_values)
             
             socketio.emit('gauge_update', {
-                "Random": latest_values.get("Random", 0),
-                "Counter": latest_values.get("Counter", 0),
-                "Sawtooth": latest_values.get("Sawtooth", 0)
+                "Temperature": latest_values.get("Temperature", 0),
+                "Humidity": latest_values.get("Humidity", 0)
             })
             
             client.disconnect()  # Disconnect from the server
@@ -127,36 +126,65 @@ def read_values_periodically():
             print(f"Error reading values: {str(e)}")
             time.sleep(1)  # Wait before retrying in case of error
 
+
 @app.route('/write', methods=['POST'])
 def write():
-    data = request.get_json()  # Generic payload with setting names as keys
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "No data provided"}), 400
+
+    opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
+
     try:
-        client.connect()  # Connect to the OPC UA server
-        node_ids = load_node_ids()  # Load all node IDs (mapping of setting names to node IDs)
+        opcua_client.connect()  # Ensure connection is established
 
-        for setting, value in data.items():
-            if setting in node_ids and value is not None:
-                node = client.get_node(node_ids[setting])
-                node_data_type = node.get_data_type_as_variant_type()  # Dynamically get the node's data type
+        for nodeid, value in data.items():
+            node = opcua_client.get_node(nodeid)
+            node_data_type = node.get_data_type_as_variant_type()
 
-                # Map the data type and convert value accordingly
-                if node_data_type == ua.VariantType.Boolean:
-                    dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
-                elif node_data_type == ua.VariantType.Int32:
-                    dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
-                elif node_data_type == ua.VariantType.Float:
-                    dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
-                else:
-                    raise ValueError(f"Unsupported data type for {setting}: {node_data_type}")
+            if node_data_type == ua.VariantType.Boolean:
+                dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+            elif node_data_type == ua.VariantType.Int32:
+                dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+            elif node_data_type == ua.VariantType.Float:
+                dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
+            else:
+                raise ValueError(f"Unsupported data type for node {nodeid}: {node_data_type}")
 
-                node.set_value(dv)  # Write the value to the OPC UA node
+            node.set_value(dv)
 
-        client.disconnect()  # Disconnect from the server
         return jsonify({"success": True}), 200
 
     except Exception as e:
         print(f"Error writing settings: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+    finally:
+        try:
+            opcua_client.disconnect()  # Disconnect after operation
+        except Exception as disconnect_error:
+            print(f"Error during client disconnect: {disconnect_error}")
+
+template_mapping = {
+    "Set Point": "Settings/spinning2_sp.html",
+    "Digital Input": "Settings/spinning2_di.html",
+    "Digital Output": "Settings/spinning2_do.html",
+    "Analog Input": "Settings/spinning2_ai.html",
+    "Analog Output": "Settings/spinning2_ao.html",
+    "Preset Values": "Settings/spinning2_pv.html",
+    "Timer": "Settings/spinning2_ti.html",
+    "Controllers": "Settings/spinning2_co.html",
+    "UPSS": "Settings/spinning2_up.html",
+    "Pump Min Set": "Settings/spinning2_pm.html",
+}
+
+@app.route('/load_template/<submodule_option>')
+def load_template(submodule_option):
+    if submodule_option in template_mapping:
+        template_path = template_mapping[submodule_option]
+        # Include node IDs as part of the context
+        return render_template(template_path, msg={"payload": latest_values, "node_ids": load_node_ids()})
+    return "Template not found", 404
 
 
 
@@ -188,82 +216,8 @@ def get_alarms():
 
 @app.route('/alarmslist')
 def alarmslist():
-    departments = load_data()
-    seen = set()
-    allowed_submodules = [
-        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
-        if not (submodule in seen or seen.add(submodule))
-    ]
-    return render_template('iot/alarmslist.html', departments=departments,allowed_submodules=allowed_submodules)  # Render the HTML template
+    return render_template('iot/alarmslist.html')  # Render the HTML template
 
-
-
-# @app.route('/')
-# def home():
-#     departments = load_data()
-#     return render_template('iot/dashboard.html', departments=departments)  # Render the HTML template
-
-<<<<<<< HEAD
-# @app.route('/alarms')
-# def alarms():
-#     msg = {"payload": latest_values}
-#     return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
-=======
-@app.route('/alarms')
-def alarms():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
->>>>>>> 5646455a506c6e07580a35da132e371028a87e2d
-
-@app.route('/setpoint')
-def setpoint():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
-
-@app.route('/di')
-def di():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
-
-@app.route('/do')
-def do():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_do.html', msg=msg)  # Render the HTML template
-
-@app.route('/ai')
-def ai():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_ai.html', msg=msg)  # Render the HTML template
-
-@app.route('/ao')
-def ao():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_ao.html', msg=msg)  # Render the HTML template
-
-@app.route('/pv')
-def pv():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_pv.html', msg=msg)  # Render the HTML template
-
-@app.route('/ti')
-def ti():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_ti.html', msg=msg)  # Render the HTML template
-
-@app.route('/co')
-def co():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_co.html', msg=msg)  # Render the HTML template
-
-@app.route('/up')
-def up():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_up.html', msg=msg)  # Render the HTML template
-
-@app.route('/pu')
-def pu():
-    msg = {"payload": latest_values}
-    return render_template('Settings/spinning2_pu.html', msg=msg)  # Render the HTML template
 
 @app.route('/')
 def home():
@@ -275,12 +229,6 @@ def home():
     ]
     return render_template('iot/dashboard.html', departments=departments,allowed_submodules=allowed_submodules)  # Render the HTML template
 
-# @app.route('/dashboard')
-# def dashboard():
-#     if 'userloggedin' not in session:
-#         return redirect(url_for('user_login'))
-#     allowed_submodules = session.get('allowed_submodules', [])
-#     return render_template('iot/dashboard.html', allowed_submodules=allowed_submodules)
 
 @app.route('/dashboard')
 def dashboard():
@@ -290,7 +238,10 @@ def dashboard():
         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
         if not (submodule in seen or seen.add(submodule))
     ]
-    return render_template('iot/dashboard.html', allowed_submodules=allowed_submodules)
+    # Load node_ids from the YAML file
+    with open('nodeid.yaml', 'r') as file:
+        node_ids = yaml.safe_load(file)
+    return render_template('iot/dashboard.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
 
 # Function to load the data from the YAML file
 def load_data():
@@ -317,23 +268,6 @@ def inject_context():
     }
 
 
-# @app.route('/<submodule>')
-# def render_submodule(submodule):
-#     # Load the submodule to template mapping
-#     submodules = load_data()["submodules"]
-
-#     # Find the template associated with the submodule
-#     template_name = submodules.get(submodule)
-#     if template_name:
-#         template_path = os.path.join("templates", "iot", template_name)
-#         if os.path.exists(template_path):
-#             # Pass the latest values from the OPC UA server (or other data)
-#             msg = {"payload": latest_values}  # Replace latest_values with your data
-#             return render_template(f"iot/{template_name}", msg=msg, allowed_submodules=session.get('allowed_submodules', []))
-
-#     return "Page not found", 404
-
-
 @app.route('/<submodule>')
 def render_submodule(submodule):
     # Load the submodule to template mapping
@@ -357,6 +291,7 @@ def render_submodule(submodule):
             return render_template(f"iot/{template_name}", msg=msg, allowed_submodules=allowed_submodules)
 
     return "Page not found", 404
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def user_login():

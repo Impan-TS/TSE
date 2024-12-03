@@ -577,11 +577,11 @@
         .simple-popup {
             display: none;
             position: fixed;
-            top: 13.5%;
+            top: 50%;
             left: 55%;
             transform: translate(-50%, -50%);
             /* Centers the popup */
-            background-color: rgba(76, 175, 80, 0.8);
+            background-color: rgb(148, 0, 0);
             /* Green background with 70% opacity */
             color: white;
             padding: 16px 24px;
@@ -590,7 +590,7 @@
             /* Rounded corners for a smooth appearance */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             /* Drop shadow for better visibility */
-            z-index: 1001;
+            z-index: 9999;
             font-size: 16px;
             /* Larger text for readability */
             min-width: 250px;
@@ -605,6 +605,31 @@
             /* More space between icon and text */
             font-size: 20px;
             /* Larger icon */
+        }
+
+        #main-content {
+            position: relative;
+            z-index: 999;
+            width: 100%;
+            margin-top: 8%;
+            margin-left: 5%;
+            /* align-items: center; */
+        }
+
+        /* Apply blur effect to the background when main-content is active */
+        body.blur-active::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent overlay */
+            backdrop-filter: blur(5px);
+            /* Blur effect */
+            z-index: 998;
+            /* Ensure it appears below main-content */
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
@@ -734,12 +759,7 @@
             {% endfor %}
         </div>
 
-
-<<<<<<< HEAD
         <button id="alarms" class="module-button" onclick="window.location.href='/alarmslist'">
-=======
-        <button id="alarms" class="module-button" onclick="window.location.href='/alarms'">
->>>>>>> 5646455a506c6e07580a35da132e371028a87e2d
             <i class="fa-solid fa-triangle-exclamation"></i> Alarms
         </button>
         <div id="alarmsSubmodules" class="submodule-container"></div>
@@ -786,6 +806,63 @@
     </div>
 
     <script>
+
+        function loadTemplate(submoduleOption) {
+            fetch(`/load_template/${submoduleOption}`)
+                .then(response => response.text())
+                .then(data => {
+                    const mainContent = document.getElementById('main-content');
+                    mainContent.innerHTML = data;
+                    document.body.classList.add('blur-active'); // Add blur to the background
+                    bindDynamicEvents(); // Rebind events to dynamically loaded content
+                })
+                .catch(error => console.error('Error loading template:', error));
+        }
+
+        function bindDynamicEvents() {
+            // Update button functionality
+            document.querySelector('.btn-success').addEventListener('click', updateSettings);
+
+            // Close button functionality
+            document.querySelector('.btn-danger').addEventListener('click', closeDialog);
+        }
+
+        function updateSettings() {
+            const setpoints = {};
+
+            // Select all input elements with the data-nodeid attribute
+            document.querySelectorAll("input[data-nodeid]").forEach(input => {
+                const nodeid = input.getAttribute("data-nodeid");
+                const value = input.value;
+
+                if (nodeid) {
+                    setpoints[nodeid] = value; // Use nodeid as key
+                }
+            });
+
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings updated successfully!');
+                    } else {
+                        alert('Failed to update settings.');
+                    }
+                })
+                .catch(error => console.error('Error updating settings:', error));
+        }
+
+
+        function closeDialog() {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = ''; // Clear the content
+            document.body.classList.remove('blur-active'); // Remove blur from the background
+        }
+
         let previousAlarms = [];
 
         function fetchAlarmCount() {
@@ -818,7 +895,7 @@
         // Function to show simple popup alerts for 2 seconds each
         function showSimplePopups(alarms) {
             let index = 0;
-            const popupDisplayInterval = 2000; // 2 seconds for each popup
+            const popupDisplayInterval = 10000; // 2 seconds for each popup
 
             function showNextPopup() {
                 if (index < alarms.length) {
@@ -848,7 +925,7 @@
 
         function showAlarmsSequentially(alarms) {
             let index = 0;
-            const alarmDisplayInterval = 2000; // 2 seconds interval
+            const alarmDisplayInterval = 10000; // 2 seconds interval
 
             function showNextAlarm() {
                 if (index < alarms.length) {
@@ -935,7 +1012,7 @@
         }
 
         // Call the function periodically to check for new alarms
-        setInterval(fetchAlarmCount, 10000);
+        setInterval(fetchAlarmCount, 5000);
 
 
         var iframe = document.getElementById('reportIframe');

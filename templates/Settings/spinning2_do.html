@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,16 +10,18 @@
     <style>
         /* Styles for the dialog and inputs */
         .dialog-box {
-            max-width: 50%;
+            max-width: 35%;
             width: auto;
             border: 1px solid #333;
             border-radius: 10px;
             background-color: #e3f4ff;
             padding: 20px;
-            margin: auto;
+            margin: 0 auto;
             box-sizing: border-box;
             position: relative;
+            /* Needed for absolute positioning of the close icon */
         }
+
 
         .header {
             background-color: #0c609d;
@@ -31,17 +32,22 @@
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 15px;
+            width: 100%;
         }
+
 
         .row-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            /* grid-template-columns: repeat(6, 1fr); */
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            /* Dynamic columns */
+            /* Adjust column width dynamically */
             gap: 8px;
+            /* Space between the columns */
             margin-bottom: 8px;
         }
 
-        .parameter,
-        .value {
+        .parameter {
             width: 100%;
             height: 40px;
             text-align: center;
@@ -55,9 +61,30 @@
             color: black;
         }
 
+
         .value {
             background-color: #007bff;
             color: white;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #333;
+            border-radius: 5px;
+            line-height: 40px;
+            padding-right: 10px;
+        }
+
+
+        .set-box input {
+            width: 100%;
+            height: 40px;
+            /* padding: 10px; */
+            background: #4caf50;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #333;
+            border-radius: 5px;
+            line-height: 40px;
         }
 
         .m-value-row .value {
@@ -91,16 +118,6 @@
             transform: scale(1.1);
         }
 
-        .set-box input {
-            width: 70px;
-            padding: 10px;
-            background: #4caf50;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            border: none;
-            border-radius: 5px;
-        }
 
         .set-box input:focus {
             outline: none;
@@ -108,11 +125,8 @@
         }
 
         .dialog-footer {
-            padding: 15px;
             text-align: right;
-            background: #f8f9fa;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+            background: #e3f4ff;
         }
 
         .dialog-footer button {
@@ -137,27 +151,27 @@
         </div>
         <div class="row-container">
             <div class="parameter">VALUE</div>
-            <div class="value">{{ msg.payload.Spg2_DO_Pump_Act | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.Spg2_DO_Pump_Act2 | default(0, true) }}</div>
+            <div class="value">{{ 1 if msg.payload.Spg2_DO_Pump_Act else 0 }}</div>
+            <div class="value">{{ 1 if msg.payload.Spg2_DO_Pump_Act2 else 0 }}</div>
         </div>
 
         <!-- Row 2 -->
         <div class="row-container m-value-row">
             <div class="parameter">M VALUE</div>
             <div class="set-box">
-                <input type="number" id="Spg2_iMi_DO_Man" value="{{ msg.payload.Spg2_iMi_DO_Man | default(0, true) }}"
-                    min="0" max="1" step="1" oninput="validateInput(this)" />
+                <input type="number" id="Spg2_iMi_DO_Man" value="{{ 1 if msg.payload.Spg2_iMi_DO_Man else 0 }}" min="0"
+                    max="1" step="1" oninput="validateInput(this)" />
             </div>
             <div class="set-box">
-                <input type="number" id="Spg2_iMi_DO_Man2" value="{{ msg.payload.Spg2_iMi_DO_Man2 | default(0, true) }}"
+                <input type="number" id="Spg2_iMi_DO_Man2" value="{{ 1 if msg.payload.Spg2_iMi_DO_Man2 else 0 }}"
                     min="0" max="1" step="1" oninput="validateInput(this)" />
             </div>
         </div>
 
         <!-- Row 3 -->
-        <div class="row-container">
+        <!-- <div class="row-container">
             <div class="parameter">MODE</div>
-        </div>
+        </div> -->
 
         <div class="dialog-footer">
             <button class="btn btn-success" onclick="updateSettings()">Update</button>
@@ -215,4 +229,3 @@
 </body>
 
 </html>
-

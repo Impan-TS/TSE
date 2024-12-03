@@ -1,4 +1,15 @@
 node_ids:
+  Prep_1_iVa_Act_RH: "ns=6;s=::Prep_1:iVa_Act_RH"                      #Dashboard
+  Prep_1_iVa_Act_Temp: "ns=6;s=::Prep_1:iVa_Act_Temp"
+  Prep_2_iVa_Act_RH: "ns=6;s=::Prep_2:iVa_Act_RH"                     
+  Prep_2_iVa_Act_Temp: "ns=6;s=::Prep_2:iVa_Act_Temp" 
+  Spg1_iVa_Act_RH: "ns=6;s=::Spg1:iVa_Act_RH"                     
+  Spg1_iVa_Act_Temp: "ns=6;s=::Spg1:iVa_Act_Temp"
+  Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"                     
+  Spg2_iVa_Act_Temp: "ns=6;s=::Spg2:iVa_Act_Temp"
+  Linkconer_iVa_Act_RH: "ns=6;s=::Linkconer:iVa_Act_RH"                     
+  Linkconer_iVa_Act_Temp: "ns=6;s=::Linkconer:iVa_Act_Temp"
+
   Spg2_iVa_DPG_RDF: "ns=6;s=::Spg2:iVa_DPG_RDF"                       #Diagram
   Spg2_iVa_UPSS_Output_RAF: "ns=6;s=::Spg2:iVa_UPSS_Output_RAF"
   Spg2_iVa_WTC_Output: "ns=6;s=::Spg2:iVa_WTC_Output"
@@ -81,6 +92,7 @@ node_ids:
   Spg2_UPSS_Pid_Para_IntegrationTime: "ns=6;s=::Spg2:UPSS_Pid_Para.IntegrationTime"
   Spg2_iVa_UPSS_Output_RAF: "ns=6;s=::Spg2:iVa_UPSS_Output_RAF"
   Spg2_iVa_Pid_Output_UPSS: "ns=6;s=::Spg2:iVa_Pid_Output_UPSS"
+  Spg2_iVa_Min_RAF_UPSS: "ns=6;s=::Spg2:iVa_Min_RAF_UPSS"
   Spg2_iVa_Max_RAF_UPSS: "ns=6;s=::Spg2:iVa_Max_RAF_UPSS"
 
   Spg2_iVa_Min_Pump_Output: "ns=6;s=::Spg2:iVa_Min_Pump_Output"          #Pump Setting UPSS
@@ -114,3 +126,5 @@ node_ids:
   DI_Spg2_iFl_WasherPump1_ON: "ns=6;s=::DI_Spg2:iFl_WasherPump1_ON"
   DI_Spg2_iFl_WasherPump1_OFF: "ns=6;s=::DI_Spg2:iFl_WasherPump1_OFF"
   DI_Spg2_iFl_WasherPump1_TRIP: "ns=6;s=::DI_Spg2:iFl_WasherPump1_TRIP"
+
+  

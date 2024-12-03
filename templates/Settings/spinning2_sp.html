@@ -7,23 +7,14 @@
     <title>Set Point</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            background: #f8f9fa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-
         .dialog-container {
             position: relative;
-            background: white;
-            border: 1px solid #ccc;
+            background: #e3f4ff;
+            border: 1px solid #0c609d;
             border-radius: 10px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             width: 400px;
+            margin-left: 36%;
         }
 
         .dialog-header {
@@ -44,7 +35,7 @@
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            border: 0.1px solid #d0ebff;
+            border: 1px solid #d0ebff;
             border-radius: 1px;
             overflow: hidden;
         }
@@ -53,7 +44,8 @@
         .dialog-body td {
             padding: 10px;
             text-align: center;
-            border: 0.1px solid #acdbff;
+            border: 0.1px solid #0c609d;
+            background: #e3f4ff;
         }
 
         .dialog-body th {
@@ -91,14 +83,31 @@
         .dialog-footer {
             padding: 15px;
             text-align: right;
-            background: #f8f9fa;
+            background: #e3f4ff;
             border-bottom-left-radius: 10px;
             border-bottom-right-radius: 10px;
         }
 
-        .dialog-footer button {
+        /* .dialog-footer button {
             margin-left: 10px;
         }
+
+        .table th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .table th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+
+        .table td:first-child {
+            border-bottom-left-radius: 10px;
+        }
+
+        .table td:last-child {
+            border-bottom-right-radius: 10px;
+        } */
     </style>
 </head>
 
@@ -118,16 +127,17 @@
                 <tbody>
                     <tr>
                         <td><b>% RH</b></td>
-                        <td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_RH'] }}</span></td>
+                        <td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_RH'] | round(1) }}</span></td>
                         <td class="set-box">
-                            <input type="number" id="Spg2_iMi_Set_RH" value="{{ msg.payload['Spg2_iMi_Set_RH'] }}" />
+                            <input type="number" id="Spg2_iMi_Set_RH" value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH'] }}" />
                         </td>
                     </tr>
                     <tr>
                         <td><b>°C</b></td>
-                        <td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_Temp'] }}</span></td>
+                        <td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_Temp'] | round(1) }}</span></td>
                         <td class="set-box">
-                            <input type="number" id="Spg2_iMi_Set_Temp" value="{{ msg.payload['Spg2_iMi_Set_Temp'] }}" />
+                            <input type="number" id="Spg2_iMi_Set_Temp"
+                                value="{{ msg.payload['Spg2_iMi_Set_Temp'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_Temp'] }}" />
                         </td>
                     </tr>
                 </tbody>

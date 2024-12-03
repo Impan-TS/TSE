@@ -11,17 +11,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Include Moment.js (for date handling) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <!-- Include Chart.js Moment.js adapter -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Include Plotly -->
-
     <style>
         .common-container {
             border: 1px solid black;
@@ -102,15 +96,19 @@
         <div class="common-container">
             <h2>{{ name }}</h2>
             <div class="sensor-data" id="sensorData{{ loop.index }}">
-                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-weight: bold;">
-                    <div style="margin-right: 70px;">Temperature : <span id="temperature{{ loop.index }}">0</span>°C</div>
+                <div
+                    style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-weight: bold;">
+                    <div style="margin-right: 70px;">Temperature : <span id="temperature{{ loop.index }}">0</span>°C
+                    </div>
                     <div>Humidity : <span id="humidity{{ loop.index }}">0</span>%</div>
                 </div>
             </div>
 
             <div class="gauge-container">
-                <div class="gauge-box"><canvas id="randomGauge{{ loop.index }}" width="220" height="150"></canvas></div>
-                <div class="gauge-box"><canvas id="sawtoothGauge{{ loop.index }}" width="220" height="150"></canvas></div>
+                <div class="gauge-box"><canvas id="temperatureGauge{{ loop.index }}" width="220" height="150"></canvas>
+                </div>
+                <div class="gauge-box"><canvas id="humidityGauge{{ loop.index }}" width="220" height="150"></canvas>
+                </div>
             </div>
             <div class="chart-container">
                 <canvas id="myChart{{ loop.index }}"></canvas>
@@ -119,9 +117,39 @@
         {% endfor %}
     </div>
 
+
     <script>
-        function setupDepartment(departmentId, tempElementId, humidityElementId) {
-            var ctx = document.getElementById(departmentId.chart).getContext('2d');
+        // Function to map the submodule to the correct Node IDs
+        function getNodeIds(departmentName) {
+            const nodeIds = {
+                'Preparatory 1': {
+                    temperature: "Prep_1_iVa_Act_Temp",
+                    humidity: "Prep_1_iVa_Act_RH"
+                },
+                'Preparatory 2': {
+                    temperature: "Prep_2_iVa_Act_Temp",
+                    humidity: "Prep_2_iVa_Act_RH"
+                },
+                'Spinning 1': {
+                    temperature: "Spg1_iVa_Act_Temp",
+                    humidity: "Spg1_iVa_Act_RH"
+                },
+                'Spinning 2': {
+                    temperature: "Spg2_iVa_Act_Temp",
+                    humidity: "Spg2_iVa_Act_RH"
+                },
+                'Link Coner': {
+                    temperature: "Linkconer_iVa_Act_Temp",
+                    humidity: "Linkconer_iVa_Act_RH"
+                }
+            };
+            return nodeIds[departmentName];
+        }
+
+        // Function to setup each department's chart and gauges
+        function setupDepartment(departmentName, departmentIndex) {
+            const nodeIds = getNodeIds(departmentName);
+            var ctx = document.getElementById('myChart' + departmentIndex).getContext('2d');
             var chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -166,11 +194,11 @@
             socket.on('update', function (data) {
                 var currentTime = new Date();
                 chart.data.labels.push(currentTime);
-                chart.data.datasets[0].data.push(data.Random);
-                chart.data.datasets[1].data.push(data.Sawtooth);
+                chart.data.datasets[0].data.push(data[nodeIds.temperature]);
+                chart.data.datasets[1].data.push(data[nodeIds.humidity]);
 
-                document.getElementById(tempElementId).textContent = data.Random.toFixed(2);
-                document.getElementById(humidityElementId).textContent = data.Sawtooth.toFixed(2);
+                document.getElementById('temperature' + departmentIndex).textContent = data[nodeIds.temperature].toFixed(2);
+                document.getElementById('humidity' + departmentIndex).textContent = data[nodeIds.humidity].toFixed(2);
 
                 if (chart.data.labels.length > 20) {
                     chart.data.labels.shift();
@@ -180,25 +208,32 @@
             });
 
             socket.on('gauge_update', function (data) {
-                drawNeedleGauge(departmentId.id, data.Random, 'random');
-                drawNeedleGauge(departmentId.id, data.Sawtooth, 'sawtooth');
+                console.log("Received gauge update", data);
+                drawNeedleGauge(departmentIndex, data[nodeIds.temperature], 'temperature');
+                drawNeedleGauge(departmentIndex, data[nodeIds.humidity], 'humidity');
             });
 
-            function drawNeedleGauge(elementId, value, type) {
-                const canvas = document.getElementById(`${type}Gauge${elementId}`);
+
+            // Corrected function to draw needle gauge
+            function drawNeedleGauge(departmentIndex, value, type) {
+                const canvas = document.getElementById(type + 'Gauge' + departmentIndex);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const centerX = canvas.width / 2;
                 const centerY = canvas.height * 0.9;
                 const radius = Math.min(canvas.width, canvas.height) / 2;
 
+                // Clear the canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw gauge arc
                 ctx.strokeStyle = "black";
                 ctx.lineWidth = 21;
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI, false);
                 ctx.stroke();
 
+                // Draw colored segments
                 const rangeColors = [
                     { range: [-2, -1], color: '#008000' },
                     { range: [-1, 0], color: '#FFFF00' },
@@ -217,8 +252,9 @@
                     ctx.stroke();
                 });
 
+                // Draw ticks and labels
                 const tickCount = 5;
-                const range = [-2, -1, 0, 1, 2];
+                const range = [-20, -10, 0, 10, 20];
                 const tickSpacing = Math.PI / (tickCount - 1);
 
                 range.forEach((tick, index) => {
@@ -247,23 +283,22 @@
 
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle - Math.PI / 6), centerY + needleBase * Math.sin(needleAngle - Math.PI / 6));
+                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle), centerY + needleBase * Math.sin(needleAngle));
                 ctx.lineTo(centerX + needleLength * Math.cos(needleAngle), centerY + needleLength * Math.sin(needleAngle));
-                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle + Math.PI / 6), centerY + needleBase * Math.sin(needleAngle + Math.PI / 6));
-                ctx.closePath();
-
-                ctx.fillStyle = '#b22222';
-                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
             }
         }
 
+        // Set up each department based on the submodule data
         {% for name, template in submodules.items() %}
-        setupDepartment({
-            id: {{ loop.index }},
-            chart: 'myChart{{ loop.index }}'
-        }, 'temperature{{ loop.index }}', 'humidity{{ loop.index }}');
+        setupDepartment('{{ name }}', {{ loop.index }});
         {% endfor %}
     </script>
+
 </body>
+
 </html>
+
 {% endblock %}
