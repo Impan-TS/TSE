@@ -127,6 +127,85 @@ def read_values_periodically():
             time.sleep(1)  # Wait before retrying in case of error
 
 
+# @app.route('/write', methods=['POST'])
+# def write():
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"success": False, "error": "No data provided"}), 400
+
+#     opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
+
+#     try:
+#         opcua_client.connect()  # Ensure connection is established
+
+#         for nodeid, value in data.items():
+#             node = opcua_client.get_node(nodeid)
+#             node_data_type = node.get_data_type_as_variant_type()
+
+#             if node_data_type == ua.VariantType.Boolean:
+#                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+#             elif node_data_type == ua.VariantType.Int32:
+#                 dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+#             elif node_data_type == ua.VariantType.Float:
+#                 dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
+#             else:
+#                 raise ValueError(f"Unsupported data type for node {nodeid}: {node_data_type}")
+
+#             node.set_value(dv)
+
+#         return jsonify({"success": True}), 200
+
+#     except Exception as e:
+#         print(f"Error writing settings: {e}")
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+#     finally:
+#         try:
+#             opcua_client.disconnect()  # Disconnect after operation
+#         except Exception as disconnect_error:
+#             print(f"Error during client disconnect: {disconnect_error}")
+
+
+# @app.route('/write', methods=['POST'])
+# def write():
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"success": False, "error": "No data provided"}), 400
+
+#     node_ids = load_node_ids()  # Load Node IDs from the YAML file
+#     opcua_client = Client(OPC_UA_URL)
+
+#     try:
+#         opcua_client.connect()  # Connect to OPC UA server
+
+#         for parameter, value in data.items():
+#             node_id = node_ids.get(parameter)
+#             if not node_id:
+#                 raise ValueError(f"Node ID for parameter '{parameter}' not found")
+
+#             # Retrieve the node and determine its data type
+#             node = opcua_client.get_node(node_id)
+#             node_data_type = node.get_data_type_as_variant_type()
+
+#             if node_data_type == ua.VariantType.Boolean:
+#                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+#             else:
+#                 raise ValueError(f"Unsupported data type for node {node_id}: {node_data_type}")
+
+#             node.set_value(dv)  # Write the value to the node
+
+#         return jsonify({"success": True}), 200
+
+#     except Exception as e:
+#         print(f"Error writing settings: {e}")
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+#     finally:
+#         try:
+#             opcua_client.disconnect()  # Disconnect from OPC UA server
+#         except Exception as disconnect_error:
+#             print(f"Error during client disconnect: {disconnect_error}")
+
 @app.route('/write', methods=['POST'])
 def write():
     data = request.get_json()
@@ -164,6 +243,7 @@ def write():
             opcua_client.disconnect()  # Disconnect after operation
         except Exception as disconnect_error:
             print(f"Error during client disconnect: {disconnect_error}")
+
 
 template_mapping = {
     "Set Point": "Settings/spinning2_sp.html",
@@ -338,10 +418,13 @@ def index():
 #     msg = {"payload": latest_values}
 #     return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
 
-# @app.route('/do')
-# def do():
-#     msg = {"payload": latest_values}
-#     return render_template('Settings/spinning2_do.html', msg=msg)  # Render the HTML template
+@app.route('/do')
+def do():
+    msg = {
+        'payload': latest_values,
+        'node_ids': load_node_ids()  # Include node_ids from the YAML file
+    }
+    return render_template('Settings/spinning2_do.html', msg=msg)  # Render the HTML template
 
 # @app.route('/ai')
 # def ai():

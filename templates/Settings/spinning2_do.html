@@ -160,11 +160,13 @@
             <div class="parameter">M VALUE</div>
             <div class="set-box">
                 <input type="number" id="Spg2_iMi_DO_Man" value="{{ 1 if msg.payload.Spg2_iMi_DO_Man else 0 }}" min="0"
-                    max="1" step="1" oninput="validateInput(this)" />
+                    max="1" step="1" oninput="validateInput(this)"
+                    data-nodeid="{{ msg.node_ids['Spg2_iMi_DO_Man'] }}" />
             </div>
             <div class="set-box">
                 <input type="number" id="Spg2_iMi_DO_Man2" value="{{ 1 if msg.payload.Spg2_iMi_DO_Man2 else 0 }}"
-                    min="0" max="1" step="1" oninput="validateInput(this)" />
+                    min="0" max="1" step="1" oninput="validateInput(this)"
+                    data-nodeid="{{ msg.node_ids['Spg2_iMi_DO_Man2'] }}" />
             </div>
         </div>
 
@@ -180,7 +182,7 @@
 
     <script>
         function validateInput(input) {
-            const value = input.value;
+            // const value = input.value;
             if (value !== "0" && value !== "1") {
                 input.setCustomValidity("Invalid input detected! Please enter either 0 or 1");
             } else {
@@ -188,11 +190,12 @@
             }
         }
 
+
         function updateSettings() {
             const spg2_iMi_DO_Man = document.getElementById('Spg2_iMi_DO_Man').value;
             const spg2_iMi_DO_Man2 = document.getElementById('Spg2_iMi_DO_Man2').value;
 
-            // Check if input is valid
+            // Validate inputs
             if (spg2_iMi_DO_Man !== "0" && spg2_iMi_DO_Man !== "1") {
                 alert('Invalid input detected! Please enter either 0 or 1');
                 return;
@@ -202,12 +205,13 @@
                 return;
             }
 
-            // Proceed with sending data if valid
+            // Prepare payload
             const setpoints = {
-                Spg2_iMi_DO_Man: spg2_iMi_DO_Man === "1", // Convert to boolean
-                Spg2_iMi_DO_Man2: spg2_iMi_DO_Man2 === "1"  // Convert to boolean
+                "Spg2_iMi_DO_Man": spg2_iMi_DO_Man === "1",  // Replace with actual Node IDs
+                "Spg2_iMi_DO_Man2": spg2_iMi_DO_Man2 === "1"  // Replace with actual Node IDs
             };
 
+            // Send to the backend
             fetch('/write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -217,10 +221,14 @@
                 .then(data => {
                     if (data.success) {
                         alert('Settings updated successfully!');
+                    } else {
+                        alert(`Error updating settings: ${data.error}`);
                     }
                 })
                 .catch(error => console.error('Error:', error));
         }
+
+
 
         function closeDialog() {
             document.querySelector('.dialog-box').style.display = 'none';

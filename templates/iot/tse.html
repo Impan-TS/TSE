@@ -813,61 +813,67 @@
 
     <script>
 
-        function loadTemplate(submoduleOption) {
-            fetch(`/load_template/${submoduleOption}`)
-                .then(response => response.text())
-                .then(data => {
-                    const mainContent = document.getElementById('main-content');
-                    mainContent.innerHTML = data;
-                    document.body.classList.add('blur-active'); // Add blur to the background
-                    bindDynamicEvents(); // Rebind events to dynamically loaded content
-                })
-                .catch(error => console.error('Error loading template:', error));
-        }
-
-        function bindDynamicEvents() {
-            // Update button functionality
-            document.querySelector('.btn-success').addEventListener('click', updateSettings);
-
-            // Close button functionality
-            document.querySelector('.btn-danger').addEventListener('click', closeDialog);
-        }
-
-        function updateSettings() {
-            const setpoints = {};
-
-            // Select all input elements with the data-nodeid attribute
-            document.querySelectorAll("input[data-nodeid]").forEach(input => {
-                const nodeid = input.getAttribute("data-nodeid");
-                const value = input.value;
-
-                if (nodeid) {
-                    setpoints[nodeid] = value; // Use nodeid as key
-                }
-            });
-
-            fetch('/write', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(setpoints),
+function loadTemplate(submoduleOption) {
+        fetch(`/load_template/${submoduleOption}`)
+            .then(response => response.text())
+            .then(data => {
+                const mainContent = document.getElementById('main-content');
+                mainContent.innerHTML = data;
+                document.body.classList.add('blur-active'); // Add blur to the background
+                bindDynamicEvents(); // Rebind events to dynamically loaded content
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Settings updated successfully!');
-                    } else {
-                        alert('Failed to update settings.');
+            .catch(error => console.error('Error loading template:', error));
+    }
+
+    function bindDynamicEvents() {
+        document.querySelector('.btn-success').addEventListener('click', updateSettings);
+        document.querySelector('.btn-danger').addEventListener('click', closeDialog);
+    }
+
+    function updateSettings() {
+        const setpoints = {};
+
+        document.querySelectorAll("input[data-nodeid]").forEach(input => {
+            const nodeid = input.getAttribute("data-nodeid");
+            const datatype = input.getAttribute("data-datatype");
+            let value = input.value;
+
+            if (nodeid) {
+                if (datatype === "boolean") {
+                    // Validate boolean input (either 0 or 1)
+                    if (value !== "0" && value !== "1") {
+                        alert("Please enter either 0 or 1 for boolean values.");
+                        return;  // Stop execution if invalid
                     }
-                })
-                .catch(error => console.error('Error updating settings:', error));
-        }
+                    value = value === "1";  // Convert to boolean
+                } else {
+                    value = parseFloat(value); // Convert numeric values
+                }
+                setpoints[nodeid] = value;
+            }
+        });
 
+        fetch('/write', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(setpoints),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Settings updated successfully!');
+                } else {
+                    alert(`Failed to update settings: ${data.error}`);
+                }
+            })
+            .catch(error => console.error('Error updating settings:', error));
+    }
 
-        function closeDialog() {
-            const mainContent = document.getElementById('main-content');
-            mainContent.innerHTML = ''; // Clear the content
-            document.body.classList.remove('blur-active'); // Remove blur from the background
-        }
+    function closeDialog() {
+        const mainContent = document.getElementById('main-content');
+        mainContent.innerHTML = ''; // Clear the content
+        document.body.classList.remove('blur-active'); // Remove blur from the background
+    }
 
         let previousAlarms = [];
 
