@@ -126,5 +126,3 @@ node_ids:
   DI_Spg2_iFl_WasherPump1_ON: "ns=6;s=::DI_Spg2:iFl_WasherPump1_ON"
   DI_Spg2_iFl_WasherPump1_OFF: "ns=6;s=::DI_Spg2:iFl_WasherPump1_OFF"
   DI_Spg2_iFl_WasherPump1_TRIP: "ns=6;s=::DI_Spg2:iFl_WasherPump1_TRIP"
-
-  

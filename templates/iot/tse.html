@@ -611,7 +611,7 @@
             position: relative;
             z-index: 999;
             width: 100%;
-            margin-top: 8%;
+            margin-top: 7%;
             margin-left: 5%;
             /* align-items: center; */
         }
@@ -749,9 +749,10 @@
                 </button>
                 {% endif %}
 
+
                 <!-- Add submodule options here -->
                 {% for submodule_option in allowed_submodules %}
-                <button class="submodule-button bg">
+                <button class="submodule-button bg" onclick="loadTemplate('{{ submodule_option }}')">
                     <i class="fa-solid fa-gear settings-icon"></i> {{ submodule_option }}
                 </button>
                 {% endfor %}
@@ -804,6 +805,11 @@
         <!-- Default content (if any) -->
         {% endblock %}
     </div>
+
+    <div id="main-content">
+        <!-- The content will be dynamically inserted here -->
+    </div>
+
 
     <script>
 
@@ -1034,6 +1040,32 @@
         document.addEventListener("DOMContentLoaded", function () {
             const moduleButtons = document.querySelectorAll(".module-button");
             const submoduleContainers = document.querySelectorAll(".submodule-container");
+            const sidebarOptions = document.querySelectorAll('.sidebar-option');
+
+            sidebarOptions.forEach(option => {
+                option.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const submoduleOption = this.getAttribute('data-submodule');
+
+                    // AJAX call to fetch and load the template
+                    fetch(`/load_template/${submoduleOption}`)
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error("Failed to load template");
+                            }
+                        })
+                        .then(html => {
+                            const container = document.getElementById('main-content');
+                            container.innerHTML = html; // Replace the main content with the new template
+                        })
+                        .catch(error => {
+                            console.error("Error loading template:", error);
+                        });
+                });
+            });
 
             // Toggle dropdown visibility
             moduleButtons.forEach(button => {

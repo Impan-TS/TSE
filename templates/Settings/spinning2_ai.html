@@ -181,13 +181,13 @@
             <!-- Added class here -->
             <div class="parameter">M VALUE</div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_RH_Man_Ref"
-                    value="{{ msg.payload['Spg2_iMi_Set_RH_Man_Ref'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_RH_Man_Ref'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH_Man_Ref'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_Temp_Man_Ref"
-                    value="{{ msg.payload['Spg2_iMi_Set_Temp_Man_Ref'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_Temp_Man_Ref'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_Temp_Man_Ref'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_WoT_Man_Ref"
-                    value="{{ msg.payload['Spg2_iMi_Set_WoT_Man_Ref'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_WoT_Man_Ref'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_WoT_Man_Ref'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_DPG_Man_REF"
-                    value="{{ msg.payload['Spg2_iMi_Set_DPG_Man_REF'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_DPG_Man_REF'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_DPG_Man_REF'] }}" /></div>
         </div>
 
         <div class="dialog-footer">

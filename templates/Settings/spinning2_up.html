@@ -176,27 +176,27 @@
             <!-- Added class here -->
             <div class="parameter">Set RH</div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_RH"
-                    value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH'] }}" /></div>
             <div class="parameter">SAF Min - Set</div>
             <div class="set-box"><input type="number" id="Spg2_iVa_Min_SAF_UPSS"
-                    value="{{ msg.payload['Spg2_iVa_Min_SAF_UPSS'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iVa_Min_SAF_UPSS'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iVa_Min_SAF_UPSS'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row">
             <!-- Added class here -->
             <div class="parameter">P Gain</div>
             <div class="set-box"><input type="number" id="Spg2_UPSS_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_UPSS_Pid_Para_Gain'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_UPSS_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_UPSS_Pid_Para_Gain'] }}" /></div>
             <div class="parameter">SAF Max - Set</div>
             <div class="set-box"><input type="number" id="Spg2_iVa_Max_SAF_UPSS"
-                    value="{{ msg.payload['Spg2_iVa_Max_SAF_UPSS'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iVa_Max_SAF_UPSS'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iVa_Max_SAF_UPSS'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row">
             <!-- Added class here -->
             <div class="parameter">Integral Tn</div>
             <div class="set-box"><input type="number" id="Spg2_UPSS_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_UPSS_Pid_Para_IntegrationTime'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_UPSS_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_UPSS_Pid_Para_IntegrationTime'] }}" /></div>
             <div class="parameter">RetAF Act Output</div>
             <div class="value" style="background: #007bff">{{ msg.payload.Spg2_iVa_UPSS_Output_RAF | round(1) }}</div>
         </div>
@@ -207,7 +207,7 @@
             <div class="value">{{ msg.payload.Spg2_iVa_Pid_Output_UPSS | round(1) }}</div>
             <div class="parameter">RetAF Min - Set</div>
             <div class="set-box"><input type="number" id="Spg2_iVa_Min_RAF_UPSS"
-                    value="{{ msg.payload['Spg2_iVa_Min_RAF_UPSS'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iVa_Min_RAF_UPSS'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iVa_Min_RAF_UPSS'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row">
@@ -216,7 +216,7 @@
             <div></div>
             <div class="parameter">RetAF Max - Set</div>
             <div class="set-box"><input type="number" id="Spg2_iVa_Max_RAF_UPSS"
-                    value="{{ msg.payload['Spg2_iVa_Max_RAF_UPSS'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iVa_Max_RAF_UPSS'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iVa_Max_RAF_UPSS'] }}" /></div>
         </div>
 
         <div class="dialog-footer">

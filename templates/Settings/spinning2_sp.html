@@ -129,7 +129,9 @@
                         <td><b>% RH</b></td>
                         <td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_RH'] | round(1) }}</span></td>
                         <td class="set-box">
-                            <input type="number" id="Spg2_iMi_Set_RH" value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH'] }}" />
+                            <input type="number" id="Spg2_iMi_Set_RH"
+                                value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}"
+                                data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH'] }}" />
                         </td>
                     </tr>
                     <tr>
@@ -137,7 +139,8 @@
                         <td><span class="value-box">{{ msg.payload['Spg2_iVa_Act_Temp'] | round(1) }}</span></td>
                         <td class="set-box">
                             <input type="number" id="Spg2_iMi_Set_Temp"
-                                value="{{ msg.payload['Spg2_iMi_Set_Temp'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_Temp'] }}" />
+                                value="{{ msg.payload['Spg2_iMi_Set_Temp'] | round(1) }}"
+                                data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_Temp'] }}" />
                         </td>
                     </tr>
                 </tbody>

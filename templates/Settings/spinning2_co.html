@@ -178,33 +178,33 @@
             <!-- Added class here -->
             <div class="parameter">SET POINT</div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_RH"
-                    value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_Temp"
-                    value="{{ msg.payload['Spg2_iMi_Set_Temp'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iMi_Set_Temp'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_Temp'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_iVa_Set_Temp_WoT"
-                    value="{{ msg.payload['Spg2_iVa_Set_Temp_WoT'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_iVa_Set_Temp_WoT'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iVa_Set_Temp_WoT'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row">
             <!-- Added class here -->
             <div class="parameter">P.GAIN</div>
             <div class="set-box"><input type="number" id="Spg2_Humidity_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_Humidity_Pid_Para_Gain'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_Humidity_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Humidity_Pid_Para_Gain'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_Temp_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_Temp_Pid_Para_Gain'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_Temp_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Temp_Pid_Para_Gain'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_Damper_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_Damper_Pid_Para_Gain'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_Damper_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Damper_Pid_Para_Gain'] }}" /></div>
         </div>
 
         <div class="row-container m-value-row">
             <!-- Added class here -->
             <div class="parameter">INTEGRAL TN</div>
             <div class="set-box"><input type="number" id="Spg2_Humidity_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_Humidity_Pid_Para_IntegrationTime'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_Humidity_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Humidity_Pid_Para_IntegrationTime'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_Temp_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_Temp_Pid_Para_IntegrationTime'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_Temp_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Temp_Pid_Para_IntegrationTime'] }}" /></div>
             <div class="set-box"><input type="number" id="Spg2_Damper_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_Damper_Pid_Para_IntegrationTime'] | round(1) }}" /></div>
+                    value="{{ msg.payload['Spg2_Damper_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Damper_Pid_Para_IntegrationTime'] }}" /></div>
         </div>
 
         <div class="row-container">

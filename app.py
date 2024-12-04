@@ -187,6 +187,18 @@ def load_template(submodule_option):
     return "Template not found", 404
 
 
+# @app.route('/load_template/<submodule_option>')
+# def load_template(submodule_option):
+#     # Ensure the submodule_option exists in the mapping
+#     if submodule_option in template_mapping:
+#         template_path = template_mapping[submodule_option]
+#         return render_template(
+#             template_path, 
+#             msg={"payload": latest_values, "node_ids": load_node_ids()}
+#         )
+#     return "Template not found", 404
+
+
 
 # Load alarms and node mappings
 with open("alarms.yaml") as f:
@@ -315,6 +327,57 @@ def user_login():
 def index():
     msg = {'payload': 0}
     return render_template('iot/index.html', msg=msg)  # Render the HTML template
+
+# @app.route('/setpoint')
+# def setpoint():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
+
+# @app.route('/di')
+# def di():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
+
+# @app.route('/do')
+# def do():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_do.html', msg=msg)  # Render the HTML template
+
+# @app.route('/ai')
+# def ai():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_ai.html', msg=msg)  # Render the HTML template
+
+# @app.route('/ao')
+# def ao():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_ao.html', msg=msg)  # Render the HTML template
+
+# @app.route('/pv')
+# def pv():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_pv.html', msg=msg)  # Render the HTML template
+
+# @app.route('/ti')
+# def ti():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_ti.html', msg=msg)  # Render the HTML template
+
+# @app.route('/co')
+# def co():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_co.html', msg=msg)  # Render the HTML template
+
+# @app.route('/up')
+# def up():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_up.html', msg=msg)  # Render the HTML template
+
+# @app.route('/pu')
+# def pu():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_pu.html', msg=msg)  # Render the HTML template
+
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
