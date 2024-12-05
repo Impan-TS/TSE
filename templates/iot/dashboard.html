@@ -214,13 +214,12 @@
             });
 
 
-            // Corrected function to draw needle gauge
             function drawNeedleGauge(departmentIndex, value, type) {
                 const canvas = document.getElementById(type + 'Gauge' + departmentIndex);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const centerX = canvas.width / 2;
-                const centerY = canvas.height * 0.9;
+                const centerY = canvas.height * 0.9; // Lowered to make room for labels
                 const radius = Math.min(canvas.width, canvas.height) / 2;
 
                 // Clear the canvas
@@ -235,15 +234,17 @@
 
                 // Draw colored segments
                 const rangeColors = [
-                    { range: [-2, -1], color: '#008000' },
-                    { range: [-1, 0], color: '#FFFF00' },
-                    { range: [0, 1], color: '#FFA500' },
-                    { range: [1, 2], color: '#FF0000' }
+                    { range: [-30, -20], color: '#008000' },
+                    { range: [-20, -10], color: '#FFFF00' },
+                    { range: [-10, 0], color: '#FFA500' },
+                    { range: [0, 10], color: '#FF0000' },
+                    { range: [10, 20], color: '#FF6347' },
+                    { range: [20, 30], color: '#FF4500' }
                 ];
 
                 rangeColors.forEach(function (range) {
-                    const startAngle = Math.PI + ((range.range[0] + 2) / 4) * Math.PI;
-                    const endAngle = Math.PI + ((range.range[1] + 2) / 4) * Math.PI;
+                    const startAngle = Math.PI + ((range.range[0] + 30) / 60) * Math.PI;
+                    const endAngle = Math.PI + ((range.range[1] + 30) / 60) * Math.PI;
 
                     ctx.strokeStyle = range.color;
                     ctx.lineWidth = 19;
@@ -253,13 +254,13 @@
                 });
 
                 // Draw ticks and labels
-                const tickCount = 5;
-                const range = [-20, -10, 0, 10, 20];
+                const tickCount = 7;
+                const tickRange = [-30, -20, -10, 0, 10, 20, 30];
                 const tickSpacing = Math.PI / (tickCount - 1);
 
-                range.forEach((tick, index) => {
+                tickRange.forEach((tick, index) => {
                     const tickAngle = Math.PI + index * tickSpacing;
-                    const tickLength = radius - 10;
+                    const tickLength = radius - 20;
 
                     ctx.beginPath();
                     ctx.moveTo(centerX + tickLength * Math.cos(tickAngle), centerY + tickLength * Math.sin(tickAngle));
@@ -268,7 +269,7 @@
                     ctx.strokeStyle = '#000';
                     ctx.stroke();
 
-                    const labelOffset = radius - 25;
+                    const labelOffset = radius - 40;
                     ctx.fillStyle = '#000';
                     ctx.font = '12px Arial';
                     ctx.textAlign = 'center';
@@ -276,18 +277,32 @@
                     ctx.fillText(tick, centerX + labelOffset * Math.cos(tickAngle), centerY + labelOffset * Math.sin(tickAngle));
                 });
 
-                // Draw needle
-                const needleAngle = Math.PI + ((value + 2) / 4) * Math.PI;
+                // Calculate needle angle for the current value
+                const needleAngle = Math.PI + ((value + 30) / 60) * Math.PI; // Value mapped to gauge
                 const needleLength = radius - 30;
-                const needleBase = 15;
 
+                // Draw needle
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(needleAngle - Math.PI); // Rotate needle to the correct angle
+
+                // Needle body
+                ctx.fillStyle = '#FF0000'; // Red needle
                 ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle), centerY + needleBase * Math.sin(needleAngle));
-                ctx.lineTo(centerX + needleLength * Math.cos(needleAngle), centerY + needleLength * Math.sin(needleAngle));
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#000';
-                ctx.stroke();
+                ctx.moveTo(-5, 0); // Left side of the needle
+                ctx.lineTo(5, 0); // Right side of the needle
+                ctx.lineTo(0, -needleLength); // Tip of the needle
+                ctx.closePath();
+                ctx.fill();
+
+                // Restore canvas context
+                ctx.restore();
+
+                // Draw needle base
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI, false); // Circle at the center
+                ctx.fillStyle = '#000';
+                ctx.fill();
             }
         }
 

@@ -18,6 +18,7 @@ import bcrypt
 from datetime import datetime
 from cryptography.fernet import Fernet
 from threading import Thread
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = 'xyzsdfg'
@@ -125,6 +126,40 @@ def read_values_periodically():
         except Exception as e:
             print(f"Error reading values: {str(e)}")
             time.sleep(1)  # Wait before retrying in case of error
+
+# def read_values_periodically():
+#     global latest_values
+#     while True:
+#         try:
+#             client.connect()  # Connect to the OPC UA server
+            
+#             # Load Node IDs from YAML file
+#             node_ids = load_node_ids()
+            
+#             for name, node_id in node_ids.items():
+#                 try:
+#                     node = client.get_node(node_id)
+#                     latest_values[name] = node.get_value()  # Read the value
+#                 except Exception as e:
+#                     print(f"Error reading node {name}: {e}")
+            
+#             # Emit the latest values to all connected clients
+#             socketio.emit('update', {
+#                 'temperature': latest_values.get('Temperature', 0),
+#                 'humidity': latest_values.get('Humidity', 0)
+#             })
+            
+#             socketio.emit('gauge_update', {
+#                 'temperature': latest_values.get('Temperature', 0),
+#                 'humidity': latest_values.get('Humidity', 0)
+#             })
+            
+#             client.disconnect()  # Disconnect from the server
+#             time.sleep(1)  # Wait for 1 second before the next read
+#         except Exception as e:
+#             print(f"Error reading values: {str(e)}")
+#             time.sleep(1)  # Wait before retrying in case of error
+
 
 
 # @app.route('/write', methods=['POST'])
@@ -572,6 +607,7 @@ def logout():
     session.pop('role', None)
     session.pop('allowed_submodules', None)
     return redirect(url_for('home'))  # Redirect to login page after logout
+
 
 if __name__ == '__main__':
     # Start the background thread to read values periodically
