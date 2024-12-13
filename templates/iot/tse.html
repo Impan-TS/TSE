@@ -574,50 +574,39 @@
         }
 
         /* Simple popup styling */
-        .simple-popup {
+        /* .simple-popup {
             display: none;
             position: fixed;
             top: 50%;
             left: 55%;
             transform: translate(-50%, -50%);
-            /* Centers the popup */
             background-color: rgb(148, 0, 0);
-            /* Green background with 70% opacity */
             color: white;
             padding: 16px 24px;
-            /* Adds padding around the text */
             border-radius: 8px;
-            /* Rounded corners for a smooth appearance */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            /* Drop shadow for better visibility */
             z-index: 9999;
             font-size: 16px;
-            /* Larger text for readability */
             min-width: 250px;
-            /* Ensures a minimum width */
             text-align: left;
-            font-weight: bold;
-        }
+            font-weight: bold; */
+        /* } */
 
         /* Popup with an icon */
-        .simple-popup i {
+        /* .simple-popup i {
             margin-right: 15px;
-            /* More space between icon and text */
             font-size: 20px;
-            /* Larger icon */
-        }
+        } */
 
         #main-content {
-            position: relative;
+            position: absolute;
             z-index: 999;
             width: 100%;
             margin-top: 7%;
             margin-left: 5%;
-            /* align-items: center; */
         }
 
-        /* Apply blur effect to the background when main-content is active */
-        body.blur-active::before {
+        /* body.blur-active::before {
             content: '';
             position: fixed;
             top: 0;
@@ -625,12 +614,10 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            /* Semi-transparent overlay */
-            backdrop-filter: blur(5px);
-            /* Blur effect */
+            backdrop-filter: blur(0px);
             z-index: 998;
-            /* Ensure it appears below main-content */
-        }
+        } */
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
@@ -659,10 +646,10 @@
             </div>
 
             <!-- Simple popup for automatic alerts -->
-            <div id="simplePopup" class="simple-popup">
+            <!-- <div id="simplePopup" class="simple-popup">
                 <i class="fa fa-exclamation-circle"></i>
                 <span id="simplePopupMessage">Alarm!</span>
-            </div>
+            </div> -->
 
 
             {% if session['userloggedin'] %}
@@ -813,67 +800,113 @@
 
     <script>
 
-function loadTemplate(submoduleOption) {
-        fetch(`/load_template/${submoduleOption}`)
-            .then(response => response.text())
-            .then(data => {
-                const mainContent = document.getElementById('main-content');
-                mainContent.innerHTML = data;
-                document.body.classList.add('blur-active'); // Add blur to the background
-                bindDynamicEvents(); // Rebind events to dynamically loaded content
-            })
-            .catch(error => console.error('Error loading template:', error));
-    }
+        function loadTemplate(submoduleOption) {
+            fetch(`/load_template/${submoduleOption}`)
+                .then(response => response.text())
+                .then(data => {
+                    const mainContent = document.getElementById('main-content');
+                    mainContent.innerHTML = data;
+                    document.body.classList.add('blur-active'); // Add blur to the background
+                    bindDynamicEvents(); // Rebind events to dynamically loaded content
+                })
+                .catch(error => console.error('Error loading template:', error));
+        }
 
-    function bindDynamicEvents() {
-        document.querySelector('.btn-success').addEventListener('click', updateSettings);
-        document.querySelector('.btn-danger').addEventListener('click', closeDialog);
-    }
+        // function bindDynamicEvents() {
+        //     document.querySelector('.btn-success').addEventListener('click', updateSettings);
+        //     document.querySelector('.btn-danger').addEventListener('click', closeDialog);
+        // }
 
-    function updateSettings() {
-        const setpoints = {};
+        function bindDynamicEvents() {
+            // Remove existing listeners before adding new ones to prevent duplication
+            const successButton = document.querySelector('.btn-success');
+            const dangerButton = document.querySelector('.btn-danger');
 
-        document.querySelectorAll("input[data-nodeid]").forEach(input => {
-            const nodeid = input.getAttribute("data-nodeid");
-            const datatype = input.getAttribute("data-datatype");
-            let value = input.value;
-
-            if (nodeid) {
-                if (datatype === "boolean") {
-                    // Validate boolean input (either 0 or 1)
-                    if (value !== "0" && value !== "1") {
-                        alert("Please enter either 0 or 1 for boolean values.");
-                        return;  // Stop execution if invalid
-                    }
-                    value = value === "1";  // Convert to boolean
-                } else {
-                    value = parseFloat(value); // Convert numeric values
-                }
-                setpoints[nodeid] = value;
+            if (successButton) {
+                successButton.removeEventListener('click', updateSettings);
+                successButton.addEventListener('click', updateSettings);
             }
+
+            if (dangerButton) {
+                dangerButton.removeEventListener('click', closeDialog);
+                dangerButton.addEventListener('click', closeDialog);
+            }
+        }
+
+        function updateSettings() {
+            const setpoints = {};
+
+            document.querySelectorAll("input[data-nodeid]").forEach(input => {
+                const nodeid = input.getAttribute("data-nodeid");
+                const datatype = input.getAttribute("data-datatype");
+                let value = input.value;
+
+                if (nodeid) {
+                    if (datatype === "boolean") {
+                        // Validate boolean input (either 0 or 1)
+                        if (value !== "0" && value !== "1") {
+                            alert("Please enter either 0 or 1 for boolean values.");
+                            return;  // Stop execution if invalid
+                        }
+                        value = value === "1";  // Convert to boolean
+                    } else {
+                        value = parseFloat(value); // Convert numeric values
+                    }
+                    setpoints[nodeid] = value;
+                }
+            });
+
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings updated successfully!');
+                    } else {
+                        alert(`Failed to update settings: ${data.error}`);
+                    }
+                })
+                .catch(error => console.error('Error updating settings:', error));
+        }
+
+        function closeDialog() {
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = ''; // Clear the content
+            document.body.classList.remove('blur-active'); // Remove blur from the background
+        }
+
+        function makeDraggable(element) {
+            let offsetX = 0, offsetY = 0, isDragging = false;
+
+            element.addEventListener('mousedown', function (e) {
+                isDragging = true;
+                offsetX = e.clientX - element.offsetLeft;
+                offsetY = e.clientY - element.offsetTop;
+                document.body.style.cursor = 'move';
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (isDragging) {
+                    element.style.left = `${e.clientX - offsetX}px`;
+                    element.style.top = `${e.clientY - offsetY}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', function () {
+                isDragging = false;
+                document.body.style.cursor = 'default';
+            });
+        }
+
+        // Initialize draggable functionality
+        document.addEventListener('DOMContentLoaded', function () {
+            const mainContent = document.getElementById('main-content');
+            makeDraggable(mainContent);
         });
 
-        fetch('/write', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(setpoints),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Settings updated successfully!');
-                } else {
-                    alert(`Failed to update settings: ${data.error}`);
-                }
-            })
-            .catch(error => console.error('Error updating settings:', error));
-    }
-
-    function closeDialog() {
-        const mainContent = document.getElementById('main-content');
-        mainContent.innerHTML = ''; // Clear the content
-        document.body.classList.remove('blur-active'); // Remove blur from the background
-    }
 
         let previousAlarms = [];
 
@@ -905,34 +938,34 @@ function loadTemplate(submoduleOption) {
         }
 
         // Function to show simple popup alerts for 2 seconds each
-        function showSimplePopups(alarms) {
-            let index = 0;
-            const popupDisplayInterval = 10000; // 2 seconds for each popup
+        // function showSimplePopups(alarms) {
+        //     let index = 0;
+        //     const popupDisplayInterval = 10000; // 2 seconds for each popup
 
-            function showNextPopup() {
-                if (index < alarms.length) {
-                    const alarm = alarms[index];
-                    const popupMessage = `${alarm.message} (${alarm.name})`;
+        //     function showNextPopup() {
+        //         if (index < alarms.length) {
+        //             const alarm = alarms[index];
+        //             const popupMessage = `${alarm.message} (${alarm.name})`;
 
-                    // Set the popup message
-                    document.getElementById("simplePopupMessage").innerText = popupMessage;
+        //             // Set the popup message
+        //             document.getElementById("simplePopupMessage").innerText = popupMessage;
 
-                    // Show the popup
-                    const popup = document.getElementById("simplePopup");
-                    popup.style.display = "block";
+        //             // Show the popup
+        //             const popup = document.getElementById("simplePopup");
+        //             popup.style.display = "block";
 
-                    // Auto-hide after 2 seconds
-                    setTimeout(() => {
-                        popup.style.display = "none"; // Hide the popup
-                        index++; // Move to the next alarm
-                        setTimeout(showNextPopup, 500); // 500ms delay before showing the next popup
-                    }, popupDisplayInterval);
-                }
-            }
+        //             // Auto-hide after 2 seconds
+        //             setTimeout(() => {
+        //                 popup.style.display = "none"; // Hide the popup
+        //                 index++; // Move to the next alarm
+        //                 setTimeout(showNextPopup, 500); // 500ms delay before showing the next popup
+        //             }, popupDisplayInterval);
+        //         }
+        //     }
 
-            // Start showing the popups
-            showNextPopup();
-        }
+        //     // Start showing the popups
+        //     showNextPopup();
+        // }
 
 
         function showAlarmsSequentially(alarms) {

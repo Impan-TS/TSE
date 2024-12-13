@@ -11,55 +11,65 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Moment.js (for date handling) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Include Chart.js Moment.js adapter -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Include Plotly -->
+
     <style>
         .common-container {
             border: 1px solid black;
             border-radius: 15px;
-            width: 45%;
-            height: 490px;
+            width: 28%;
+            height: 250px;
             padding: 8px;
             background: linear-gradient(#0076CE 0%, #ADD8E6 58%);
-            margin: 20px 1%;
+            margin: 10px 1%;
             display: flex;
             flex-direction: column;
             align-items: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             color: white;
         }
+        .common-container h2 {
+    font-size: 15px;  /* Adjusted department name font size */
+    margin: 2px 0;  /* Reduced margin for more space */
+}
 
         .chart-container {
-            width: 86%;
-            height: 250px;
+            width: 90%;
+            height: 70px;
             padding: 20px;
             background-color: white;
-            border-radius: 20px;
+            border-radius: 10px;
         }
 
         .gauge-container {
             display: flex;
             justify-content: space-between;
-            width: 91%;
-            margin-bottom: 10px;
+            width: 100%;
+            margin-bottom: 8px;
             background-color: white;
-            border-radius: 20px;
+            border-radius: 10px;
         }
 
         .gauge-box {
-            width: 45%;
-            height: 130px;
+            width: 100%;
+            height: 30px;
             padding-bottom: 50px;
         }
 
         .sensor-data {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 18px;
+            font-size: 10px;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
 
         header {
@@ -69,7 +79,7 @@
             z-index: 100;
             background-color: #002366;
             color: white;
-            padding: 10px;
+            padding: 7px;
             text-align: center;
         }
 
@@ -80,7 +90,7 @@
         }
 
         body {
-            padding-top: 80px;
+            padding-top: 60px;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
@@ -96,19 +106,15 @@
         <div class="common-container">
             <h2>{{ name }}</h2>
             <div class="sensor-data" id="sensorData{{ loop.index }}">
-                <div
-                    style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-weight: bold;">
-                    <div style="margin-right: 70px;">Temperature : <span id="temperature{{ loop.index }}">0</span>°C
-                    </div>
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-weight: bold;">
+                    <div style="margin-right: 70px;">Temperature : <span id="temperature{{ loop.index }}">0</span>°C</div>
                     <div>Humidity : <span id="humidity{{ loop.index }}">0</span>%</div>
                 </div>
             </div>
 
             <div class="gauge-container">
-                <div class="gauge-box"><canvas id="temperatureGauge{{ loop.index }}" width="220" height="150"></canvas>
-                </div>
-                <div class="gauge-box"><canvas id="humidityGauge{{ loop.index }}" width="220" height="150"></canvas>
-                </div>
+                <div class="gauge-box"><canvas id="randomGauge{{ loop.index }}" width="170" height="70"></canvas></div>
+                <div class="gauge-box"><canvas id="sawtoothGauge{{ loop.index }}" width="170" height="70"></canvas></div>
             </div>
             <div class="chart-container">
                 <canvas id="myChart{{ loop.index }}"></canvas>
@@ -117,39 +123,9 @@
         {% endfor %}
     </div>
 
-
     <script>
-        // Function to map the submodule to the correct Node IDs
-        function getNodeIds(departmentName) {
-            const nodeIds = {
-                'Preparatory 1': {
-                    temperature: "Prep_1_iVa_Act_Temp",
-                    humidity: "Prep_1_iVa_Act_RH"
-                },
-                'Preparatory 2': {
-                    temperature: "Prep_2_iVa_Act_Temp",
-                    humidity: "Prep_2_iVa_Act_RH"
-                },
-                'Spinning 1': {
-                    temperature: "Spg1_iVa_Act_Temp",
-                    humidity: "Spg1_iVa_Act_RH"
-                },
-                'Spinning 2': {
-                    temperature: "Spg2_iVa_Act_Temp",
-                    humidity: "Spg2_iVa_Act_RH"
-                },
-                'Link Coner': {
-                    temperature: "Linkconer_iVa_Act_Temp",
-                    humidity: "Linkconer_iVa_Act_RH"
-                }
-            };
-            return nodeIds[departmentName];
-        }
-
-        // Function to setup each department's chart and gauges
-        function setupDepartment(departmentName, departmentIndex) {
-            const nodeIds = getNodeIds(departmentName);
-            var ctx = document.getElementById('myChart' + departmentIndex).getContext('2d');
+        function setupDepartment(departmentId, tempElementId, humidityElementId) {
+            var ctx = document.getElementById(departmentId.chart).getContext('2d');
             var chart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -194,11 +170,11 @@
             socket.on('update', function (data) {
                 var currentTime = new Date();
                 chart.data.labels.push(currentTime);
-                chart.data.datasets[0].data.push(data[nodeIds.temperature]);
-                chart.data.datasets[1].data.push(data[nodeIds.humidity]);
+                chart.data.datasets[0].data.push(data.Random);
+                chart.data.datasets[1].data.push(data.Sawtooth);
 
-                document.getElementById('temperature' + departmentIndex).textContent = data[nodeIds.temperature].toFixed(2);
-                document.getElementById('humidity' + departmentIndex).textContent = data[nodeIds.humidity].toFixed(2);
+                document.getElementById(tempElementId).textContent = data.Random.toFixed(2);
+                document.getElementById(humidityElementId).textContent = data.Sawtooth.toFixed(2);
 
                 if (chart.data.labels.length > 20) {
                     chart.data.labels.shift();
@@ -208,43 +184,35 @@
             });
 
             socket.on('gauge_update', function (data) {
-                console.log("Received gauge update", data);
-                drawNeedleGauge(departmentIndex, data[nodeIds.temperature], 'temperature');
-                drawNeedleGauge(departmentIndex, data[nodeIds.humidity], 'humidity');
+                drawNeedleGauge(departmentId.id, data.Random, 'random');
+                drawNeedleGauge(departmentId.id, data.Sawtooth, 'sawtooth');
             });
 
-
-            function drawNeedleGauge(departmentIndex, value, type) {
-                const canvas = document.getElementById(type + 'Gauge' + departmentIndex);
+            function drawNeedleGauge(elementId, value, type) {
+                const canvas = document.getElementById(`${type}Gauge${elementId}`);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const centerX = canvas.width / 2;
-                const centerY = canvas.height * 0.9; // Lowered to make room for labels
+                const centerY = canvas.height * 0.9;
                 const radius = Math.min(canvas.width, canvas.height) / 2;
 
-                // Clear the canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Draw gauge arc
                 ctx.strokeStyle = "black";
                 ctx.lineWidth = 21;
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI, false);
                 ctx.stroke();
 
-                // Draw colored segments
                 const rangeColors = [
-                    { range: [-30, -20], color: '#008000' },
-                    { range: [-20, -10], color: '#FFFF00' },
-                    { range: [-10, 0], color: '#FFA500' },
-                    { range: [0, 10], color: '#FF0000' },
-                    { range: [10, 20], color: '#FF6347' },
-                    { range: [20, 30], color: '#FF4500' }
+                    { range: [-2, -1], color: '#008000' },
+                    { range: [-1, 0], color: '#FFFF00' },
+                    { range: [0, 1], color: '#FFA500' },
+                    { range: [1, 2], color: '#FF0000' }
                 ];
 
                 rangeColors.forEach(function (range) {
-                    const startAngle = Math.PI + ((range.range[0] + 30) / 60) * Math.PI;
-                    const endAngle = Math.PI + ((range.range[1] + 30) / 60) * Math.PI;
+                    const startAngle = Math.PI + ((range.range[0] + 2) / 4) * Math.PI;
+                    const endAngle = Math.PI + ((range.range[1] + 2) / 4) * Math.PI;
 
                     ctx.strokeStyle = range.color;
                     ctx.lineWidth = 19;
@@ -253,14 +221,13 @@
                     ctx.stroke();
                 });
 
-                // Draw ticks and labels
-                const tickCount = 7;
-                const tickRange = [-30, -20, -10, 0, 10, 20, 30];
+                const tickCount = 5;
+                const range = [-2, -1, 0, 1, 2];
                 const tickSpacing = Math.PI / (tickCount - 1);
 
-                tickRange.forEach((tick, index) => {
+                range.forEach((tick, index) => {
                     const tickAngle = Math.PI + index * tickSpacing;
-                    const tickLength = radius - 20;
+                    const tickLength = radius - 10;
 
                     ctx.beginPath();
                     ctx.moveTo(centerX + tickLength * Math.cos(tickAngle), centerY + tickLength * Math.sin(tickAngle));
@@ -269,51 +236,38 @@
                     ctx.strokeStyle = '#000';
                     ctx.stroke();
 
-                    const labelOffset = radius - 40;
+                    const labelOffset = radius - 25;
                     ctx.fillStyle = '#000';
-                    ctx.font = '12px Arial';
+                    ctx.font = '1px Arial';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(tick, centerX + labelOffset * Math.cos(tickAngle), centerY + labelOffset * Math.sin(tickAngle));
                 });
 
-                // Calculate needle angle for the current value
-                const needleAngle = Math.PI + ((value + 30) / 60) * Math.PI; // Value mapped to gauge
-                const needleLength = radius - 30;
-
                 // Draw needle
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(needleAngle - Math.PI); // Rotate needle to the correct angle
+                const needleAngle = Math.PI + ((value + 2) / 4) * Math.PI;
+                const needleLength = radius - 30;
+                const needleBase = 15;
 
-                // Needle body
-                ctx.fillStyle = '#FF0000'; // Red needle
                 ctx.beginPath();
-                ctx.moveTo(-5, 0); // Left side of the needle
-                ctx.lineTo(5, 0); // Right side of the needle
-                ctx.lineTo(0, -needleLength); // Tip of the needle
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle - Math.PI / 6), centerY + needleBase * Math.sin(needleAngle - Math.PI / 6));
+                ctx.lineTo(centerX + needleLength * Math.cos(needleAngle), centerY + needleLength * Math.sin(needleAngle));
+                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle + Math.PI / 6), centerY + needleBase * Math.sin(needleAngle + Math.PI / 6));
                 ctx.closePath();
-                ctx.fill();
 
-                // Restore canvas context
-                ctx.restore();
-
-                // Draw needle base
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI, false); // Circle at the center
-                ctx.fillStyle = '#000';
+                ctx.fillStyle = '#b22222';
                 ctx.fill();
             }
         }
 
-        // Set up each department based on the submodule data
         {% for name, template in submodules.items() %}
-        setupDepartment('{{ name }}', {{ loop.index }});
+        setupDepartment({
+            id: {{ loop.index }},
+            chart: 'myChart{{ loop.index }}'
+        }, 'temperature{{ loop.index }}', 'humidity{{ loop.index }}');
         {% endfor %}
     </script>
-
 </body>
-
 </html>
-
 {% endblock %}

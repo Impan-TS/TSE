@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash, send_file
 from opcua import Client, ua
 import os
 import json
@@ -348,14 +348,26 @@ def alarmslist():
 
 @app.route('/')
 def home():
-    departments = load_data()
+    departmentss = load_data()
     seen = set()
     allowed_submodules = [
         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
         if not (submodule in seen or seen.add(submodule))
     ]
-    return render_template('iot/dashboard.html', departments=departments,allowed_submodules=allowed_submodules)  # Render the HTML template
+    return render_template('iot/dashboard.html', departmentss=departmentss,allowed_submodules=allowed_submodules)  # Render the HTML template
 
+@app.route('/trends')
+def trends():
+    # Remove duplicates while preserving order
+    seen = set()
+    allowed_submodules = [
+        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+        if not (submodule in seen or seen.add(submodule))
+    ]
+    # Load node_ids from the YAML file
+    with open('nodeid.yaml', 'r') as file:
+        node_ids = yaml.safe_load(file)
+    return render_template('iot/trends.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
 
 @app.route('/dashboard')
 def dashboard():
