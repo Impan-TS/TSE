@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Output</title>
-    <!-- Include Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Your existing styles... */
         /* Styles for the dialog and inputs */
         .dialog-box {
             max-width: 35%;
@@ -132,6 +132,41 @@
         .dialog-footer button {
             margin-left: 10px;
         }
+        .mode-switch {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mode-switch input[type="checkbox"] {
+            width: 60px;
+            height: 30px;
+            position: relative;
+            -webkit-appearance: none;
+            background-color: #ddd;
+            border-radius: 50px;
+            transition: background-color 0.3s;
+        }
+
+        .mode-switch input[type="checkbox"]:checked {
+            background-color: #4CAF50;
+        }
+
+        .mode-switch input[type="checkbox"]:before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: white;
+            transition: transform 0.3s;
+        }
+
+        .mode-switch input[type="checkbox"]:checked:before {
+            transform: translateX(30px);
+        }
     </style>
 </head>
 
@@ -170,10 +205,27 @@
             </div>
         </div>
 
-        <!-- Row 3 -->
-        <!-- <div class="row-container">
-            <div class="parameter">MODE</div>
-        </div> -->
+        <!-- Row 3: Mode Toggle for Washer Pump-1 -->
+        <div class="row-container">
+            <div class="parameter">MODE - Washer Pump-1</div>
+            <div class="mode-switch">
+                <label>
+                    <input type="checkbox" id="modeToggle1" onchange="toggleMode(1)">
+                    <span>Auto / Manual</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Row 4: Mode Toggle for Washer Pump-2 -->
+        <div class="row-container">
+            <div class="parameter">MODE - Washer Pump-2</div>
+            <div class="mode-switch">
+                <label>
+                    <input type="checkbox" id="modeToggle2" onchange="toggleMode(2)">
+                    <span>Auto / Manual</span>
+                </label>
+            </div>
+        </div>
 
         <div class="dialog-footer">
             <button class="btn btn-success" onclick="updateSettings()">Update</button>
@@ -181,37 +233,44 @@
     </div>
 
     <script>
-        function validateInput(input) {
-            // const value = input.value;
-            if (value !== "0" && value !== "1") {
-                input.setCustomValidity("Invalid input detected! Please enter either 0 or 1");
+        let isAutoMode1 = true;
+        let isAutoMode2 = true;
+
+        function toggleMode(pumpNumber) {
+            if (pumpNumber === 1) {
+                isAutoMode1 = !isAutoMode1;
+                document.getElementById("Spg2_iMi_DO_Man").disabled = isAutoMode1;
+                if (isAutoMode1) {
+                    document.getElementById("Spg2_iMi_DO_Man").value = 0;
+                }
             } else {
-                input.setCustomValidity(""); // Clear validation error
+                isAutoMode2 = !isAutoMode2;
+                document.getElementById("Spg2_iMi_DO_Man2").disabled = isAutoMode2;
+                if (isAutoMode2) {
+                    document.getElementById("Spg2_iMi_DO_Man2").value = 0;
+                }
             }
         }
 
-
         function updateSettings() {
-            const spg2_iMi_DO_Man = document.getElementById('Spg2_iMi_DO_Man').value;
-            const spg2_iMi_DO_Man2 = document.getElementById('Spg2_iMi_DO_Man2').value;
+            const setpoints = {};
 
-            // Validate inputs
-            if (spg2_iMi_DO_Man !== "0" && spg2_iMi_DO_Man !== "1") {
-                alert('Invalid input detected! Please enter either 0 or 1');
-                return;
-            }
-            if (spg2_iMi_DO_Man2 !== "0" && spg2_iMi_DO_Man2 !== "1") {
-                alert('Invalid input detected! Please enter either 0 or 1');
-                return;
-            }
+            // Collect values to update for both manual and auto modes
+            document.querySelectorAll("input[data-nodeid]").forEach(input => {
+                const nodeid = input.getAttribute("data-nodeid");
+                let value = input.value;
 
-            // Prepare payload
-            const setpoints = {
-                "Spg2_iMi_DO_Man": spg2_iMi_DO_Man === "1",  // Replace with actual Node IDs
-                "Spg2_iMi_DO_Man2": spg2_iMi_DO_Man2 === "1"  // Replace with actual Node IDs
-            };
+                if (nodeid) {
+                    if (isAutoMode1 && input.id === "Spg2_iMi_DO_Man") {
+                        value = 0;  // Set to 0 in Auto mode for Pump-1
+                    }
+                    if (isAutoMode2 && input.id === "Spg2_iMi_DO_Man2") {
+                        value = 0;  // Set to 0 in Auto mode for Pump-2
+                    }
+                    setpoints[nodeid] = value;
+                }
+            });
 
-            // Send to the backend
             fetch('/write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -222,16 +281,16 @@
                     if (data.success) {
                         alert('Settings updated successfully!');
                     } else {
-                        alert(`Error updating settings: ${data.error}`);
+                        alert('Failed to update settings');
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => console.error('Error updating settings:', error));
         }
 
-
-
         function closeDialog() {
-            document.querySelector('.dialog-box').style.display = 'none';
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = ''; // Clear the content
+            document.body.classList.remove('blur-active'); // Remove blur from the background
         }
     </script>
 </body>

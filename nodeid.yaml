@@ -11,6 +11,15 @@
 #   Linkconer_iVa_Act_Temp: "ns=6;s=::Linkconer:iVa_Act_Temp"
 
 node_ids:
+  Spg2_iFl_Start_DO_B: "ns=6;s=::Spg2:iFl_Start_DO_B"                   #manual auto
+  Spg2_iFl_Start_DO_B2: "ns=6;s=::Spg2:iFl_Start_DO_B2"
+
+
+
+
+
+
+
   Preparatory 1_RH: "ns=6;s=::Prep_1:iVa_Act_RH"                      #Dashboard
   Preparatory 1_Temp: "ns=6;s=::Prep_1:iVa_Act_Temp"
   Preparatory 2_RH: "ns=6;s=::Prep_2:iVa_Act_RH"                     

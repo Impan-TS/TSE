@@ -800,6 +800,25 @@
 
     <script>
 
+function handleToggle(checkbox, node1, node2) {
+    // Determine if the switch is in "manual" or "auto" mode
+    const isManual = checkbox.checked;
+
+    if (isManual) {
+        // If manual, synchronize value and mvalue
+        document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
+        document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
+    } else {
+        // If auto, only update mvalue
+        document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
+        document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
+    }
+
+    // Optionally update or set values in the backend (server side)
+    updateSettings();
+}
+
+
         function loadTemplate(submoduleOption) {
             fetch(`/load_template/${submoduleOption}`)
                 .then(response => response.text())
@@ -871,6 +890,8 @@
                 })
                 .catch(error => console.error('Error updating settings:', error));
         }
+
+        
 
         function closeDialog() {
             const mainContent = document.getElementById('main-content');
@@ -968,44 +989,44 @@
         // }
 
 
-        function showAlarmsSequentially(alarms) {
-            let index = 0;
-            const alarmDisplayInterval = 10000; // 2 seconds interval
+        // function showAlarmsSequentially(alarms) {
+        //     let index = 0;
+        //     const alarmDisplayInterval = 10000; // 2 seconds interval
 
-            function showNextAlarm() {
-                if (index < alarms.length) {
-                    // Get the current alarm with time
-                    const alarm = alarms[index];
-                    const alarmMessage = `
-                <p>
-                    <span class="alarm-time">${alarm.time}</span>
-                    ${alarm.message} (${alarm.name})
-                </p>
-            `;
+        //     function showNextAlarm() {
+        //         if (index < alarms.length) {
+        //             // Get the current alarm with time
+        //             const alarm = alarms[index];
+        //             const alarmMessage = `
+        //         <p>
+        //             <span class="alarm-time">${alarm.time}</span>
+        //             ${alarm.message} (${alarm.name})
+        //         </p>
+        //     `;
 
-                    // Display the current alarm in the modal body
-                    document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
+        //             // Display the current alarm in the modal body
+        //             document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
 
-                    // Show the modal
-                    document.getElementById("alarmModal").style.display = "flex";
+        //             // Show the modal
+        //             document.getElementById("alarmModal").style.display = "flex";
 
-                    // Add the modal-open class to the body
-                    document.body.classList.add("modal-open");
+        //             // Add the modal-open class to the body
+        //             document.body.classList.add("modal-open");
 
-                    // Increase the index and set the timeout for the next alarm
-                    index++;
+        //             // Increase the index and set the timeout for the next alarm
+        //             index++;
 
-                    // Auto-close after 2 seconds and show the next alarm
-                    setTimeout(() => {
-                        closeModal();
-                        setTimeout(showNextAlarm, 500); // 500ms delay before showing the next one
-                    }, alarmDisplayInterval);
-                }
-            }
+        //             // Auto-close after 2 seconds and show the next alarm
+        //             setTimeout(() => {
+        //                 closeModal();
+        //                 setTimeout(showNextAlarm, 500); // 500ms delay before showing the next one
+        //             }, alarmDisplayInterval);
+        //         }
+        //     }
 
-            // Start displaying the alarms one by one
-            showNextAlarm();
-        }
+        //     // Start displaying the alarms one by one
+        //     showNextAlarm();
+        // }
 
         function showAlarmslist() {
             // Reset alarm count to 0 when modal is opened

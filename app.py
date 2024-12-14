@@ -319,27 +319,39 @@ def load_template(submodule_option):
 with open("alarms.yaml") as f:
     alarms_data = yaml.safe_load(f)["alarms"]
 
+# Mock database to store active alarms and acknowledgment status
 active_alarms = []
 
 @app.route("/alarms")
 def get_alarms():
-    # Generate mock active alarms for demonstration
+    """Fetch active alarms."""
     global active_alarms
+    # Simulate active alarms with acknowledgment status
     active_alarms = [
         {
-            "alarm": alarms_data[node]["alarm"],
+            "alarm": node,
             "name": alarms_data[node]["name"],
             "message": alarms_data[node]["message"],
             "code": alarms_data[node]["code"],
             "severity": alarms_data[node]["severity"],
             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            # "status": "Active",
+            "acknowledged": alarms_data[node].get("acknowledged", False)
         }
-        for node in alarms_data
-        if node.endswith("TRIP")  # Simulating active alarms
+        for node in alarms_data if node.endswith("TRIP")
     ]
     return jsonify(active_alarms)
 
+@app.route("/acknowledge", methods=["POST"])
+def acknowledge_alarm():
+    """Acknowledge an alarm."""
+    global alarms_data
+    data = request.json
+    alarm_id = data.get("alarm")
+
+    if alarm_id in alarms_data:
+        alarms_data[alarm_id]["acknowledged"] = True
+        return jsonify({"success": True, "message": "Alarm acknowledged"})
+    return jsonify({"success": False, "message": "Alarm not found"}), 404
 
 @app.route('/alarmslist')
 def alarmslist():

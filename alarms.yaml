@@ -5,24 +5,28 @@ alarms:
     message: "Return Air Fan-1 VFD Fault - Spinning 1"
     code: 2
     severity: 1
+    acknowledged: false
   DI_Spg2_iFl_RetAFan2_TRIP: 
     alarm: 1
     name: "Return Air Fan-2"
     message: "Return Air Fan-2 VFD Fault - Spinning 1"
     code: 1
     severity: 1
+    acknowledged: false
   DI_Spg2_iFl_SAFan1_TRIP: 
     alarm: 2
     name: "Supply Air Fan-1"
     message: "Supply Air Fan-1 VFD Fault - Spinning 1"
     code: 2
     severity: 1
+    acknowledged: true
   DI_Spg2_iFl_RDF1_TRIP: 
     alarm: 4
     name: "Return Dust Filter-1"
     message: "Return Dust Filter-1 Fault - Spinning 1"
     code: 4
     severity: 4
+    acknowledged: true
   DI_Spg2_iFl_DCF1_TRIP: 
     alarm: 5
     name: "Dust Collector Fan-1"
