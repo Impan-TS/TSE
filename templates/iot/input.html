@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit YAML</title>
+    <script>
+        // Load YAML content and generate form fields
+        async function loadYAML() {
+            const response = await fetch('/get-input');
+            if (response.ok) {
+                const data = await response.json();
+                generateForm(data);
+            } else {
+                alert("Failed to load YAML: " + (await response.json()).error);
+            }
+        }
+
+        // Generate form dynamically for editable fields only
+        function generateForm(data, parentKey = '', parentElement = null) {
+            const formContainer = parentElement || document.getElementById('formContainer');
+            formContainer.innerHTML = ''; // Clear existing form
+
+            for (const [key, value] of Object.entries(data)) {
+                const div = document.createElement('div');
+                div.style.marginBottom = '15px';
+
+                if (key === 'client_name') {
+                    // Display non-editable field for client_name but editable value
+                    const label = document.createElement('label');
+                    label.textContent = `Client name:`;
+                    label.className = 'form-label';
+
+                    const valueInput = document.createElement('input');
+                    valueInput.type = 'text';
+                    valueInput.value = value;
+                    valueInput.name = `${parentKey}${key}`; // Full path as name for value
+                    valueInput.className = 'form-input';
+
+                    div.appendChild(label);
+                    div.appendChild(valueInput);
+                    formContainer.appendChild(div);
+                } else if (key === 'submodules') {
+                    // Handle submodules without editing the key itself
+                    const label = document.createElement('label');
+                    label.textContent = `Departments:`;
+                    label.className = 'form-label';
+
+                    const nestedDiv = document.createElement('div');
+                    nestedDiv.style.marginLeft = '20px';
+
+                    div.appendChild(label);
+                    div.appendChild(nestedDiv);
+                    generateForm(value, `${parentKey}${key}.`, nestedDiv);
+                } else if (typeof value === 'object' && value !== null) {
+                    // Handle nested objects
+                    const label = document.createElement('label');
+                    label.textContent = key + ":";
+                    label.className = 'form-label';
+
+                    const nestedDiv = document.createElement('div');
+                    nestedDiv.style.marginLeft = '20px';
+
+                    div.appendChild(label);
+                    div.appendChild(nestedDiv);
+                    generateForm(value, `${parentKey}${key}.`, nestedDiv);
+                } else {
+                    // Create inputs for editable fields
+                    const keyInput = document.createElement('input');
+                    keyInput.type = 'text';
+                    keyInput.value = key;
+                    keyInput.dataset.keyPath = parentKey;
+                    keyInput.className = 'form-input-key';
+
+                    const valueInput = document.createElement('input');
+                    valueInput.type = 'text';
+                    valueInput.value = value;
+                    valueInput.name = `${parentKey}${key}`;
+                    valueInput.className = 'form-input';
+
+                    div.appendChild(keyInput);
+                    div.appendChild(valueInput);
+                }
+
+                formContainer.appendChild(div);
+            }
+        }
+
+        // Gather form data, including modified keys and values
+        function getFormData(container) {
+            const inputs = container.querySelectorAll('input');
+            const result = {};
+
+            inputs.forEach(input => {
+                const isKeyInput = !input.name; // Key inputs don't have a name attribute
+                if (isKeyInput) return;
+
+                const keys = input.name.split('.');
+                let current = result;
+
+                keys.forEach((key, index) => {
+                    if (index === keys.length - 1) {
+                        current[key] = input.value;
+                    } else {
+                        current[key] = current[key] || {};
+                        current = current[key];
+                    }
+                });
+            });
+
+            // Handle renamed keys
+            container.querySelectorAll('[data-key-path]').forEach(keyInput => {
+                const oldPath = keyInput.dataset.keyPath.split('.');
+                const newKey = keyInput.value;
+                const parentPath = oldPath.slice(0, -1);
+
+                let current = result;
+                for (const part of parentPath) {
+                    current = current[part];
+                }
+
+                const oldKey = oldPath[oldPath.length - 1];
+                if (oldKey !== newKey) {
+                    current[newKey] = current[oldKey];
+                    delete current[oldKey];
+                }
+            });
+
+            return result;
+        }
+
+        // Update YAML file on the server
+        async function updateYAML() {
+            const formContainer = document.getElementById('formContainer');
+            const formData = getFormData(formContainer);
+
+            const response = await fetch('/update-input', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                alert((await response.json()).message);
+            } else {
+                alert("Failed to update YAML: " + (await response.json()).error);
+            }
+        }
+    </script>
+    
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #formContainer {
+            width: 70%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        .form-input {
+            width: 60%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-input-key {
+            width: 25%;
+            margin-right: 10px;
+        }
+
+        button {
+            display: block;
+            width: 150px;
+            padding: 10px;
+            margin: 20px auto;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style> -->
+    
+</head>
+<body onload="loadYAML()">
+    <h1>Edit YAML File</h1>
+    <div id="formContainer"></div>
+    <button onclick="updateYAML()">Save Changes</button>
+</body>
+</html>
