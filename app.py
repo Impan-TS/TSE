@@ -632,7 +632,32 @@ def logout():
     session.pop('allowed_submodules', None)
     return redirect(url_for('home'))  # Redirect to login page after logout
 
+# editing the input.yaml
+@app.route('/input')
+def input_page():
+    return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
 
+# Endpoint to fetch the YAML file content
+@app.route('/get-input', methods=['GET'])
+def get_input():
+    try:
+        with open('input.yaml', 'r') as file:
+            data = yaml.safe_load(file)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Endpoint to update the YAML file
+@app.route('/update-input', methods=['POST'])
+def update_input():
+    try:
+        data = request.json  # Receive updated YAML content as JSON
+        with open('input.yaml', 'w') as file:
+            yaml.safe_dump(data, file)
+        return jsonify({"message": "File updated successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 if __name__ == '__main__':
     # Start the background thread to read values periodically
     thread = threading.Thread(target=read_values_periodically)
