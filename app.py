@@ -686,7 +686,6 @@ def logout():
 def input_page():
     return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
 
-<<<<<<< HEAD
 # Render the Trends HTML template
 @app.route('/trends')
 def trends():
@@ -699,8 +698,6 @@ def trends():
 def input_page():
     return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
 
-=======
->>>>>>> c3d08691a1d652fd56c5955bde924878ef73afcc
 # Endpoint to fetch the YAML file content
 @app.route('/get-input', methods=['GET'])
 def get_input():
@@ -721,12 +718,7 @@ def update_input():
         return jsonify({"message": "File updated successfully!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-<<<<<<< HEAD
 
-
-=======
-        
->>>>>>> c3d08691a1d652fd56c5955bde924878ef73afcc
 if __name__ == '__main__':
     # Start the background thread to read values periodically
     thread = threading.Thread(target=read_values_periodically)
