@@ -617,7 +617,6 @@
             backdrop-filter: blur(0px);
             z-index: 998;
         } */
-
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
@@ -797,26 +796,27 @@
         <!-- The content will be dynamically inserted here -->
     </div>
 
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
     <script>
 
-function handleToggle(checkbox, node1, node2) {
-    // Determine if the switch is in "manual" or "auto" mode
-    const isManual = checkbox.checked;
+        function handleToggle(checkbox, node1, node2) {
+            // Determine if the switch is in "manual" or "auto" mode
+            const isManual = checkbox.checked;
 
-    if (isManual) {
-        // If manual, synchronize value and mvalue
-        document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
-        document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
-    } else {
-        // If auto, only update mvalue
-        document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
-        document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
-    }
+            if (isManual) {
+                // If manual, synchronize value and mvalue
+                document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
+                document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
+            } else {
+                // If auto, only update mvalue
+                document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
+                document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
+            }
 
-    // Optionally update or set values in the backend (server side)
-    updateSettings();
-}
+            // Optionally update or set values in the backend (server side)
+            updateSettings();
+        }
 
 
         function loadTemplate(submoduleOption) {
@@ -851,6 +851,39 @@ function handleToggle(checkbox, node1, node2) {
                 dangerButton.addEventListener('click', closeDialog);
             }
         }
+
+        function toggleMode(nodeId) {
+            const toggleElement = document.getElementById(nodeId);
+            const newState = toggleElement.checked ? 1 : 0;
+
+            // Update the node value based on the toggle state
+            const setpoints = {};
+            setpoints[nodeId] = newState;
+
+            // Send the updated value to the server
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings updated successfully!');
+                    } else {
+                        alert(`Failed to update settings: ${data.error}`);
+                    }
+                })
+                .catch(error => console.error('Error updating settings:', error));
+        }
+
+     // Function to update the mode text when the toggle state changes
+     function updateModeText(toggle, textId) {
+            // Update the text based on whether the toggle is checked or not
+            var text = toggle.checked ? 'Manual' : 'Auto'; // Reverse the logic
+            document.getElementById(textId).textContent = text;
+        }
+    
 
         function updateSettings() {
             const setpoints = {};
@@ -891,7 +924,7 @@ function handleToggle(checkbox, node1, node2) {
                 .catch(error => console.error('Error updating settings:', error));
         }
 
-        
+
 
         function closeDialog() {
             const mainContent = document.getElementById('main-content');

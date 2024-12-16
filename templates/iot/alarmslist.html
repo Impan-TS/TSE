@@ -26,20 +26,24 @@
             color: #0c609d;
         }
 
-        /* Table Styles */
         .alarm-table {
             width: 80%;
             margin: 20px auto;
-            border-collapse: collapse;
+            border-collapse: seperate;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
+            border-spacing: 0;
             /* Rounded corners */
             overflow: hidden;
             /* Ensures rounded borders display correctly */
+            border: 1px solid #0c609d;
+            /* Outer border color */
         }
+
 
         .alarm-table th,
         .alarm-table td {
+            /* border: 1px solid #ddd; Internal cell borders */
             padding: 12px;
             text-align: left;
             /* Data stays left-aligned */
@@ -91,6 +95,17 @@
             font-size: 22px;
             /* Adjust size as needed */
         }
+
+        button:disabled {
+            background-color: #cccccc;
+            /* Light gray background */
+            color: #666666;
+            /* Dim text color */
+            cursor: not-allowed;
+            /* Show 'not allowed' cursor */
+            opacity: 0.6;
+            /* Slightly faded look */
+        }
     </style>
 </head>
 
@@ -130,20 +145,21 @@
                                 : `<span class="alert-icon">&#x26A0;</span>`; // Red triangle alert icon
 
                             const row = `
-                        <tr class="${rowClass}">
-                            <td>${alarm.time}</td>
-                            <td>${alarm.message} (${alarm.name})</td>
-                            <td>${alarm.code}</td>
-                            <td>${alarm.severity}</td>
-                            <td>
-                                ${acknowledged}
-                                <button onclick="acknowledgeAlarm('${alarm.alarm}')"
-                                        ${alarm.acknowledged ? "disabled" : ""}>
-                                    Acknowledge
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                            <tr class="${rowClass}">
+        <td>${alarm.time}</td>
+        <td>${alarm.message} (${alarm.name})</td>
+        <td>${alarm.code}</td>
+        <td>${alarm.severity}</td>
+        <td style="vertical-align: top;">
+            ${acknowledged}
+            <button onclick="acknowledgeAlarm('${alarm.alarm}')"
+                    style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 6px; font-size: 10px; margin-left: 7px; cursor: pointer;"
+                    ${alarm.acknowledged ? "disabled" : ""}>
+                Acknowledge
+            </button>
+        </td>
+    </tr>
+`;
                             alarmBody.insertAdjacentHTML("beforeend", row);
                         });
                     }

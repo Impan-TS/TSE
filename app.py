@@ -241,6 +241,45 @@ def read_values_periodically():
 #         except Exception as disconnect_error:
 #             print(f"Error during client disconnect: {disconnect_error}")
 
+
+# @app.route('/write', methods=['POST'])
+# def write():
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"success": False, "error": "No data provided"}), 400
+
+#     opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
+
+#     try:
+#         opcua_client.connect()  # Ensure connection is established
+
+#         for nodeid, value in data.items():
+#             node = opcua_client.get_node(nodeid)
+#             node_data_type = node.get_data_type_as_variant_type()
+
+#             if node_data_type == ua.VariantType.Boolean:
+#                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+#             elif node_data_type == ua.VariantType.Int32:
+#                 dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+#             elif node_data_type == ua.VariantType.Float:
+#                 dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
+#             else:
+#                 raise ValueError(f"Unsupported data type for node {nodeid}: {node_data_type}")
+
+#             node.set_value(dv)
+
+#         return jsonify({"success": True}), 200
+
+#     except Exception as e:
+#         print(f"Error writing settings: {e}")
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+#     finally:
+#         try:
+#             opcua_client.disconnect()  # Disconnect after operation
+#         except Exception as disconnect_error:
+#             print(f"Error during client disconnect: {disconnect_error}")
+
 @app.route('/write', methods=['POST'])
 def write():
     data = request.get_json()
@@ -256,6 +295,7 @@ def write():
             node = opcua_client.get_node(nodeid)
             node_data_type = node.get_data_type_as_variant_type()
 
+            # Handle different data types (Boolean, Int32, Float, etc.)
             if node_data_type == ua.VariantType.Boolean:
                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
             elif node_data_type == ua.VariantType.Int32:
@@ -278,7 +318,6 @@ def write():
             opcua_client.disconnect()  # Disconnect after operation
         except Exception as disconnect_error:
             print(f"Error during client disconnect: {disconnect_error}")
-
 
 template_mapping = {
     "Set Point": "Settings/spinning2_sp.html",
@@ -353,6 +392,16 @@ def acknowledge_alarm():
         return jsonify({"success": True, "message": "Alarm acknowledged"})
     return jsonify({"success": False, "message": "Alarm not found"}), 404
 
+@app.route('/write/<node_id>/<int:value>', methods=['POST'])
+def write_value(node_id, value):
+    try:
+        node = client.get_node(node_id)
+        node.set_value(value)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 @app.route('/alarmslist')
 def alarmslist():
     return render_template('iot/alarmslist.html')  # Render the HTML template
@@ -368,18 +417,18 @@ def home():
     ]
     return render_template('iot/dashboard.html', departmentss=departmentss,allowed_submodules=allowed_submodules)  # Render the HTML template
 
-@app.route('/trends')
-def trends():
-    # Remove duplicates while preserving order
-    seen = set()
-    allowed_submodules = [
-        submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
-        if not (submodule in seen or seen.add(submodule))
-    ]
-    # Load node_ids from the YAML file
-    with open('nodeid.yaml', 'r') as file:
-        node_ids = yaml.safe_load(file)
-    return render_template('iot/trends.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
+# @app.route('/trends')
+# def trends():
+#     # Remove duplicates while preserving order
+#     seen = set()
+#     allowed_submodules = [
+#         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+#         if not (submodule in seen or seen.add(submodule))
+#     ]
+#     # Load node_ids from the YAML file
+#     with open('nodeid.yaml', 'r') as file:
+#         node_ids = yaml.safe_load(file)
+#     return render_template('iot/trends.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
 
 @app.route('/dashboard')
 def dashboard():
@@ -631,6 +680,40 @@ def logout():
     session.pop('role', None)
     session.pop('allowed_submodules', None)
     return redirect(url_for('home'))  # Redirect to login page after logout
+
+
+# Render the Trends HTML template
+@app.route('/trends')
+def trends():
+    msg = {'payload': 0}
+    return render_template('iot/trends.html', msg=msg)
+
+
+# editing the input.yaml
+@app.route('/input')
+def input_page():
+    return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
+
+# Endpoint to fetch the YAML file content
+@app.route('/get-input', methods=['GET'])
+def get_input():
+    try:
+        with open('input.yaml', 'r') as file:
+            data = yaml.safe_load(file)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Endpoint to update the YAML file
+@app.route('/update-input', methods=['POST'])
+def update_input():
+    try:
+        data = request.json  # Receive updated YAML content as JSON
+        with open('input.yaml', 'w') as file:
+            yaml.safe_dump(data, file)
+        return jsonify({"message": "File updated successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
