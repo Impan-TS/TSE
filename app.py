@@ -692,12 +692,6 @@ def trends():
     msg = {'payload': 0}
     return render_template('iot/trends.html', msg=msg)
 
-
-# editing the input.yaml
-@app.route('/input')
-def input_page():
-    return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
-
 # Endpoint to fetch the YAML file content
 @app.route('/get-input', methods=['GET'])
 def get_input():
