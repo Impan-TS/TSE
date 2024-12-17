@@ -97,6 +97,7 @@ def load_node_ids():
         data = yaml.safe_load(f)
         return data.get("node_ids", {})
 
+
 def read_values_periodically():
     global latest_values
     while True:
@@ -286,6 +287,8 @@ def write():
     if not data:
         return jsonify({"success": False, "error": "No data provided"}), 400
 
+    print(f"Received data: {data}")  # Debugging step
+
     opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
 
     try:
@@ -318,6 +321,54 @@ def write():
             opcua_client.disconnect()  # Disconnect after operation
         except Exception as disconnect_error:
             print(f"Error during client disconnect: {disconnect_error}")
+
+
+@app.route('/writes', methods=['POST'])
+def writes():
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "No data provided"}), 400
+
+    opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
+
+    try:
+        opcua_client.connect()  # Ensure connection is established
+
+        for nodeid, value in data.items():
+            # Get the node ID from the YAML configuration
+            if nodeid not in load_node_ids():
+                return jsonify({"success": False, "error": f"Invalid node ID: {nodeid}"}), 400
+            
+            # Ensure correct parsing of node_id
+            node = opcua_client.get_node(load_node_ids()[nodeid])  # Get the correct node based on YAML config
+
+            node_data_type = node.get_data_type_as_variant_type()
+
+            # Handle different data types (Boolean, Int32, Float, etc.)
+            if node_data_type == ua.VariantType.Boolean:
+                dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+            elif node_data_type == ua.VariantType.Int32:
+                dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+            elif node_data_type == ua.VariantType.Float:
+                dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
+            else:
+                raise ValueError(f"Unsupported data type for node {nodeid}: {node_data_type}")
+
+            node.set_value(dv)  # Write the value to the node
+
+        return jsonify({"success": True}), 200
+
+    except Exception as e:
+        print(f"Error writing settings: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    finally:
+        try:
+            opcua_client.disconnect()  # Disconnect after operation
+        except Exception as disconnect_error:
+            print(f"Error during client disconnect: {disconnect_error}")
+
+
 
 template_mapping = {
     "Set Point": "Settings/spinning2_sp.html",
@@ -686,21 +737,12 @@ def logout():
 def input_page():
     return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
 
-<<<<<<< HEAD
 # Render the Trends HTML template
 @app.route('/trends')
 def trends():
     msg = {'payload': 0}
     return render_template('iot/trends.html', msg=msg)
 
-
-# editing the input.yaml
-@app.route('/input')
-def input_page():
-    return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
-
-=======
->>>>>>> c3d08691a1d652fd56c5955bde924878ef73afcc
 # Endpoint to fetch the YAML file content
 @app.route('/get-input', methods=['GET'])
 def get_input():
@@ -721,12 +763,7 @@ def update_input():
         return jsonify({"message": "File updated successfully!"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-<<<<<<< HEAD
 
-
-=======
-        
->>>>>>> c3d08691a1d652fd56c5955bde924878ef73afcc
 if __name__ == '__main__':
     # Start the background thread to read values periodically
     thread = threading.Thread(target=read_values_periodically)

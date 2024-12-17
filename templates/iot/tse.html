@@ -800,25 +800,6 @@
 
     <script>
 
-        function handleToggle(checkbox, node1, node2) {
-            // Determine if the switch is in "manual" or "auto" mode
-            const isManual = checkbox.checked;
-
-            if (isManual) {
-                // If manual, synchronize value and mvalue
-                document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
-                document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
-            } else {
-                // If auto, only update mvalue
-                document.getElementById(`${node1}-mvalue`).value = document.getElementById(`${node1}-value`).value;
-                document.getElementById(`${node2}-mvalue`).value = document.getElementById(`${node2}-value`).value;
-            }
-
-            // Optionally update or set values in the backend (server side)
-            updateSettings();
-        }
-
-
         function loadTemplate(submoduleOption) {
             fetch(`/load_template/${submoduleOption}`)
                 .then(response => response.text())
@@ -830,11 +811,6 @@
                 })
                 .catch(error => console.error('Error loading template:', error));
         }
-
-        // function bindDynamicEvents() {
-        //     document.querySelector('.btn-success').addEventListener('click', updateSettings);
-        //     document.querySelector('.btn-danger').addEventListener('click', closeDialog);
-        // }
 
         function bindDynamicEvents() {
             // Remove existing listeners before adding new ones to prevent duplication
@@ -850,40 +826,23 @@
                 dangerButton.removeEventListener('click', closeDialog);
                 dangerButton.addEventListener('click', closeDialog);
             }
+
+            // Bind the mode toggle event (specific for spinning2_do)
+            const modeInputs = document.querySelectorAll('input[type="checkbox"]');
+            modeInputs.forEach(input => {
+                input.removeEventListener('change', updateModeText);
+                input.addEventListener('change', function () {
+                    updateModeText(this, this.id + '-text', this.dataset.nodeid);
+                });
+            });
+
+            // Bind input validation (for manual input fields)
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.removeEventListener('input', validateInput);
+                input.addEventListener('input', validateInput);
+            });
         }
-
-        function toggleMode(nodeId) {
-            const toggleElement = document.getElementById(nodeId);
-            const newState = toggleElement.checked ? 1 : 0;
-
-            // Update the node value based on the toggle state
-            const setpoints = {};
-            setpoints[nodeId] = newState;
-
-            // Send the updated value to the server
-            fetch('/write', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(setpoints),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Settings updated successfully!');
-                    } else {
-                        alert(`Failed to update settings: ${data.error}`);
-                    }
-                })
-                .catch(error => console.error('Error updating settings:', error));
-        }
-
-     // Function to update the mode text when the toggle state changes
-     function updateModeText(toggle, textId) {
-            // Update the text based on whether the toggle is checked or not
-            var text = toggle.checked ? 'Manual' : 'Auto'; // Reverse the logic
-            document.getElementById(textId).textContent = text;
-        }
-    
 
         function updateSettings() {
             const setpoints = {};
@@ -916,7 +875,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Settings updated successfully!');
+                        alert('Updated successfully!');
                     } else {
                         alert(`Failed to update settings: ${data.error}`);
                     }
@@ -924,13 +883,42 @@
                 .catch(error => console.error('Error updating settings:', error));
         }
 
-
-
         function closeDialog() {
             const mainContent = document.getElementById('main-content');
             mainContent.innerHTML = ''; // Clear the content
             document.body.classList.remove('blur-active'); // Remove blur from the background
         }
+
+        function updateModeText(toggle, textId, nodeId) {
+            var isManual = toggle.checked; // If checked, it's Manual (true); else, Auto (false)
+            var text = isManual ? 'Manual' : 'Auto';
+            document.getElementById(textId).textContent = text;
+
+            // Prepare the data payload for the Flask server
+            var payload = {};
+            payload[nodeId] = isManual; // Set 'true' for Manual, 'false' for Auto
+
+            // Send the data to the server
+            fetch('/writes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                // .then(response => response.json())
+                // .then(data => {
+                //     if (data.success) {
+                //         console.log("Value updated successfully for:", nodeId);
+                //     } else {
+                //         console.error("Failed to update value:", data.error);
+                //         alert("Error updating OPC UA server: " + data.error);
+                //     }
+                // })
+                .catch(error => {
+                    console.error("Error in fetch:", error);
+                    alert("Network error: " + error.message);
+                });
+        }
+
 
         function makeDraggable(element) {
             let offsetX = 0, offsetY = 0, isDragging = false;
