@@ -251,16 +251,6 @@
             }
         }
 
-        // Function to update the mode text when the toggle state changes
-function updateModeText(toggle, textId, nodeId) {
-    var text = toggle.checked ? 'Manual' : 'Auto'; // Reverse the logic for update
-    document.getElementById(textId).textContent = text;
-
-    // Update the node value in OPC UA server
-    var newValue = toggle.checked ? true : false;
-    updateNodeValue(nodeId, newValue);
-}
-
 // Function to send the updated value to the OPC UA server
 function updateNodeValue(nodeId, value) {
     // Assuming you have a function to send data to Node-RED or OPC UA server
