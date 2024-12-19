@@ -1,47 +1,26 @@
 alarms:
-  DI_Spg2_iFl_RetAFan1_TRIP: 
-    alarm: 2
-    name: "Return Air Fan-1"
-    message: "Return Air Fan-1 VFD Fault - Spinning 1"
-    code: 2
-    severity: 1
-    acknowledged: false
-  DI_Spg2_iFl_RetAFan2_TRIP: 
-    alarm: 1
-    name: "Return Air Fan-2"
-    message: "Return Air Fan-2 VFD Fault - Spinning 1"
-    code: 1
-    severity: 1
-    acknowledged: true
-  DI_Spg2_iFl_SAFan1_TRIP: 
-    alarm: 2
-    name: "Supply Air Fan-1"
-    message: "Supply Air Fan-1 VFD Fault - Spinning 1"
-    code: 2
-    severity: 1
-    acknowledged: true
-  DI_Spg2_iFl_RDF1_TRIP: 
-    alarm: 4
-    name: "Return Dust Filter-1"
-    message: "Return Dust Filter-1 Fault - Spinning 1"
-    code: 4
-    severity: 4
-    acknowledged: true
-  DI_Spg2_iFl_DCF1_TRIP: 
-    alarm: 5
-    name: "Dust Collector Fan-1"
-    message: "Dust Collector Fan-1 Fault - Spinning 1"
-    code: 5
-    severity: 1
-  DI_Spg2_iFl_ScrewCompactor1_TRIP: 
-    alarm: 3
-    name: "Screw Compactor-1"
-    message: "Screw Compactor-1 Fault - Spinning 1"
-    code: 3
-    severity: 3
-  DI_Spg2_iFl_WasherPump1_TRIP: 
-    alarm: 1
-    name: "Washer Pump-1"
-    message: "Washer Pump-1 Fault - Spinning 1"
-    code: 1
-    severity: 1
+  - Alarm: 12
+    Name: "Return Air Fan-1 VFD Fault"
+    Message: "Return Air Fan-1 VFD Fault - Spinning 2"
+    Code: 12
+    Severity: 1
+    Behavior: "Persistent Alarm"
+    NodeId: "ns=6;s=::DI_Spg2:iFl_RetAFan1_TRIP"
+
+  - Alarm: 13
+    Name: "Return Air Fan-2 VFD Fault"
+    Message: "Return Air Fan-2 VFD Fault - Spinning 2"
+    Code: 13
+    Severity: 1
+    Behavior: "Persistent Alarm"
+    NodeId: "ns=6;s=::DI_Spg2:iFl_RetAFan2_TRIP"
+
+  - Alarm: 14
+    Name: "Supply Air Fan-1 VFD Fault"
+    Message: "Supply Air Fan-1 VFD Fault - Spinning 2"
+    Code: 14
+    Severity: 1
+    Behavior: "Persistent Alarm"
+    NodeId: "ns=6;s=::DI_Spg2:iFl_SAFan1_TRIP"
+
+  # Add remaining alarms here based on the data

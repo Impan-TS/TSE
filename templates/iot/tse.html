@@ -637,6 +637,13 @@
         <div class="right-section">
             <!-- Alarm Notification Icon -->
             <!-- Button to trigger the alarm modal -->
+            <!-- <div class="bell-container">
+                <button class="bell-button" onclick="showAlarmslist()">
+                    <i class="fa fa-bell"></i>
+                    <span id="alarm-count" class="badge">0</span>
+                </button>
+            </div> -->
+
             <div class="bell-container">
                 <button class="bell-button" onclick="showAlarmslist()">
                     <i class="fa fa-bell"></i>
@@ -950,6 +957,87 @@
         });
 
 
+        // let previousAlarms = [];
+
+        // function fetchAlarmCount() {
+        //     fetch("/alarms")
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             const alarmCountElement = document.getElementById("alarm-count");
+        //             const alarmCount = data.length;
+
+        //             if (alarmCount > 0) {
+        //                 // Show the badge and update the count
+        //                 alarmCountElement.style.display = "inline-block";
+        //                 alarmCountElement.innerText = alarmCount;
+        //             } else {
+        //                 // Hide the badge
+        //                 alarmCountElement.style.display = "none";
+        //             }
+
+        //             // Check for new alarms and display simple popups
+        //             const newAlarms = data.filter(alarm => !previousAlarms.some(a => a.alarm === alarm.alarm));
+        //             if (newAlarms.length > 0) {
+        //                 // Show simple popup for each new alarm
+        //                 showSimplePopups(newAlarms);
+        //             }
+
+        //             previousAlarms = data;
+        //         });
+        // }
+
+        // function showAlarmslist() {
+        //     // Reset alarm count to 0 when modal is opened
+        //     document.getElementById("alarm-count").innerText = 0;
+
+        //     // Fetch alarms and update the modal body
+        //     fetch("/alarms")
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             let alarmMessage = "";
+
+        //             if (data.length === 0) {
+        //                 alarmMessage = "<p>No alarm notifications yet.</p>";
+        //             } else {
+        //                 // Loop through data and format each alarm with alternating styles
+        //                 alarmMessage = data.map((a, index) => {
+        //                     const className = (index % 2 === 0) ? 'even' : 'odd';
+        //                     return `
+        //                 <p class="${className}">
+        //                     <span class="alarm-time">${a.time}</span>
+        //                     ${a.message} (${a.name})
+        //                 </p>
+        //             `;
+        //                 }).join("");
+        //             }
+
+        //             // Update modal body with alarm messages
+        //             document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
+
+        //             // Show the modal
+        //             document.getElementById("alarmModal").style.display = "flex";
+
+        //             // Add the modal-open class to the body
+        //             document.body.classList.add("modal-open");
+        //         });
+        // }
+
+        // function closeModal() {
+        //     // Hide the modal
+        //     document.getElementById("alarmModal").style.display = "none";
+
+        //     // Remove the modal-open class from the body
+        //     document.body.classList.remove("modal-open");
+
+        //     // Reset the alarm count and hide the badge when the modal is closed
+        //     const alarmCountElement = document.getElementById("alarm-count");
+        //     alarmCountElement.style.display = "none"; // Hide the badge
+        //     alarmCountElement.innerText = "0"; // Reset the count to 0
+        // }
+
+        // // Call the function periodically to check for new alarms
+        // setInterval(fetchAlarmCount, 5000);
+
         let previousAlarms = [];
 
         function fetchAlarmCount() {
@@ -960,18 +1048,14 @@
                     const alarmCount = data.length;
 
                     if (alarmCount > 0) {
-                        // Show the badge and update the count
                         alarmCountElement.style.display = "inline-block";
                         alarmCountElement.innerText = alarmCount;
                     } else {
-                        // Hide the badge
                         alarmCountElement.style.display = "none";
                     }
 
-                    // Check for new alarms and display simple popups
-                    const newAlarms = data.filter(alarm => !previousAlarms.some(a => a.alarm === alarm.alarm));
+                    const newAlarms = data.filter(alarm => !previousAlarms.some(a => a.name === alarm.name));
                     if (newAlarms.length > 0) {
-                        // Show simple popup for each new alarm
                         showSimplePopups(newAlarms);
                     }
 
@@ -979,81 +1063,9 @@
                 });
         }
 
-        // Function to show simple popup alerts for 2 seconds each
-        // function showSimplePopups(alarms) {
-        //     let index = 0;
-        //     const popupDisplayInterval = 10000; // 2 seconds for each popup
-
-        //     function showNextPopup() {
-        //         if (index < alarms.length) {
-        //             const alarm = alarms[index];
-        //             const popupMessage = `${alarm.message} (${alarm.name})`;
-
-        //             // Set the popup message
-        //             document.getElementById("simplePopupMessage").innerText = popupMessage;
-
-        //             // Show the popup
-        //             const popup = document.getElementById("simplePopup");
-        //             popup.style.display = "block";
-
-        //             // Auto-hide after 2 seconds
-        //             setTimeout(() => {
-        //                 popup.style.display = "none"; // Hide the popup
-        //                 index++; // Move to the next alarm
-        //                 setTimeout(showNextPopup, 500); // 500ms delay before showing the next popup
-        //             }, popupDisplayInterval);
-        //         }
-        //     }
-
-        //     // Start showing the popups
-        //     showNextPopup();
-        // }
-
-
-        // function showAlarmsSequentially(alarms) {
-        //     let index = 0;
-        //     const alarmDisplayInterval = 10000; // 2 seconds interval
-
-        //     function showNextAlarm() {
-        //         if (index < alarms.length) {
-        //             // Get the current alarm with time
-        //             const alarm = alarms[index];
-        //             const alarmMessage = `
-        //         <p>
-        //             <span class="alarm-time">${alarm.time}</span>
-        //             ${alarm.message} (${alarm.name})
-        //         </p>
-        //     `;
-
-        //             // Display the current alarm in the modal body
-        //             document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
-
-        //             // Show the modal
-        //             document.getElementById("alarmModal").style.display = "flex";
-
-        //             // Add the modal-open class to the body
-        //             document.body.classList.add("modal-open");
-
-        //             // Increase the index and set the timeout for the next alarm
-        //             index++;
-
-        //             // Auto-close after 2 seconds and show the next alarm
-        //             setTimeout(() => {
-        //                 closeModal();
-        //                 setTimeout(showNextAlarm, 500); // 500ms delay before showing the next one
-        //             }, alarmDisplayInterval);
-        //         }
-        //     }
-
-        //     // Start displaying the alarms one by one
-        //     showNextAlarm();
-        // }
-
         function showAlarmslist() {
-            // Reset alarm count to 0 when modal is opened
             document.getElementById("alarm-count").innerText = 0;
 
-            // Fetch alarms and update the modal body
             fetch("/alarms")
                 .then(response => response.json())
                 .then(data => {
@@ -1062,45 +1074,32 @@
                     if (data.length === 0) {
                         alarmMessage = "<p>No alarm notifications yet.</p>";
                     } else {
-                        // Loop through data and format each alarm with alternating styles
                         alarmMessage = data.map((a, index) => {
                             const className = (index % 2 === 0) ? 'even' : 'odd';
                             return `
                         <p class="${className}">
                             <span class="alarm-time">${a.time}</span>
                             ${a.message} (${a.name})
-                        </p>
-                    `;
+                        </p>`;
                         }).join("");
                     }
 
-                    // Update modal body with alarm messages
                     document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
-
-                    // Show the modal
                     document.getElementById("alarmModal").style.display = "flex";
-
-                    // Add the modal-open class to the body
                     document.body.classList.add("modal-open");
                 });
         }
 
         function closeModal() {
-            // Hide the modal
             document.getElementById("alarmModal").style.display = "none";
-
-            // Remove the modal-open class from the body
             document.body.classList.remove("modal-open");
 
-            // Reset the alarm count and hide the badge when the modal is closed
             const alarmCountElement = document.getElementById("alarm-count");
-            alarmCountElement.style.display = "none"; // Hide the badge
-            alarmCountElement.innerText = "0"; // Reset the count to 0
+            alarmCountElement.style.display = "none";
+            alarmCountElement.innerText = "0";
         }
 
-        // Call the function periodically to check for new alarms
         setInterval(fetchAlarmCount, 5000);
-
 
         var iframe = document.getElementById('reportIframe');
         iframe.style.display = 'none';

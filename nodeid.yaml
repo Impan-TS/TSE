@@ -11,9 +11,6 @@
 #   Linkconer_iVa_Act_Temp: "ns=6;s=::Linkconer:iVa_Act_Temp"
 
 node_ids:
-  Spg2_iFl_Start_DO_B: "ns=6;s=::Spg2:iFl_Start_DO_B"                  #manual auto
-  Spg2_iFl_Start_DO_B2: "ns=6;s=::Spg2:iFl_Start_DO_B2"
-
   Preparatory 1_RH: "ns=6;s=::Prep_1:iVa_Act_RH"                      #Dashboard
   Preparatory 1_Temp: "ns=6;s=::Prep_1:iVa_Act_Temp"
   Preparatory 2_RH: "ns=6;s=::Prep_2:iVa_Act_RH"                     
@@ -53,6 +50,8 @@ node_ids:
   Spg2_DO_Pump_Act2: "ns=6;s=::Spg2:DO_Pump_Act2"
   Spg2_iMi_DO_Man: "ns=6;s=::Spg2:iMi_DO_Man"
   Spg2_iMi_DO_Man2: "ns=6;s=::Spg2:iMi_DO_Man2"
+  Spg2_iFl_Start_DO_B: "ns=6;s=::Spg2:iFl_Start_DO_B"                  #manual auto
+  Spg2_iFl_Start_DO_B2: "ns=6;s=::Spg2:iFl_Start_DO_B2"
 
   Spg2_iVa_Act_RH: "ns=6;s=::Spg2:iVa_Act_RH"                          #Analog input
   Spg2_iVa_Act_Temp: "ns=6;s=::Spg2:iVa_Act_Temp"
@@ -62,6 +61,10 @@ node_ids:
   Spg2_iMi_Set_Temp_Man_Ref: "ns=6;s=::Spg2:iMi_Set_Temp_Man_Ref"
   Spg2_iMi_Set_WoT_Man_Ref: "ns=6;s=::Spg2:iMi_Set_WoT_Man_Ref"
   Spg2_iMi_Set_DPG_Man_REF: "ns=6;s=::Spg2:iMi_Set_DPG_Man_REF"
+  Spg2_iFl_Set_Humidity_Man_B: "ns=6;s=::Spg2:iFl_Set_Humidity_Man_B"   #manual auto
+  Spg2_iMi_Set_Temp_Man_B: "ns=6;s=::Spg2:iMi_Set_Temp_Man_B"
+  Spg2_iMi_Set_WoT_Man_B: "ns=6;s=::Spg2:iMi_Set_WoT_Man_B"                  
+  Spg2_iFl_Set_DPG_RDF_Man_B: "ns=6;s=::Spg2:iFl_Set_DPG_RDF_Man_B"
 
   Spg2_iVa_WTC_Output: "ns=6;s=::Spg2:iVa_WTC_Output"                  #Analog output
   Spg2_iVa_WTC_Output2: "ns=6;s=::Spg2:iVa_WTC_Output2"
@@ -75,6 +78,9 @@ node_ids:
   Spg2_iVa_Humid_Output_Man_Ref: "ns=6;s=::Spg2:iVa_Humid_Output_Man_Ref"
   Spg2_iVa_Humid_Output_Man_Ref2: "ns=6;s=::Spg2:iVa_Humid_Output_Man_Ref2"
   Spg2_iVa_Damper_Output_Man_Ref: "ns=6;s=::Spg2:iVa_Damper_Output_Man_Ref"
+  Spg2_iFl_Humid_Output_Man_B: "ns=6;s=::Spg2:iFl_Humid_Output_Man_B"   #manual auto
+  Spg2_iFl_Humid_Output_Man_B2: "ns=6;s=::Spg2:iFl_Humid_Output_Man_B2"
+  Spg2_iFl_Damper_Output_Man_B: "ns=6;s=::Spg2:iFl_Damper_Output_Man_B"
 
   Spg2_iVa_Pump_Start_REF: "ns=6;s=::Spg2:iVa_Pump_Start_REF"           #Preset values
   Spg2_iVa_Pump_Stop_REF: "ns=6;s=::Spg2:iVa_Pump_Stop_REF"

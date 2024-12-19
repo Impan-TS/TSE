@@ -127,7 +127,7 @@
             margin-top: 6px;
             position: relative;
             display: inline-block;
-            width: 40px;
+            width: 42px;
             height: 24px;
         }
 
@@ -144,7 +144,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color:#7dcbff;
             transition: 0.4s;
             border-radius: 34px;
         }
@@ -162,7 +162,7 @@
         }
 
         input:checked+.slider {
-            background-color: #4caf50;
+            background-color: #0c609d;
         }
 
         input:checked+.slider:before {
@@ -266,35 +266,33 @@
         //         });
         // }
 
-<<<<<<< HEAD
-=======
-// Function to send the updated value to the OPC UA server
-function updateNodeValue(nodeId, value) {
-    // Assuming you have a function to send data to Node-RED or OPC UA server
-    // This is a placeholder, replace it with actual code to send data (e.g., using WebSocket, HTTP, etc.)
-    console.log("Updating NodeID: " + nodeId + " with value: " + value);
+// // Function to send the updated value to the OPC UA server
+// function updateNodeValue(nodeId, value) {
+//     // Assuming you have a function to send data to Node-RED or OPC UA server
+//     // This is a placeholder, replace it with actual code to send data (e.g., using WebSocket, HTTP, etc.)
+//     console.log("Updating NodeID: " + nodeId + " with value: " + value);
 
-    // Example HTTP request (replace with your actual implementation):
-    fetch("/write", { // Updated endpoint to match the server-side code
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            [nodeId]: value // Dynamically set nodeId and value to the body
-        })
-    }).then(response => response.json()) // Ensure you parse the JSON response
-    .then(data => {
-        if (data.success) {
-            console.log("Update successful");
-        } else {
-            console.log("Update failed: " + data.error);
-        }
-    }).catch(error => {
-        console.error("Error updating node:", error);
-    });
-}
->>>>>>> b397ce7d98e3ad6696fbb1d5f64987cda72efa2c
+//     // Example HTTP request (replace with your actual implementation):
+//     fetch("/write", { // Updated endpoint to match the server-side code
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({
+//             [nodeId]: value // Dynamically set nodeId and value to the body
+//         })
+//     }).then(response => response.json()) // Ensure you parse the JSON response
+//     .then(data => {
+//         if (data.success) {
+//             console.log("Update successful");
+//         } else {
+//             console.log("Update failed: " + data.error);
+//         }
+//     }).catch(error => {
+//         console.error("Error updating node:", error);
+//     });
+// }
+
 
 
         // Dynamically update switch modes based on node values

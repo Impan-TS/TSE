@@ -148,6 +148,53 @@
         .dialog-footer button {
             margin-left: 10px;
         }
+
+        /* Styling for toggle switch */
+        .switch {
+            margin-top: 6px;
+            position: relative;
+            display: inline-block;
+            width: 42px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color:#7dcbff;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+        }
+
+        input:checked+.slider {
+            background-color: #0c609d;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
     </style>
 
 </head>
@@ -190,16 +237,108 @@
                     value="{{ msg.payload['Spg2_iMi_Set_DPG_Man_REF'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_DPG_Man_REF'] }}" /></div>
         </div>
 
+        <!-- Row 3: MODE Row with Toggle Switches -->
+        <div class="row-container">
+            <div class="parameter">MODE</div>
+            <div class="parameter">
+                <label class="switch">
+                    <input type="checkbox" id="mode1" {{ 'checked' if msg.payload.Spg2_iFl_Set_Humidity_Man_B else '' }}
+                        onchange="updateModeText(this, 'mode1-text', 'Spg2_iFl_Set_Humidity_Man_B')">
+                    <span class="slider"></span>
+                </label>
+                <span id="mode1-text">{{ 'Manual' if msg.payload.Spg2_iFl_Set_Humidity_Man_B else 'Auto' }}</span>
+            </div>
+            <div class="parameter">
+                <label class="switch">
+                    <input type="checkbox" id="mode2" {{ 'checked' if msg.payload.Spg2_iMi_Set_Temp_Man_B else '' }}
+                        onchange="updateModeText(this, 'mode2-text', 'Spg2_iMi_Set_Temp_Man_B')">
+                    <span class="slider"></span>
+                </label>
+                <span id="mode2-text">{{ 'Manual' if msg.payload.Spg2_iMi_Set_Temp_Man_B else 'Auto' }}</span>
+            </div>
+            <div class="parameter">
+                <label class="switch">
+                    <input type="checkbox" id="mode3" {{ 'checked' if msg.payload.Spg2_iMi_Set_WoT_Man_B else '' }}
+                        onchange="updateModeText(this, 'mode3-text', 'Spg2_iMi_Set_WoT_Man_B')">
+                    <span class="slider"></span>
+                </label>
+                <span id="mode3-text">{{ 'Manual' if msg.payload.Spg2_iMi_Set_WoT_Man_B else 'Auto' }}</span>
+            </div>
+            <div class="parameter">
+                <label class="switch">
+                    <input type="checkbox" id="mode4" {{ 'checked' if msg.payload.Spg2_iFl_Set_DPG_RDF_Man_B else '' }}
+                        onchange="updateModeText(this, 'mode4-text', 'Spg2_iFl_Set_DPG_RDF_Man_B')">
+                    <span class="slider"></span>
+                </label>
+                <span id="mode4-text">{{ 'Manual' if msg.payload.Spg2_iFl_Set_DPG_RDF_Man_B else 'Auto' }}</span>
+            </div>
+        </div>
+
         <div class="dialog-footer">
             <button class="btn btn-success" onclick="updateSettings()">Update</button>
         </div>
 
     </div>
 
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
 
     <!-- Include Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Dynamically update switch modes based on node values
+        function updateSwitchModes() {
+            const mode1 = document.getElementById('mode1');
+            const mode2 = document.getElementById('mode2');
+            const mode3 = document.getElementById('mode3');
+            const mode4 = document.getElementById('mode4');
+            const mode1Text = document.getElementById('mode1-text');
+            const mode2Text = document.getElementById('mode2-text');
+            const mode3Text = document.getElementById('mode3-text');
+            const mode4Text = document.getElementById('mode4-text');
+
+            if (msg.payload.Spg2_iFl_Set_Humidity_Man_B === true) {
+                mode1.checked = true;
+                mode1Text.textContent = 'Manual';
+            } else {
+                mode1.checked = false;
+                mode1Text.textContent = 'Auto';
+            }
+
+            if (msg.payload.Spg2_iMi_Set_Temp_Man_B === true) {
+                mode2.checked = true;
+                mode2Text.textContent = 'Manual';
+            } else {
+                mode2.checked = false;
+                mode2Text.textContent = 'Auto';
+            }
+
+            if (msg.payload.Spg2_iMi_Set_WoT_Man_B === true) {
+                mode3.checked = true;
+                mode3Text.textContent = 'Manual';
+            } else {
+                mode3.checked = false;
+                mode3Text.textContent = 'Auto';
+            }
+
+            if (msg.payload.Spg2_iFl_Set_DPG_RDF_Man_B === true) {
+                mode4.checked = true;
+                mode4Text.textContent = 'Manual';
+            } else {
+                mode4.checked = false;
+                mode4Text.textContent = 'Auto';
+            }
+        }
+
+        // Example validation function to ensure valid input for manual values
+        function validateInput(input) {
+            if (input.value < 0 || input.value > 1) {
+                input.value = input.value < 0 ? 0 : 1;
+            }
+        }
+
+        updateSwitchModes();
+
+
         function updateSettings() {
             const setpoints = {
                 Spg2_iMi_Set_RH_Man_Ref: document.getElementById('Spg2_iMi_Set_RH_Man_Ref').value,
