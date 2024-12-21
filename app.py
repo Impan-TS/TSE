@@ -751,93 +751,62 @@ def trends():
     return render_template('iot/trends.html', msg=msg)
 
 # configuring input.yaml
-# Serve the HTML file
-@app.route('/input')
-def input_page():
-    return render_template('iot/input.html')  # Ensure this file is in the 'templates' folder
 
-# Endpoint to fetch the YAML file content
-@app.route('/get-input', methods=['GET'])
-def get_input():
-    try:
-        with open('input.yaml', 'r') as file:
-            data = yaml.safe_load(file)
-        return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# Load the YAML file
+def load_yaml():
+    with open("input.yaml", 'r') as file:
+        return yaml.safe_load(file)
 
-# Endpoint to update the YAML file
-@app.route('/update-input', methods=['POST'])
-def update_input():
-    try:
-        # Receive updated YAML content as JSON
-        data = request.json  
+# Save changes to the YAML file
+def save_yaml(data):
+    with open("input.yaml", 'w') as file:
+        yaml.dump(data, file)
         
-        # Verify that the data has the expected structure
-        if not isinstance(data, dict):
-            raise ValueError("Invalid data format, expected a dictionary.")
+@app.route('/input', methods=['GET', 'POST'])
+def input_page():
+    data = load_yaml()
 
-        # Write updated data to the YAML file
-        with open('input.yaml', 'w') as file:
-            yaml.safe_dump(data, file, default_flow_style=False)  # Ensures nice, readable formatting
+    if request.method == 'POST':
+        if 'client_name' in request.form:
+            data['client_name'] = request.form['client_name']
+        elif 'submodule_name' in request.form and 'submodule_file' in request.form:
+            new_submodule = {
+                request.form['submodule_name']: request.form['submodule_file']
+            }
+            data['submodules'].update(new_submodule)
+        save_yaml(data)
 
-        return jsonify({"message": "File updated successfully!"})
+    return render_template('iot/input.html', client_name=data['client_name'], submodules=data['submodules'])
 
-    except Exception as e:
-        # Provide a more detailed error message in case of failure
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
-# Endpoint to add a submodule
-@app.route('/add-submodule', methods=['POST'])
-def add_submodule():
-    try:
-        # Get submodule name and file path from the request
-        submodule_name = request.json.get('submodule_name')
-        submodule_file = request.json.get('submodule_file')
-
-        # Read the current YAML content
-        with open('input.yaml', 'r') as file:
-            data = yaml.safe_load(file)
-
-        # Ensure 'submodules' key exists in the data
-        if 'submodules' not in data:
-            data['submodules'] = {}
-
-        # Add the new submodule to the 'submodules' dictionary
-        data['submodules'][submodule_name] = submodule_file
-
-        # Write the updated data back to the YAML file
-        with open('input.yaml', 'w') as file:
-            yaml.safe_dump(data, file)
-
-        return jsonify({"message": "Submodule added successfully!"})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/remove-submodule', methods=['POST'])
+@app.route('/remove_submodule', methods=['POST'])
 def remove_submodule():
-    try:
-        submodule_name = request.json.get('submodule_name')
-        with open('input.yaml', 'r') as file:
-            data = yaml.safe_load(file)
+    data = load_yaml()
+    submodule_name = request.form['submodule_name']
+    del data['submodules'][submodule_name]
+    save_yaml(data)
+    return jsonify({'success': True})
 
-        # Ensure 'submodules' key exists in the data
-        if 'submodules' in data:
-            # Remove the submodule by deleting the key from the dictionary
-            if submodule_name in data['submodules']:
-                del data['submodules'][submodule_name]
+@app.route('/edit_submodule', methods=['POST'])
+def edit_submodule():
+    data = load_yaml()
+    
+    old_name = request.form['submodule_name']
+    new_name = request.form['new_submodule_name']
+    new_file = request.form['submodule_file']
+    
+    # Remove the old submodule if it exists
+    if old_name in data['submodules']:
+        del data['submodules'][old_name]
+    
+    # Add the new submodule with the new name
+    data['submodules'][new_name] = new_file
+    
+    # Save the updated data to the YAML file
+    save_yaml(data)
+    
+    return jsonify({'success': True})
 
-        # Write the updated data back to the YAML file
-        with open('input.yaml', 'w') as file:
-            yaml.safe_dump(data, file)
-
-        return jsonify({"message": "Submodule removed successfully!"})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+    #-----------------------------------
 
 if __name__ == '__main__':
     # Start the background thread to read values periodically

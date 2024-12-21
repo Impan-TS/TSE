@@ -1,316 +1,370 @@
+{% extends "iot/tse.html" %}
+
+{% block title %}Edit & Manage Submodules{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Client and Department Modification</title>
-    <script>
-        // Load YAML content and generate form fields
-        async function loadYAML() {
-            const response = await fetch('/get-input');
-            if (response.ok) {
-                const data = await response.json();
-                generateForm(data);
-            } else {
-                alert("Failed to load YAML: " + (await response.json()).error);
-            }
-        }
-
-        // Add new submodule dynamically
-        async function addSubmodule() {
-            const submoduleName = prompt("Enter submodule name:");
-            const submoduleFile = prompt("Enter submodule file:");
-
-            if (!submoduleName || !submoduleFile) return;
-
-            const response = await fetch('/add-submodule', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ submodule_name: submoduleName, submodule_file: submoduleFile })
-            });
-
-            if (response.ok) {
-                alert((await response.json()).message);
-                loadYAML();  // Reload the submodules only
-            } else {
-                alert("Failed to add submodule: " + (await response.json()).error);
-            }
-        }
-
-        // Remove a submodule dynamically
-        async function removeSubmodule(submoduleName) {
-            const confirmRemove = confirm(`Are you sure you want to remove the submodule: ${submoduleName}?`);
-            if (!confirmRemove) return;
-
-            const response = await fetch('/remove-submodule', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ submodule_name: submoduleName })
-            });
-
-            if (response.ok) {
-                alert((await response.json()).message);
-                loadYAML();  // Reload the submodules only
-            } else {
-                alert("Failed to remove submodule: " + (await response.json()).error);
-            }
-        }
-
-        // Generate form dynamically for editable fields only
-        function generateForm(data, parentKey = '', parentElement = null) {
-            const formContainer = parentElement || document.getElementById('formContainer');
-            formContainer.innerHTML = ''; // Clear existing form only for non-submodule parts
-
-            for (const [key, value] of Object.entries(data)) {
-                const div = document.createElement('div');
-                div.style.marginBottom = '15px';
-
-                if (key === 'client_name') {
-                    const label = document.createElement('label');
-                    label.textContent = `Client name:`;
-                    label.className = 'form-label';
-                    label.style.fontFamily = 'Poppins';
-                    label.style.fontWeight = 'bold';
-
-                    const valueInput = document.createElement('input');
-                    valueInput.type = 'text';
-                    valueInput.value = value;
-                    valueInput.name = `${parentKey}${key}`;
-                    valueInput.className = 'form-input';
-
-                    div.appendChild(label);
-                    div.appendChild(valueInput);
-                    formContainer.appendChild(div);
-                } else if (key === 'submodules') {
-                    const label = document.createElement('label');
-                    label.textContent = `Departments :`;
-                    label.className = 'form-label';
-                    label.style.fontFamily = 'Poppins';
-                    label.style.fontWeight = 'bold';
-
-
-                    const nestedDiv = document.createElement('div');
-                    nestedDiv.style.marginLeft = '20px';
-
-                    div.appendChild(label);
-                    div.appendChild(nestedDiv);
-                    generateSubmodules(value, nestedDiv); // Pass existing submodules to this function
-                    formContainer.appendChild(div);
-
-                    // Add "Add Submodule" button at the end of all submodules
-                    const addButton = document.createElement('button');
-                    addButton.textContent = 'Add department';
-                    addButton.onclick = addSubmodule;
-                    addButton.style.marginLeft = '370px';
-                    nestedDiv.appendChild(addButton);
-                }
-            }
-        }
-
-        // Generate submodules section
-        function generateSubmodules(submodules, parentElement) {
-            // Create the table structure
-            const table = document.createElement('table');
-            table.className = 'form-table';
-            table.style.marginLeft = '36px';
-
-            // Create the table header
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            const headers = ['Department Name', 'Department File', '  Actions'];
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.textContent = headerText;
-                th.style.paddingRight = '30px';
-                th.style.backgroundColor = 'lightblue';
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
-            table.appendChild(thead);
-
-            // Create the table body
-            const tbody = document.createElement('tbody');
-            for (const [name, file] of Object.entries(submodules)) {
-                const row = document.createElement('tr');
-
-                const nameCell = document.createElement('td');
-                const nameInput = document.createElement('input');
-                nameInput.type = 'text';
-                nameInput.value = name;
-                nameInput.placeholder = 'Submodule Name';
-                nameInput.className = 'form-input';
-                nameCell.appendChild(nameInput);
-
-                const fileCell = document.createElement('td');
-                const fileInput = document.createElement('input');
-                fileInput.type = 'text';
-                fileInput.value = file;
-                fileInput.placeholder = 'Submodule File';
-                fileInput.className = 'form-input';
-                fileCell.appendChild(fileInput);
-
-                const actionsCell = document.createElement('td');
-                const removeButton = document.createElement('button');
-                removeButton.textContent = 'Remove';
-                removeButton.onclick = () => removeSubmodule(name);
-
-                // Make the button smaller and give it a red color
-                removeButton.style.fontSize = '12px';  // Adjust the font size to make it smaller
-                removeButton.style.padding = '5px 20px';  // Adjust padding for a smaller button
-                removeButton.style.backgroundColor = 'red';  // Set background color to red
-                removeButton.style.color = 'white';  // Set text color to white
-                removeButton.style.border = 'none';  // Remove border (optional)
-                removeButton.style.borderRadius = '5px';  // Optional: rounded corners
-                removeButton.style.cursor = 'pointer';  // Change cursor on hover
-                removeButton.style.width = '80px';
-
-                actionsCell.appendChild(removeButton);
-
-
-                // Append cells to the row
-                row.appendChild(nameCell);
-                row.appendChild(fileCell);
-                row.appendChild(actionsCell);
-
-                // Append row to the table body
-                tbody.appendChild(row);
-            }
-
-            table.appendChild(tbody);
-            parentElement.appendChild(table);
-        }
-
-
-        function getFormData(container) {
-            const result = { submodules: {} };
-
-            // Find all rows in the table (which represent submodules)
-            const rows = container.querySelectorAll('table tbody tr');
-
-            rows.forEach(row => {
-                const nameInput = row.querySelector('td input[placeholder="Submodule Name"]');
-                const fileInput = row.querySelector('td input[placeholder="Submodule File"]');
-
-                // Ensure both inputs exist and have values
-                if (nameInput && fileInput) {
-                    const submoduleName = nameInput.value;
-                    const submoduleFile = fileInput.value;
-                    result.submodules[submoduleName] = submoduleFile;
-                }
-            });
-
-            // Find and add the client name input
-            const clientNameInput = container.querySelector('input[name="client_name"]');
-            if (clientNameInput) {
-                result.client_name = clientNameInput.value;
-            }
-
-            return result;
-        }
-
-        // Update YAML file on the server
-        async function updateYAML() {
-            const formContainer = document.getElementById('formContainer');
-            const formData = getFormData(formContainer);
-
-            const response = await fetch('/update-input', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                alert((await response.json()).message);
-            } else {
-                alert("Failed to update YAML: " + (await response.json()).error);
-            }
-        }
-
-        // Initial load of YAML data
-        window.onload = loadYAML;
-    </script>
-
+    <title>Edit & Manage Submodules</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <style>
-        body {
-            margin-top: 2%;
-            font-family: Arial, sans-serif;
-            background-color: #e7f3ff;
-            /* Light blue background */
-            /* padding: 200px; */
-            margin-left: 100px;
+        .container {
+            margin-top: 60px;
         }
 
-        h1 {
-            text-align: center;
-            color: #004080;
-            /* Darker blue for contrast */
+        .modal {
+    
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1050; /* Make sure it appears above other elements */
+    background-color: #256fc3;
+    padding: 0px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 80%; /* Adjust based on requirement */
+    max-width: 500px; /* Optional */
+    background-color: transparent !important; 
+    box-shadow: none; 
+    border: none !important;
+    max-height: 550px;
+
+}
+.modal-content{
+    height: 90%;
+    overflow: overlay !important;
+    max-height: 550px;
+}
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    backdrop-filter: blur(10px) !important; /* Adds the blur effect */
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.5); /* For semi-transparent backdrop */
+    z-index: 1040; /* Ensure it's behind the modal */
+}
+
+body.modal-open::before {
+    position: fixed;
+}
+
+.modal-body{
+    text-align: left;
+}
+
+        /* .modal-fade {
+            margin-top: 200px;
+            align-content: center;
+            height: 10%;
+            width: 2%;
+        }
+        .modal-dialog {
+            margin-top: 200px;
+            width: 20%;
+        }
+        .modal-content {
+            
+            margin-top: 200px;
+            width: auto;
+        } */
+
+        .table-container {
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #0c609d;
+            overflow: hidden;
         }
 
-        #formContainer {
-            width: 50%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-            /* White background for form */
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .table {
+            border-collapse: collapse;
+            margin-bottom: 0;
         }
 
-        .form-label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: inline-block;
-            color: #0056b3;
-            /* Light blue text */
-        }
-
-        .form-input {
-            width: 90%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #99c2ff;
-            /* Light blue border */
-            border-radius: 4px;
-        }
-
-        .form-input-key {
-            width: 25%;
-            margin-right: 10px;
-        }
-
-        button {
-            display: block;
-            width: 150px;
-            padding: 10px;
-            margin: 0px auto;
-            background-color: #007bff;
-            /* Blue button */
+        .thead th {
+            background-color: #0c609d;
             color: white;
+            text-align: center;
+            border-radius: 0;
+        }
+
+        .thead th:first-child {
+            border-top-left-radius: 7px;
+        }
+
+        .thead th:last-child {
+            border-top-right-radius: 7px;
+        }
+
+        .btn-action {
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            background: none;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #0056b3;
-            /* Darker blue on hover */
+        .btn-action:hover {
+            color: #007bff;
         }
+
+        td, th {
+            text-align: center;
+            vertical-align: middle;
+            border-right: 1px solid #0c609d;
+            font-weight: 480;
+        }
+
+        tr td:last-child, tr th:last-child {
+            border-right: none;
+        }
+
+        .edit-client-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .edit-client-section input {
+            width: 70%;
+        }
+
+        .add-department-btn {
+        top: 20px; /* Adjust top position as needed */
+        width: 60px; /* Adjust width as needed */
+        height: 60px; /* Adjust height as needed */
+        font-size: 25px; /* Adjust icon size */
+    }        
+
     </style>
+</head>
+<body>
+    <div class="container">
+        
+            <h3 style="color: #0c609d; font-size: 18px;">Client Name: </h3>
+            <div class="edit-client-section">
+                <span id="client_name_display" style="font-size: 18px; margin-top: -10px">{{ client_name }}
+                <button class="btn btn-action" onclick="editClientName()" title="Edit Client Name" style="font-size: unset;">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </span>
+            <button class="btn" onclick="addSubmodule()" title="Add Department" style="background-color: #327fb6; border: black; padding: 8px 12px; color: white; font-size: 12px; top: 350px; border-radius: 50%; display: flex; justify-content: center;">
+                <i class="fas fa-plus" style="font-size: 20px;"></i>
+            </button>
+            
+        </div>
 
-    <h1 style="margin-top: 50px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 36px;
-    font-weight: bold;
-    color: #0545a0;">Client and Department Modification</h1>
-    <div id="formContainer">
+        <h3 style="margin-top: 20px; color: #0c609d; font-size: 18px;">Departments:
+        </h3>
+        <div class="table-container">
+            <table class="table table-striped table-hover">
+                <thead class="thead">
+                    <tr>
+                        <th>Department</th>
+                        <th>Template</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="submodule_table">
+                    {% for name, file in submodules.items() %}
+                    <tr id="submodule_{{ name }}">
+                        <td>{{ name }}</td>
+                        <td>{{ file }}</td>
+                        <td>
+                            <button class="btn-action" onclick="editSubmodule('{{ name }}', '{{ file }}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action" onclick="removeSubmodule('{{ name }}')" title="Remove">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <button onclick="updateYAML()" style="align-items: center; margin-top: 10px; width: 20%; height: 10%;">Save
-        Changes</button>
-    </body>
 
+    <!-- Edit Client Name Modal -->
+    <div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editClientModalLabel">Edit Client Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="client_name_input" class="form-label" style="font-weight: bold;">Client Name:</label>
+                            <input type="text" class="form-control" id="client_name_input" placeholder="New Client Name">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveClientName()">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Submodule Modal -->
+    <div class="modal fade" id="editSubmoduleModal" tabindex="-1" aria-labelledby="editSubmoduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editSubmoduleModalLabel" >Edit Department</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="submodule_name_input">
+                        <div class="mb-3">
+                            <label for="submodule_new_name_input" class="form-label"style="font-weight: bold;">Department:</label>
+                            <input type="text" class="form-control" id="submodule_new_name_input" placeholder="Department">
+                        </div>
+                        <div class="mb-3">
+                            <label for="submodule_file_input" class="form-label" style="font-weight: bold;">Template:</label>
+                            <input type="text" class="form-control" id="submodule_file_input" placeholder="Template">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveSubmoduleChanges()">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Submodule Modal -->
+    
+    <div class="modal fade" id="addSubmoduleModal" tabindex="-1" aria-labelledby="addSubmoduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addSubmoduleModalLabel" >Add Department</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_submodule_name" class="form-label" style="font-weight: bold;">Department:</label>
+                            <input type="text" class="form-control" id="new_submodule_name" placeholder="Department">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_submodule_file" class="form-label" style="font-weight: bold;">Template:</label>
+                            <input type="text" class="form-control" id="new_submodule_file" placeholder="Template">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveNewSubmodule()">Add</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // function updateClientName() {
+        //     const clientName = document.getElementById('client_name').value;
+        //     fetch('/input', {
+        //         method: 'POST',
+        //         body: new URLSearchParams({
+        //             'client_name': clientName
+        //         })
+        //     }).then(response => response.json());
+        // }
+
+        function editClientName() {
+        // Set the current client name to the input field in the modal
+        const clientName = document.getElementById('client_name_display').innerText;
+        document.getElementById('client_name_input').value = clientName;
+
+        // Show the modal
+        const clientModal = new bootstrap.Modal(document.getElementById('editClientModal'));
+        clientModal.show();
+    }
+
+    function saveClientName() {
+    const clientName = document.getElementById('client_name_input').value;
+    // Send the updated client name to the '/input' route
+    fetch('/input', {
+        method: 'POST',
+        body: new URLSearchParams({
+            'client_name': clientName
+        })
+    })
+        location.reload();
+}
+
+
+
+
+        function editSubmodule(name, file) {
+            document.getElementById('submodule_name_input').value = name;
+            document.getElementById('submodule_new_name_input').value = name;  // Default the new name to the current name
+            document.getElementById('submodule_file_input').value = file;
+            const editModal = new bootstrap.Modal(document.getElementById('editSubmoduleModal'));
+            editModal.show();
+        }
+
+        function saveSubmoduleChanges() {
+            const oldName = document.getElementById('submodule_name_input').value;
+            const newName = document.getElementById('submodule_new_name_input').value;
+            const file = document.getElementById('submodule_file_input').value;
+
+            fetch('/edit_submodule', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'submodule_name': oldName,
+                    'new_submodule_name': newName,
+                    'submodule_file': file
+                })
+            }).then(response => response.json()).then(() => {
+                location.reload();
+            });
+        }
+
+        function removeSubmodule(name) {
+            if (confirm("Are you sure you want to remove this submodule?")) {
+                fetch('/remove_submodule', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        'submodule_name': name
+                    })
+                }).then(response => response.json()).then(() => {
+                    document.getElementById('submodule_' + name).remove();
+                });
+            }
+        }
+
+        function addSubmodule() {
+            const addModal = new bootstrap.Modal(document.getElementById('addSubmoduleModal'));
+            addModal.show();
+        }
+
+        function saveNewSubmodule() {
+            const name = document.getElementById('new_submodule_name').value;
+            const file = document.getElementById('new_submodule_file').value;
+            fetch('/input', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'submodule_name': name,
+                    'submodule_file': file
+                })
+            }).then(response => response.json()).then(() => {
+                location.reload();
+            });
+        }
+    </script>
+</body>
 </html>
+
+{% endblock %}

@@ -11,90 +11,79 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Include Moment.js (for date handling) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <!-- Include Chart.js Moment.js adapter -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Include Plotly -->
-
     <style>
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            padding-top: 60px;
+            background-color: #e3f4ff;
+        }
+
         .common-container {
             border: 1px solid black;
             border-radius: 15px;
-            width: 28%;
-            height: 250px;
-            padding: 8px;
+            width: 30%;
+            height: 270px;
+            padding: 10px;
             background: linear-gradient(#0076CE 0%, #ADD8E6 58%);
-            margin: 10px 1%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             color: white;
+            box-sizing: border-box;
         }
+
         .common-container h2 {
-    font-size: 15px;  /* Adjusted department name font size */
-    margin: 2px 0;  /* Reduced margin for more space */
-}
-
-        .chart-container {
-            width: 90%;
-            height: 70px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-        }
-
-        .gauge-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 8px;
-            background-color: white;
-            border-radius: 10px;
-        }
-
-        .gauge-box {
-            width: 100%;
-            height: 30px;
-            padding-bottom: 50px;
+            font-size: 15px;
+            margin: 5px 0;
+            text-align: center;
         }
 
         .sensor-data {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10px;
+            font-size: 12px;
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .gauge-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 5px;
+            margin-top: 10px;
+        }
+
+        .gauge-box {
+            width: 50%;
+            height: 50px; /* Increased height for larger gauges */
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            padding-top: 20px; /* Adjusted padding for better positioning */
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 118px;
+            background-color: white;
+            border-radius: 10px;
+            margin-top: 10px;
         }
 
         header {
             position: fixed;
             top: 0;
             width: 100%;
-            z-index: 100;
             background-color: #002366;
             color: white;
-            padding: 7px;
             text-align: center;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-
-        body {
-            padding-top: 60px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            background-color: #e3f4ff;
+            padding: 10px;
+            z-index: 100;
         }
     </style>
 </head>
@@ -105,17 +94,24 @@
         {% for name, template in submodules.items() %}
         <div class="common-container">
             <h2>{{ name }}</h2>
-            <div class="sensor-data" id="sensorData{{ loop.index }}">
-                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; font-weight: bold;">
-                    <div style="margin-right: 70px;">Temperature : <span id="temperature{{ loop.index }}">0</span>°C</div>
-                    <div>Humidity : <span id="humidity{{ loop.index }}">0</span>%</div>
+            <div class="sensor-data">
+                <div style="display: flex; justify-content: space-between; width: 100%; font-weight: bold;">
+                    <div>Temperature: <span id="temperature{{ loop.index }}">0.00</span>°C</div>
+                    <div>Humidity: <span id="humidity{{ loop.index }}">0.00</span>%</div>
                 </div>
             </div>
 
+            <!-- Gauge Section -->
             <div class="gauge-container">
-                <div class="gauge-box"><canvas id="randomGauge{{ loop.index }}" width="170" height="70"></canvas></div>
-                <div class="gauge-box"><canvas id="sawtoothGauge{{ loop.index }}" width="170" height="70"></canvas></div>
+                <div class="gauge-box">
+                    <canvas id="gauge1{{ loop.index }}" width="150" height="100"></canvas> <!-- Increased width and height -->
+                </div>
+                <div class="gauge-box">
+                    <canvas id="gauge2{{ loop.index }}" width="150" height="100"></canvas> <!-- Increased width and height -->
+                </div>
             </div>
+
+            <!-- Graph Section -->
             <div class="chart-container">
                 <canvas id="myChart{{ loop.index }}"></canvas>
             </div>
@@ -124,40 +120,39 @@
     </div>
 
     <script>
-        function setupDepartment(departmentId, tempElementId, humidityElementId) {
-            var ctx = document.getElementById(departmentId.chart).getContext('2d');
-            var chart = new Chart(ctx, {
+        function getNodeIds(departmentName) {
+            const nodeIds = {
+                'Preparatory 1': { temperature: "Preparatory 1_Temp", humidity: "Preparatory 1_RH" },
+                'Preparatory 2': { temperature: "Preparatory 2_Temp", humidity: "Preparatory 2_RH" },
+                'Spinning 1': { temperature: "Spinning 1_Temp", humidity: "Spinning 1_RH" },
+                'Spinning 2': { temperature: "Spinning 2_Temp", humidity: "Spinning 2_RH" },
+                'Link Coner': { temperature: "Linkconer_Temp", humidity: "Linkconer_RH" },
+                'Link Coner2': { temperature: "Linkconer_Temp", humidity: "Linkconer_RH" }
+            };
+            return nodeIds[departmentName];
+        }
+
+        function setupDepartment(departmentName, departmentIndex) {
+            const nodeIds = getNodeIds(departmentName);
+            const chartCtx = document.getElementById('myChart' + departmentIndex).getContext('2d');
+
+            const chart = new Chart(chartCtx, {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [
-                        {
-                            label: 'Temperature',
-                            backgroundColor: 'rgba(255, 148, 112)',
-                            borderColor: 'rgba(255, 148, 112)',
-                            data: []
-                        },
-                        {
-                            label: 'Humidity',
-                            backgroundColor: 'rgba(40, 67, 135)',
-                            borderColor: 'rgba(40, 67, 135)',
-                            data: []
-                        }
+                        { label: 'Temperature', data: [], backgroundColor: 'rgba(255, 148, 112)', borderColor: 'rgba(255, 148, 112)' },
+                        { label: 'Humidity', data: [], backgroundColor: 'rgba(40, 67, 135)', borderColor: 'rgba(40, 67, 135)' }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: {
-                            type: 'time',
-                            time: { unit: 'second', stepSize: 5 },
+                        x: { type: 'time', time: { unit: 'second' },
                             ticks: {
-                                autoSkip: true,
-                                maxTicksLimit: 10,
-                                callback: function (value) {
-                                    return moment(value).format('HH:mm:ss');
-                                }
+                                font: { size: 10 },
+                                maxTicksLimit: 6
                             }
                         },
                         y: { beginAtZero: true }
@@ -165,109 +160,99 @@
                 }
             });
 
-            var socket = io.connect('http://127.0.0.1:7005');
+            const socket = io.connect('http://127.0.0.1:7005');
 
             socket.on('update', function (data) {
-                var currentTime = new Date();
-                chart.data.labels.push(currentTime);
-                chart.data.datasets[0].data.push(data.Random);
-                chart.data.datasets[1].data.push(data.Sawtooth);
+                const temp = data[nodeIds.temperature];
+                const hum = data[nodeIds.humidity];
+                const formattedTemp = parseFloat(temp.toFixed(2));
+                const formattedHum = parseFloat(hum.toFixed(2));
 
-                document.getElementById(tempElementId).textContent = data.Random.toFixed(2);
-                document.getElementById(humidityElementId).textContent = data.Sawtooth.toFixed(2);
+                document.getElementById('temperature' + departmentIndex).textContent = formattedTemp.toFixed(2);
+                document.getElementById('humidity' + departmentIndex).textContent = formattedHum.toFixed(2);
 
-                if (chart.data.labels.length > 20) {
-                    chart.data.labels.shift();
-                    chart.data.datasets.forEach(dataset => dataset.data.shift());
-                }
+                chart.data.labels.push(new Date());
+                chart.data.datasets[0].data.push(formattedTemp);
+                chart.data.datasets[1].data.push(formattedHum);
+                if (chart.data.labels.length > 20) chart.data.labels.shift();
+
                 chart.update();
+                drawGauge('gauge1' + departmentIndex, formattedTemp, -30, 30);
+                drawGauge('gauge2' + departmentIndex, formattedHum, -30, 30);
             });
+        }
 
-            socket.on('gauge_update', function (data) {
-                drawNeedleGauge(departmentId.id, data.Random, 'random');
-                drawNeedleGauge(departmentId.id, data.Sawtooth, 'sawtooth');
-            });
+        function drawGauge(canvasId, value, minRange, maxRange) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const radius = Math.min(canvas.width, canvas.height) / 4; // Adjusted radius for larger gauges
+            const centerX = canvas.width / 2, centerY = canvas.height / 2;
 
-            function drawNeedleGauge(elementId, value, type) {
-                const canvas = document.getElementById(`${type}Gauge${elementId}`);
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height * 0.9;
-                const radius = Math.min(canvas.width, canvas.height) / 2;
+            const range = [-30, -20, -10, 0, 10, 20, 30];  // Define exact range values
+            const angle = Math.PI + (Math.PI * (value - minRange) / (maxRange - minRange));
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 21;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Gauge Segments
+            const drawArcSegment = (startValue, endValue, color) => {
+                const startAngle = Math.PI + (Math.PI * (startValue - minRange) / (maxRange - minRange));
+                const endAngle = Math.PI + (Math.PI * (endValue - minRange) / (maxRange - minRange));
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI, false);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 15;
                 ctx.stroke();
+            };
 
-                const rangeColors = [
-                    { range: [-2, -1], color: '#008000' },
-                    { range: [-1, 0], color: '#FFFF00' },
-                    { range: [0, 1], color: '#FFA500' },
-                    { range: [1, 2], color: '#FF0000' }
-                ];
+            drawArcSegment(-30, -20, 'red');
+            drawArcSegment(-20, -10, 'yellow');
+            drawArcSegment(-10, 0, '#77AB59');
+            drawArcSegment(0, 10, 'green');
+            drawArcSegment(10, 20, 'yellow');
+            drawArcSegment(20, 30, 'red');
 
-                rangeColors.forEach(function (range) {
-                    const startAngle = Math.PI + ((range.range[0] + 2) / 4) * Math.PI;
-                    const endAngle = Math.PI + ((range.range[1] + 2) / 4) * Math.PI;
+            // Draw Range Labels
+            ctx.font = "10px Arial";
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-                    ctx.strokeStyle = range.color;
-                    ctx.lineWidth = 19;
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
-                    ctx.stroke();
-                });
+            // Adjust the distance to ensure better positioning of labels
+            range.forEach((r) => {
+                const labelAngle = Math.PI + (Math.PI * (r - minRange) / (maxRange - minRange));
+                const labelX = centerX + (radius + 20) * Math.cos(labelAngle); // Adjust distance for labels
+                const labelY = centerY + (radius + 20) * Math.sin(labelAngle);
+                ctx.fillText(r, labelX, labelY);
+            });
 
-                const tickCount = 5;
-                const range = [-2, -1, 0, 1, 2];
-                const tickSpacing = Math.PI / (tickCount - 1);
+            // Draw Needle
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(angle - Math.PI);
 
-                range.forEach((tick, index) => {
-                    const tickAngle = Math.PI + index * tickSpacing;
-                    const tickLength = radius - 10;
+            const needleLength = radius - 8;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-7.5, -needleLength / 3);
+            ctx.lineTo(0, -needleLength);
+            ctx.lineTo(7.5, -needleLength / 3);
+            ctx.closePath();
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.restore();
 
-                    ctx.beginPath();
-                    ctx.moveTo(centerX + tickLength * Math.cos(tickAngle), centerY + tickLength * Math.sin(tickAngle));
-                    ctx.lineTo(centerX + (tickLength + 10) * Math.cos(tickAngle), centerY + (tickLength + 10) * Math.sin(tickAngle));
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#000';
-                    ctx.stroke();
-
-                    const labelOffset = radius - 25;
-                    ctx.fillStyle = '#000';
-                    ctx.font = '1px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(tick, centerX + labelOffset * Math.cos(tickAngle), centerY + labelOffset * Math.sin(tickAngle));
-                });
-
-                // Draw needle
-                const needleAngle = Math.PI + ((value + 2) / 4) * Math.PI;
-                const needleLength = radius - 30;
-                const needleBase = 15;
-
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle - Math.PI / 6), centerY + needleBase * Math.sin(needleAngle - Math.PI / 6));
-                ctx.lineTo(centerX + needleLength * Math.cos(needleAngle), centerY + needleLength * Math.sin(needleAngle));
-                ctx.lineTo(centerX + needleBase * Math.cos(needleAngle + Math.PI / 6), centerY + needleBase * Math.sin(needleAngle + Math.PI / 6));
-                ctx.closePath();
-
-                ctx.fillStyle = '#b22222';
-                ctx.fill();
-            }
+            // Draw Current Value
+            ctx.font = "16px Arial";
+            ctx.fillText(value.toFixed(2), centerX, centerY + 20);
         }
 
         {% for name, template in submodules.items() %}
-        setupDepartment({
-            id: {{ loop.index }},
-            chart: 'myChart{{ loop.index }}'
-        }, 'temperature{{ loop.index }}', 'humidity{{ loop.index }}');
+        setupDepartment('{{ name }}', {{ loop.index }});
         {% endfor %}
     </script>
+
 </body>
+
 </html>
+
 {% endblock %}

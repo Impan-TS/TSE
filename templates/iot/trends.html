@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin-top: -50px;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #002366;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        .chart-container {
+            width: 95%;
+            margin: 80px auto 0;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            height: 500px;
+        }
+
+        /* #hoverTooltip {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid black;
+            padding: 8px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            display: none;
+        } */
+
+        #hoverTooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            /* Slight transparency */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+            color: #333;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            /* Initially hidden */
+            z-index: 10;
+            top: 120px;
+            left: 350px;
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="chart-container">
+        <canvas id="trendsChart"></canvas>
+        <div id="hoverTooltip"></div>
+    </div>
+
+    <script>
+        function getNodeIds(departmentName) {
+            const nodeIds = {
+                'Preparatory 1': { temperature: "Preparatory 1_Temp", humidity: "Preparatory 1_RH" },
+                'Preparatory 2': { temperature: "Preparatory 2_Temp", humidity: "Preparatory 2_RH" },
+                'Spinning 1': { temperature: "Spinning 1_Temp", humidity: "Spinning 1_RH" },
+                'Spinning 2': { temperature: "Spinning 2_Temp", humidity: "Spinning 2_RH" },
+                'Link Coner': { temperature: "Linkconer_Temp", humidity: "Linkconer_RH" },
+                'Link Coner2': { temperature: "Linkconer_Temp", humidity: "Linkconer_RH" }
+            };
+            return nodeIds[departmentName];
+        }
+
+        const departments = {{ submodules | tojson }}; // Replace with dynamic department data
+        const colors = [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)',
+            'rgba(255, 159, 64, 1)'
+        ];
+
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: { unit: 'second' },
+                        ticks: { maxTicksLimit: 10 }
+                    },
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 14 } }
+                    }
+                },
+                onHover: (event, elements) => {
+                    const canvas = chart.canvas;
+                    const ctx = canvas.getContext("2d");
+                    const chartArea = chart.chartArea;
+                    const x = event.native.offsetX;
+
+                    if (x >= chartArea.left && x <= chartArea.right) {
+                        chart.update();
+
+                        // Draw the vertical dotted line
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.setLineDash([5, 5]); // Dotted line style
+                        ctx.moveTo(x, chartArea.top);
+                        ctx.lineTo(x, chartArea.bottom);
+                        ctx.strokeStyle = "black"; // Line color
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        const hoverTime = chart.scales.x.getValueForPixel(x);
+                        const tooltipData = {};
+
+                        // Collect the closest data points for each dataset
+                        chart.data.datasets.forEach((dataset, index) => {
+                            const closestPoint = dataset.data.find((point) => {
+                                return Math.abs(new Date(point.x) - hoverTime) <= 500; // Allow some tolerance
+                            });
+
+                            if (closestPoint) {
+                                const label = dataset.label;
+                                if (!tooltipData[label]) {
+                                    tooltipData[label] = closestPoint.y.toFixed(2); // Prevent duplicates
+                                }
+                            }
+                        });
+
+                        // Construct the tooltip HTML
+                        const tooltip = document.getElementById("hoverTooltip");
+                        const tooltipContent = Object.entries(tooltipData)
+                            .map(([label, value]) => `<strong>${label}</strong>: ${value}`)
+                            .join("<br>");
+
+                        if (tooltipContent) {
+                            tooltip.innerHTML = tooltipContent;
+                            tooltip.style.left = `${event.pageX + 10}px`;
+                            tooltip.style.top = `${event.pageY + 10}px`;
+                            tooltip.style.display = "block";
+                        } else {
+                            tooltip.style.display = "none";
+                        }
+                    }
+                },
+
+                onLeave: () => {
+                    const tooltip = document.getElementById("hoverTooltip");
+                    if (tooltip) tooltip.style.display = "none";
+                }
+            }
+        });
+
+        const socket = io.connect('http://127.0.0.1:7005');
+
+        Object.keys(departments).forEach((name, index) => {
+            const nodeIds = getNodeIds(name);
+
+            const temperatureDataset = {
+                label: `${name} Temperature`,
+                data: [],
+                borderColor: colors[index],
+                backgroundColor: colors[index],
+                tension: 0.4,
+                borderWidth: 2
+            };
+
+            const humidityDataset = {
+                label: `${name} Humidity`,
+                data: [],
+                borderColor: colors[index],
+                backgroundColor: colors[index],
+                borderDash: [5, 5],
+                tension: 0.4,
+                borderWidth: 2
+            };
+
+            chart.data.datasets.push(temperatureDataset, humidityDataset);
+
+            socket.on('update', function (data) {
+                const temp = data[nodeIds.temperature];
+                const hum = data[nodeIds.humidity];
+                const timestamp = new Date();
+
+                temperatureDataset.data.push({ x: timestamp, y: temp });
+                humidityDataset.data.push({ x: timestamp, y: hum });
+
+                if (temperatureDataset.data.length > 100) temperatureDataset.data.shift();
+                if (humidityDataset.data.length > 100) humidityDataset.data.shift();
+
+                chart.update();
+            });
+        });
+    </script>
+
+</body>
+
+</html>
