@@ -35,23 +35,12 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             padding: 20px;
             height: 500px;
+            position: relative;
         }
-
-        /* #hoverTooltip {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid black;
-            padding: 8px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            pointer-events: none;
-            display: none;
-        } */
 
         #hoverTooltip {
             position: absolute;
             background: rgba(255, 255, 255, 0.9);
-            /* Slight transparency */
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
@@ -59,11 +48,8 @@
             color: #333;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             display: none;
-            /* Initially hidden */
             z-index: 10;
-            top: 120px;
-            left: 350px;
-
+            pointer-events: none;
         }
     </style>
 </head>
@@ -76,7 +62,7 @@
     </div>
 
     <script>
-        function getNodeIds(departmentName) {
+         function getNodeIds(departmentName) {
             const nodeIds = {
                 'Preparatory 1': { temperature: "Preparatory 1_Temp", humidity: "Preparatory 1_RH" },
                 'Preparatory 2': { temperature: "Preparatory 2_Temp", humidity: "Preparatory 2_RH" },
@@ -120,63 +106,69 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { font: { size: 14 } }
+                        labels: { font: { size: 10 } }
                     }
                 },
-                onHover: (event, elements) => {
+                events: ['mousemove'],
+                onHover: (event) => {
+                    const tooltip = document.getElementById('hoverTooltip');
                     const canvas = chart.canvas;
-                    const ctx = canvas.getContext("2d");
                     const chartArea = chart.chartArea;
+
                     const x = event.native.offsetX;
+                    const y = event.native.offsetY;
 
-                    if (x >= chartArea.left && x <= chartArea.right) {
-                        chart.update();
+                    const hoverTime = chart.scales.x.getValueForPixel(x);
 
-                        // Draw the vertical dotted line
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.setLineDash([5, 5]); // Dotted line style
-                        ctx.moveTo(x, chartArea.top);
-                        ctx.lineTo(x, chartArea.bottom);
-                        ctx.strokeStyle = "black"; // Line color
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-                        ctx.restore();
+                    // Skip if the mouse hasn't moved
+                    if (x === chart.lastHoverX) return;
 
-                        const hoverTime = chart.scales.x.getValueForPixel(x);
-                        const tooltipData = {};
+                    chart.lastHoverX = x;
 
-                        // Collect the closest data points for each dataset
-                        chart.data.datasets.forEach((dataset, index) => {
-                            const closestPoint = dataset.data.find((point) => {
-                                return Math.abs(new Date(point.x) - hoverTime) <= 500; // Allow some tolerance
-                            });
+                    // Clear previous vertical line only if it exists
+                    if (chart.lastVerticalLine) {
+                        ctx.clearRect(chart.lastVerticalLine.x - 5, chart.chartArea.top, 10, chart.chartArea.bottom - chart.chartArea.top);
+                    }
 
-                            if (closestPoint) {
-                                const label = dataset.label;
-                                if (!tooltipData[label]) {
-                                    tooltipData[label] = closestPoint.y.toFixed(2); // Prevent duplicates
-                                }
-                            }
+                    // Draw new vertical dotted line
+                    ctx.save();
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(x, chartArea.top);
+                    ctx.lineTo(x, chartArea.bottom);
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Store this line for later clearing
+                    chart.lastVerticalLine = { x: x };
+
+                    const tooltipData = {};
+                    chart.data.datasets.forEach((dataset) => {
+                        const closestPoint = dataset.data.find((point) => {
+                            return Math.abs(new Date(point.x) - hoverTime) <= 500;
                         });
 
-                        // Construct the tooltip HTML
-                        const tooltip = document.getElementById("hoverTooltip");
-                        const tooltipContent = Object.entries(tooltipData)
-                            .map(([label, value]) => `<strong>${label}</strong>: ${value}`)
-                            .join("<br>");
-
-                        if (tooltipContent) {
-                            tooltip.innerHTML = tooltipContent;
-                            tooltip.style.left = `${event.pageX + 10}px`;
-                            tooltip.style.top = `${event.pageY + 10}px`;
-                            tooltip.style.display = "block";
-                        } else {
-                            tooltip.style.display = "none";
+                        if (closestPoint) {
+                            const label = dataset.label;
+                            tooltipData[label] = closestPoint.y.toFixed(2);
                         }
+                    });
+
+                    const tooltipContent = Object.entries(tooltipData)
+                        .map(([label, value]) => `${label}: ${value}`)
+                        .join("<br>");
+
+                    if (tooltipContent) {
+                        tooltip.innerHTML = tooltipContent;
+                        tooltip.style.left = `${x + 10}px`;
+                        tooltip.style.top = `${y + 10}px`;
+                        tooltip.style.display = "block";
+                    } else {
+                        tooltip.style.display = "none";
                     }
                 },
-
                 onLeave: () => {
                     const tooltip = document.getElementById("hoverTooltip");
                     if (tooltip) tooltip.style.display = "none";
