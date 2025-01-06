@@ -54,14 +54,14 @@ def connect_to_db():
     conn_str = 'DRIVER={SQL Server};SERVER=' + DB_SERVER + ';DATABASE=' + DB_DATABASE + ';UID=' + DB_USER + ';PWD=' + DB_PASSWORD
     return pyodbc.connect(conn_str)
 
-# Define allowed submodules per role
-ROLE_SUBMODULES = {
-    "Operator": ["Set Point"],
-    "Manager": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
-                 "Preset Values", "Timer", "Controllers", "UPSS"],
-    "Tse": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
-             "Preset Values", "Timer", "Controllers", "UPSS", "Pump Min Set"]
-}
+# # Define allowed submodules per role
+# ROLE_SUBMODULES = {
+#     "Operator": ["Set Point"],
+#     "Manager": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
+#                  "Preset Values", "Timer", "Controllers", "UPSS"],
+#     "Tse": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
+#              "Preset Values", "Timer", "Controllers", "UPSS", "Pump Min Set"]
+# }
 
 def validate_user(username, password):
     conn = create_connection()
@@ -470,15 +470,27 @@ def alarmslist():
     return render_template('iot/alarmslist.html')  # Render the HTML template
 
 
+# @app.route('/')
+# def home():
+#     departmentss = load_data()
+#     seen = set()
+#     allowed_submodules = [
+#         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+#         if not (submodule in seen or seen.add(submodule))
+#     ]
+#     return render_template('iot/dashboard.html', departmentss=departmentss,allowed_submodules=allowed_submodules)  # Render the HTML template
+
+# Dynamically fetch roles and submodules
 @app.route('/')
 def home():
+    ROLE_SUBMODULES = load_role_submodules()  # Load roles dynamically
     departmentss = load_data()
     seen = set()
     allowed_submodules = [
         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
         if not (submodule in seen or seen.add(submodule))
     ]
-    return render_template('iot/dashboard.html', departmentss=departmentss,allowed_submodules=allowed_submodules)  # Render the HTML template
+    return render_template('iot/dashboard.html', departmentss=departmentss, allowed_submodules=allowed_submodules)
 
 # @app.route('/trends')
 # def trends():
@@ -493,15 +505,27 @@ def home():
 #         node_ids = yaml.safe_load(file)
 #     return render_template('iot/trends.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
 
+# @app.route('/dashboard')
+# def dashboard():
+#     # Remove duplicates while preserving order
+#     seen = set()
+#     allowed_submodules = [
+#         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+#         if not (submodule in seen or seen.add(submodule))
+#     ]
+#     # Load node_ids from the YAML file
+#     with open('nodeid.yaml', 'r') as file:
+#         node_ids = yaml.safe_load(file)
+#     return render_template('iot/dashboard.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
+
 @app.route('/dashboard')
 def dashboard():
-    # Remove duplicates while preserving order
+    ROLE_SUBMODULES = load_role_submodules()  # Load roles dynamically
     seen = set()
     allowed_submodules = [
         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
         if not (submodule in seen or seen.add(submodule))
     ]
-    # Load node_ids from the YAML file
     with open('nodeid.yaml', 'r') as file:
         node_ids = yaml.safe_load(file)
     return render_template('iot/dashboard.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
@@ -511,8 +535,15 @@ def load_data():
     yaml_path = os.path.join(os.path.dirname(__file__), "input.yaml")
     with open(yaml_path, "r") as f:
         return yaml.safe_load(f)
+    
 
-
+# Function to load allowed submodules per role
+def load_role_submodules():
+    yaml_path = os.path.join(os.path.dirname(__file__), "input.yaml")
+    with open(yaml_path, "r") as f:
+        data = yaml.safe_load(f)
+    return data.get("roles", {})
+    
 
 # Inject submodules and client name into templates for consistent access
 @app.context_processor
@@ -537,6 +568,7 @@ def render_submodule(submodule):
     submodules = load_data()["submodules"]
 
     seen = set()
+    ROLE_SUBMODULES = load_role_submodules()  # Load roles dynamically
     allowed_submodules = [
         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
         if not (submodule in seen or seen.add(submodule))
@@ -556,6 +588,24 @@ def render_submodule(submodule):
     return "Page not found", 404
 
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def user_login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+        
+#         user_role = validate_user(username, password)
+#         if user_role:
+#             session['userloggedin'] = True
+#             session['username'] = username
+#             session['role'] = user_role
+#             session['allowed_submodules'] = ROLE_SUBMODULES[user_role]
+#             session['last_login'] = datetime.now().strftime('%d/%m/%Y %H:%M:%S')  # Store current timestamp
+#             return redirect(url_for('dashboard'))
+#         else:
+#             flash("Invalid credentials, please try again.", 'danger')
+#     return render_template('User management/userlogin.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
@@ -564,10 +614,11 @@ def user_login():
         
         user_role = validate_user(username, password)
         if user_role:
+            ROLE_SUBMODULES = load_role_submodules()  # Load roles dynamically
             session['userloggedin'] = True
             session['username'] = username
             session['role'] = user_role
-            session['allowed_submodules'] = ROLE_SUBMODULES[user_role]
+            session['allowed_submodules'] = ROLE_SUBMODULES.get(user_role, [])
             session['last_login'] = datetime.now().strftime('%d/%m/%Y %H:%M:%S')  # Store current timestamp
             return redirect(url_for('dashboard'))
         else:
@@ -762,6 +813,23 @@ def save_yaml(data):
     with open("input.yaml", 'w') as file:
         yaml.dump(data, file)
         
+# @app.route('/input', methods=['GET', 'POST'])
+# def input_page():
+#     data = load_yaml()
+
+#     if request.method == 'POST':
+#         if 'client_name' in request.form:
+#             data['client_name'] = request.form['client_name']
+#         elif 'submodule_name' in request.form and 'submodule_file' in request.form:
+#             new_submodule = {
+#                 request.form['submodule_name']: request.form['submodule_file']
+#             }
+#             data['submodules'].update(new_submodule)
+#         save_yaml(data)
+
+#     return render_template('iot/input.html', client_name=data['client_name'], submodules=data['submodules'])
+
+
 @app.route('/input', methods=['GET', 'POST'])
 def input_page():
     data = load_yaml()
@@ -776,7 +844,8 @@ def input_page():
             data['submodules'].update(new_submodule)
         save_yaml(data)
 
-    return render_template('iot/input.html', client_name=data['client_name'], submodules=data['submodules'])
+    return render_template('iot/input.html', client_name=data['client_name'], submodules=data['submodules'], roles=data['roles'])
+
 
 @app.route('/remove_submodule', methods=['POST'])
 def remove_submodule():
@@ -806,6 +875,86 @@ def edit_submodule():
     
     return jsonify({'success': True})
 
+
+from flask import request, jsonify
+import yaml
+
+@app.route('/update-order', methods=['POST'])
+def update_order():
+    try:
+        # Fetch the new order from the request
+        new_order = request.json.get('new_order', [])
+        if not new_order:
+            return jsonify({'error': 'No new order provided'}), 400
+
+        # Convert the new order to the expected dictionary format
+        submodules = {item['name']: item['file'] for item in new_order}
+
+        # Path to your YAML file
+        yaml_file_path = 'input.yaml'
+
+        # Read the existing YAML file
+        with open(yaml_file_path, 'r') as yaml_file:
+            data = yaml.safe_load(yaml_file) or {}
+
+        # Update only the 'submodules' key in the data
+        data['submodules'] = submodules
+
+        # Write the updated content back to the YAML file
+        with open(yaml_file_path, 'w') as yaml_file:
+            yaml.dump(data, yaml_file, default_flow_style=False, sort_keys=False)
+
+        return jsonify({'message': 'Order updated successfully!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+# Add a setting for a specific role
+@app.route('/add_setting', methods=['POST'])
+def add_setting():
+    data = load_yaml()
+    role = request.json.get('role')
+    setting = request.json.get('setting')
+    
+    if role and setting:
+        # Check if the role exists and add the new setting
+        if role in data['roles']:
+            if setting not in data['roles'][role]:
+                data['roles'][role].append(setting)
+                save_yaml(data)
+                return jsonify({'success': True})
+            else:
+                return jsonify({'success': False, 'message': 'Setting already exists'}), 400
+        else:
+            return jsonify({'success': False, 'message': 'Role not found'}), 400
+    return jsonify({'success': False, 'message': 'Invalid data'}), 400
+
+# Fetch settings for a specific role
+@app.route('/get_settings/<role>', methods=['GET'])
+def get_settings(role):
+    data = load_yaml()
+    if role in data['roles']:
+        return jsonify({'success': True, 'settings': data['roles'][role]})
+    return jsonify({'success': False, 'message': 'Role not found'}), 400
+
+# Delete multiple settings from a specific role
+@app.route('/delete_settings', methods=['POST'])
+def delete_settings():
+    data = load_yaml()
+    role = request.json.get('role')
+    settings = request.json.get('settings')
+
+    if role and settings:
+        if role in data['roles']:
+            data['roles'][role] = [s for s in data['roles'][role] if s not in settings]
+            save_yaml(data)
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'message': 'Role not found'}), 400
+    return jsonify({'success': False, 'message': 'Invalid data'}), 400
+
+
+
+    
     #-----------------------------------
 
 if __name__ == '__main__':

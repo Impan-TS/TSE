@@ -8,6 +8,25 @@
     <!-- Include Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+
+         /* Overlay styling */
+         .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        /* Disable pointer events when overlay is active */
+        .disabled {
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
         .dialog-box {
             max-width: 50%;
             width: auto;
@@ -18,9 +37,7 @@
             margin: 0 auto;
             box-sizing: border-box;
             position: relative;
-            /* Needed for absolute positioning of the close icon */
         }
-
 
         .header {
             background-color: #0c609d;
@@ -34,16 +51,10 @@
             width: 100%;
         }
 
-
         .row-container {
             display: grid;
-            /* grid-template-columns: repeat(6, 1fr); */
-            /* grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); */
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            /* Dynamic columns */
-            /* Adjust column width dynamically */
             gap: 8px;
-            /* Space between the columns */
             margin-bottom: 8px;
         }
 
@@ -61,7 +72,6 @@
             color: black;
         }
 
-
         .value {
             background-color: #007bff;
             color: white;
@@ -73,11 +83,9 @@
             padding-right: 10px;
         }
 
-
         .set-box input {
             width: 100%;
             height: 40px;
-            /* padding: 10px; */
             background: #4caf50;
             color: white;
             font-weight: bold;
@@ -87,12 +95,9 @@
             line-height: 40px;
         }
 
-        /* New rule to change the background color of M VALUE row */
         .m-value-row .value {
             background-color: #28a745;
-            /* Green background */
             color: white;
-            /* White text for visibility */
         }
 
         .close-icon {
@@ -118,9 +123,7 @@
 
         .close-icon:hover {
             background-color: #a71d2a;
-            /* Darker red when hovered */
             transform: scale(1.1);
-            /* Slightly enlarge on hover */
         }
 
         @media (max-width: 768px) {
@@ -149,7 +152,6 @@
             margin-left: 10px;
         }
 
-        /* Styling for toggle switch */
         .switch {
             margin-top: 6px;
             position: relative;
@@ -171,7 +173,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color:#7dcbff;
+            background-color: #7dcbff;
             transition: 0.4s;
             border-radius: 34px;
         }
@@ -201,13 +203,9 @@
 
 <body>
     <div class="dialog-box mt-5">
-        <!-- Close Button -->
         <button class="close-icon" onclick="closeDialog()">&times;</button>
-
-        <!-- Header -->
         <div class="header">ANALOG INPUTS</div>
 
-        <!-- Row 1 -->
         <div class="row-container">
             <div class="parameter">PARAMETER</div>
             <div class="parameter">ROOM RH</div>
@@ -215,6 +213,7 @@
             <div class="parameter">SA TEMP</div>
             <div class="parameter">DPG RDF</div>
         </div>
+
         <div class="row-container">
             <div class="parameter">VALUE</div>
             <div class="value">{{ msg.payload.Spg2_iVa_Act_RH | round(1) }}</div>
@@ -223,9 +222,7 @@
             <div class="value">{{ msg.payload.Spg2_iVa_DPG_RDF | round(1) }}</div>
         </div>
 
-        <!-- Row 2 -->
         <div class="row-container m-value-row">
-            <!-- Added class here -->
             <div class="parameter">M VALUE</div>
             <div class="set-box"><input type="number" id="Spg2_iMi_Set_RH_Man_Ref"
                     value="{{ msg.payload['Spg2_iMi_Set_RH_Man_Ref'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH_Man_Ref'] }}" /></div>
@@ -237,7 +234,6 @@
                     value="{{ msg.payload['Spg2_iMi_Set_DPG_Man_REF'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_DPG_Man_REF'] }}" /></div>
         </div>
 
-        <!-- Row 3: MODE Row with Toggle Switches -->
         <div class="row-container">
             <div class="parameter">MODE</div>
             <div class="parameter">
@@ -277,67 +273,37 @@
         <div class="dialog-footer">
             <button class="btn btn-success" onclick="updateSettings()">Update</button>
         </div>
-
     </div>
 
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-
-    <!-- Include Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Dynamically update switch modes based on node values
         function updateSwitchModes() {
-            const mode1 = document.getElementById('mode1');
-            const mode2 = document.getElementById('mode2');
-            const mode3 = document.getElementById('mode3');
-            const mode4 = document.getElementById('mode4');
-            const mode1Text = document.getElementById('mode1-text');
-            const mode2Text = document.getElementById('mode2-text');
-            const mode3Text = document.getElementById('mode3-text');
-            const mode4Text = document.getElementById('mode4-text');
+            const switches = [
+                { id: 'mode1', key: 'Spg2_iFl_Set_Humidity_Man_B', textId: 'mode1-text' },
+                { id: 'mode2', key: 'Spg2_iMi_Set_Temp_Man_B', textId: 'mode2-text' },
+                { id: 'mode3', key: 'Spg2_iMi_Set_WoT_Man_B', textId: 'mode3-text' },
+                { id: 'mode4', key: 'Spg2_iFl_Set_DPG_RDF_Man_B', textId: 'mode4-text' }
+            ];
 
-            if (msg.payload.Spg2_iFl_Set_Humidity_Man_B === true) {
-                mode1.checked = true;
-                mode1Text.textContent = 'Manual';
-            } else {
-                mode1.checked = false;
-                mode1Text.textContent = 'Auto';
-            }
-
-            if (msg.payload.Spg2_iMi_Set_Temp_Man_B === true) {
-                mode2.checked = true;
-                mode2Text.textContent = 'Manual';
-            } else {
-                mode2.checked = false;
-                mode2Text.textContent = 'Auto';
-            }
-
-            if (msg.payload.Spg2_iMi_Set_WoT_Man_B === true) {
-                mode3.checked = true;
-                mode3Text.textContent = 'Manual';
-            } else {
-                mode3.checked = false;
-                mode3Text.textContent = 'Auto';
-            }
-
-            if (msg.payload.Spg2_iFl_Set_DPG_RDF_Man_B === true) {
-                mode4.checked = true;
-                mode4Text.textContent = 'Manual';
-            } else {
-                mode4.checked = false;
-                mode4Text.textContent = 'Auto';
-            }
+            switches.forEach(switchObj => {
+                const element = document.getElementById(switchObj.id);
+                const textElement = document.getElementById(switchObj.textId);
+                if (msg.payload[switchObj.key]) {
+                    element.checked = true;
+                    textElement.textContent = 'Manual';
+                } else {
+                    element.checked = false;
+                    textElement.textContent = 'Auto';
+                }
+            });
         }
 
-        // Example validation function to ensure valid input for manual values
         function validateInput(input) {
             if (input.value < 0 || input.value > 1) {
                 input.value = input.value < 0 ? 0 : 1;
             }
         }
-
-        updateSwitchModes();
-
 
         function updateSettings() {
             const setpoints = {
@@ -354,19 +320,16 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        alert('Settings updated successfully!');
-                    } else {
-                        alert('Failed to update settings.');
-                    }
+                    alert(data.success ? 'Settings updated successfully!' : 'Failed to update settings.');
                 })
                 .catch(error => console.error('Error:', error));
         }
 
         function closeDialog() {
-            const dialogBox = document.querySelector('.dialog-box');
-            dialogBox.style.display = 'none';
+            document.querySelector('.dialog-box').style.display = 'none';
         }
+
+        updateSwitchModes();
     </script>
 </body>
 

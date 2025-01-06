@@ -767,6 +767,10 @@
             <button class="submodule-button" onclick="showIframe('reportIframe')">Reports</button>
         </div>
 
+        <button id="inputs" class="module-button" onclick="window.location.href='/input'">
+            <i class="fa-solid fa-file"></i> Input
+        </button>
+
         {% if session['role'] == 'Tsee' %}
         <button id="usermanagement" class="module-button">
             <i class="fa-solid fa-user-cog"></i> User Management

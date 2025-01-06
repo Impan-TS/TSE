@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <style>
-        .container {
+        /* .container {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-evenly;
@@ -35,7 +35,28 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             color: white;
             box-sizing: border-box;
-        }
+        } */
+
+        .container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Adjust the number of columns based on your layout */
+    gap: 10px; /* Space between the containers */
+    padding-top: 60px;
+    background-color: #e3f4ff;
+}
+
+.common-container {
+    border: 1px solid black;
+    border-radius: 15px;
+    height: 260px;
+    width: 96%;
+    padding: 10px;
+    background: linear-gradient(#0076CE 0%, #ADD8E6 58%);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    color: white;
+    box-sizing: border-box;
+}
+
 
         .common-container h2 {
             font-size: 24px;
