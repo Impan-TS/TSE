@@ -21,7 +21,6 @@
             /* Needed for absolute positioning of the close icon */
         }
 
-
         .header {
             background-color: #0c609d;
             color: white;
@@ -33,7 +32,6 @@
             margin-bottom: 15px;
             width: 100%;
         }
-
 
         .row-container {
             display: grid;
@@ -60,7 +58,6 @@
             color: black;
         }
 
-
         .value {
             background-color: #007bff;
             color: white;
@@ -71,7 +68,6 @@
             line-height: 40px;
             padding-right: 10px;
         }
-
 
         .close-icon {
             position: absolute;
@@ -134,10 +130,10 @@
 
         <div class="row-container">
             <div class="parameter">VALUE</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_RDF1_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_RDF2_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_DCF1_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_DCF2_ON | default(0, true) }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_RDF1_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_RDF2_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_DCF1_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_DCF2_ON else '0' }}</div>
         </div>
 
         <!-- Row 2 -->
@@ -150,12 +146,11 @@
         </div>
         <div class="row-container">
             <div class="parameter">VALUE</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_ScrewCompactor1_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_ScrewCompactor2_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan1_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan2_ON | default(0, true) }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_ScrewCompactor1_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_ScrewCompactor2_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_RetAFan1_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_RetAFan2_ON else '0' }}</div>
         </div>
-
 
         <!-- Row 3 -->
         <div class="row-container">
@@ -168,10 +163,10 @@
 
         <div class="row-container">
             <div class="parameter">VALUE</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan1_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_RetAFan2_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_WasherPump1_ON | default(0, true) }}</div>
-            <div class="value">{{ msg.payload.DI_Spg2_iFl_WasherPump2_ON | default(0, true) }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_SAFan1_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_SAFan2_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_WasherPump1_ON else '0' }}</div>
+            <div class="value">{{ '1' if msg.payload.DI_Spg2_iFl_WasherPump2_ON else '0' }}</div>
         </div>
 
     </div>

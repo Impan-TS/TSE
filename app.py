@@ -98,6 +98,36 @@ def load_node_ids():
         return data.get("node_ids", {})
 
 
+# def read_values_periodically():
+#     global latest_values
+#     while True:
+#         try:
+#             client.connect()  # Connect to the OPC UA server
+            
+#             # Load Node IDs from YAML file
+#             node_ids = load_node_ids()
+            
+#             for name, node_id in node_ids.items():
+#                 try:
+#                     node = client.get_node(node_id)
+#                     latest_values[name] = node.get_value()  # Read the value
+#                 except Exception as e:
+#                     print(f"Error reading node {name}: {e}")
+            
+#             # Emit the latest values to all connected clients
+#             socketio.emit('update', latest_values)
+            
+#             socketio.emit('gauge_update', {
+#                 "Temperature": latest_values.get("Temperature", 0),
+#                 "Humidity": latest_values.get("Humidity", 0)
+#             })
+            
+#             client.disconnect()  # Disconnect from the server
+#             time.sleep(1)  # Wait for 1 second before the next read
+#         except Exception as e:
+#             print(f"Error reading values: {str(e)}")
+#             time.sleep(1)  # Wait before retrying in case of error
+
 def read_values_periodically():
     global latest_values
     while True:
@@ -110,23 +140,29 @@ def read_values_periodically():
             for name, node_id in node_ids.items():
                 try:
                     node = client.get_node(node_id)
-                    latest_values[name] = node.get_value()  # Read the value
+                    raw_value = node.get_value()  # Read the value
+                    # Round the value to one decimal place
+                    if isinstance(raw_value, (int, float)):
+                        latest_values[name] = round(raw_value, 1)
+                    else:
+                        latest_values[name] = raw_value
                 except Exception as e:
                     print(f"Error reading node {name}: {e}")
             
             # Emit the latest values to all connected clients
             socketio.emit('update', latest_values)
             
-            socketio.emit('gauge_update', {
-                "Temperature": latest_values.get("Temperature", 0),
-                "Humidity": latest_values.get("Humidity", 0)
-            })
+            # socketio.emit('gauge_update', {
+            #     "Temperature": latest_values.get("Temperature", 0),
+            #     "Humidity": latest_values.get("Humidity", 0)
+            # })
             
             client.disconnect()  # Disconnect from the server
             time.sleep(1)  # Wait for 1 second before the next read
         except Exception as e:
             print(f"Error reading values: {str(e)}")
             time.sleep(1)  # Wait before retrying in case of error
+
 
 
 # Load alarms from YAML
@@ -962,5 +998,5 @@ if __name__ == '__main__':
     thread = threading.Thread(target=read_values_periodically)
     thread.daemon = True  # Daemonize thread
     thread.start()
-    app.run(host="127.0.0.1", port=7005)
+    # app.run(host="127.0.0.1", port=7005)
     socketio.run(app, host='127.0.0.1', port=7005, debug=True)

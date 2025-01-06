@@ -3,6 +3,34 @@
 {% block content %}
 <html>
 
+        <head>
+                <style>
+                    /* Disable text selection */
+                    body {
+                        user-select: none;
+                        /* Modern browsers */
+                        -webkit-user-select: none;
+                        /* Chrome/Safari */
+                        -ms-user-select: none;
+                        /* IE/Edge */
+                        -moz-user-select: none;
+                        /* Firefox */
+                    }
+            
+                    /* Disable copying via keyboard and right-click */
+                    body {
+                        -webkit-touch-callout: none;
+                        /* Disable callout menu on iOS */
+                    }
+            
+                    /* Disable right-click context menu */
+                    body {
+                        context-menu: none;
+                    }
+                </style>
+            
+            </head>
+
 <body>
     <div id="linkconerDiv"
         style="transform: scale(0.8); left:-5px; margin-top:20px; top: 5px; left:-2px; width: 100%; height: 100%; display: block; position: absolute;">
@@ -450,6 +478,10 @@
                 }
             }
         });
+
+        document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    });
 
     </script>
 </body>

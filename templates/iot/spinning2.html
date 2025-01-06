@@ -5,6 +5,35 @@
 {% block content %}
 <html>
 
+<head>
+
+    <style>
+        /* Disable text selection */
+        body {
+            user-select: none;
+            /* Modern browsers */
+            -webkit-user-select: none;
+            /* Chrome/Safari */
+            -ms-user-select: none;
+            /* IE/Edge */
+            -moz-user-select: none;
+            /* Firefox */
+        }
+
+        /* Disable copying via keyboard and right-click */
+        body {
+            -webkit-touch-callout: none;
+            /* Disable callout menu on iOS */
+        }
+
+        /* Disable right-click context menu */
+        body {
+            context-menu: none;
+        }
+    </style>
+
+</head>
+
 <body>
 
     <body>
@@ -257,6 +286,8 @@
 
         <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+
         <script>
             const socket = io.connect('http://' + document.domain + ':' + location.port);
 
@@ -323,6 +354,19 @@
                 }
             }
 
+            const socket = io();
+
+            // Listen for 'update' events from the server
+            socket.on('update', (data) => {
+                // Update the values on the page
+                for (const [key, value] of Object.entries(data)) {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.textContent = value; // Update the text content with the new value
+                    }
+                }
+            });
+
             // Update fan image whenever data changes
             socket.on('update', function (data) {
                 for (const nodeId in data) {
@@ -335,6 +379,10 @@
                         updateFanImage("fan3", "fan3-on-off", "fan3-trip");
                     }
                 }
+            });
+
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
             });
 
         </script>

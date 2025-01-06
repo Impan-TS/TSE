@@ -3,6 +3,34 @@
 {% block content %}
 <html>
 
+        <head>
+                <style>
+                    /* Disable text selection */
+                    body {
+                        user-select: none;
+                        /* Modern browsers */
+                        -webkit-user-select: none;
+                        /* Chrome/Safari */
+                        -ms-user-select: none;
+                        /* IE/Edge */
+                        -moz-user-select: none;
+                        /* Firefox */
+                    }
+            
+                    /* Disable copying via keyboard and right-click */
+                    body {
+                        -webkit-touch-callout: none;
+                        /* Disable callout menu on iOS */
+                    }
+            
+                    /* Disable right-click context menu */
+                    body {
+                        context-menu: none;
+                    }
+                </style>
+            
+            </head>
+
 <body>
     <div id="spinning1Div"
         style="transform: scale(0.8); left:-5px; margin-top:20px; top: 5px; left:-2px; width: 100%; height: 100%; display: block; position: absolute;">
@@ -84,12 +112,17 @@
         </div>
 
 
+        <img src="{{ url_for('static', filename='images/redline00_x.png') }}"
+            style="position:absolute; left:232px; top:226px; width:150px; height:6px;">
+        <img src="{{ url_for('static', filename='images/redline00_x.png') }}"
+            style="position:absolute; left:232px; top:387px; width:150px; height:6px;">
+
         <img src="{{ url_for('static', filename='images/rdf000.png') }}"
             style="position:absolute; left:260px; top:200px; width:95px; height:60px;">
         <img src="{{ url_for('static', filename='images/rdf000.png') }}"
             style="position:absolute; left:260px; top:360px; width:95px; height:60px;">
         <img src="{{ url_for('static', filename='images/redline00_x.png') }}"
-            style="position:absolute; left:195px; top:305px; width:165px; height:6px;">
+            style="position:absolute; left:195px; top:305px; width:40px; height:6px;">
         <img src="{{ url_for('static', filename='images/sf000.png') }}"
             style="position:absolute; left:380px; top:518px; width:51px; height:51px; border-radius: 50px; border: 1px solid black;">
         <img src="{{ url_for('static', filename='images/sf000.png') }}"
@@ -111,13 +144,17 @@
             <img src="{{ url_for('static', filename='images/greenline00_x.png') }}"
             style="position:absolute; left:433px; top: 68px; width:70px; height:6px;">
         <img src="{{ url_for('static', filename='images/redline00_x.png') }}"
-            style="position:absolute; left:355px; top:305px; width:90px; height:6px;">
+            style="position:absolute; left:386px; top:305px; width:90px; height:6px;">
         <img src="{{ url_for('static', filename='images/redline00_x.png') }}"
             style="position:absolute; left:440px; top:305px; width:415px; height:6px;">
         <img src="{{ url_for('static', filename='images/exhaust000.gif') }}"
             style="position:absolute; left:657px; top:103px; width:45px; height:25px;">
         <img src="{{ url_for('static', filename='images/intake000.gif') }}"
             style="position:absolute; left:795px; top:95px; width:35px; height:30px;">
+            <img src="{{ url_for('static', filename='images/redline00_y.png') }}"
+            style="position:absolute; left:230px; top:226px; width:6px; height:167px;">
+            <img src="{{ url_for('static', filename='images/redline00_y.png') }}"
+            style="position:absolute; left:380px; top:226px; width:6px; height:167px;">
         <img src="{{ url_for('static', filename='images/redline00_y.png') }}"
             style="position:absolute; left:678px; top:129px; width:6px; height:175px;">
         <img src="{{ url_for('static', filename='images/greenline00_y.png') }}"
@@ -171,7 +208,7 @@
         <p style="position:absolute; left:956px; top:447px; color:black;">Air Washer</p>
 
         <img src="{{ url_for('static', filename='images/redarrow00_r.png') }}"
-            style="position:absolute; left:220px; top:299.5px; width:18px; height:19px;">
+            style="position:absolute; left:214px; top:299.5px; width:18px; height:19px;">
         <img src="{{ url_for('static', filename='images/redarrow00_r.png') }}"
             style="position:absolute; left:430px; top:299.5px; width:16px; height:17px;">
         <img src="{{ url_for('static', filename='images/redarrow00_r.png') }}"
@@ -295,7 +332,7 @@
         </div>
 
         <div
-            style="position:absolute; left:268px; top:280px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
+            style="position:absolute; left:268px; top:293px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
             <span id="spg2_iVa_DPG_RDF">{{ msg.payload['Spg2_iVa_DPG_RDF'] }}</span> Pa
         </div>
 
@@ -450,6 +487,10 @@
                 }
             }
         });
+
+        document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    });
 
     </script>
 </body>
