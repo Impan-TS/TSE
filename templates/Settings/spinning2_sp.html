@@ -161,14 +161,25 @@
         // Set up Socket.IO connection
         const socket = io();
 
-        // Listen for updates from the server
         socket.on('update', function (data) {
-            // Update the displayed values every time new data is received
-            document.getElementById('Spg2_iVa_Act_RH').innerText = data['Spg2_iVa_Act_RH'];
-            document.getElementById('Spg2_iVa_Act_Temp').innerText = data['Spg2_iVa_Act_Temp'];
-            document.getElementById('Spg2_iMi_Set_RH').innerText = data['Spg2_iMi_Set_RH'];
-            document.getElementById('Spg2_iMi_Set_Temp').innerText = data['Spg2_iMi_Set_Temp'];
+            // Iterate through the keys in the data object
+            Object.keys(data).forEach((key) => {
+                const element = document.getElementById(key); // Find element by id
+                if (element) {
+                    if (element.tagName === 'SPAN') { // Update value-box (span) elements
+                        element.innerText = data[key]; // Update the span's text content
+                    } else if (element.tagName === 'INPUT') { // Update set-box (input) elements
+                        // Only update the input value if it's not focused (being edited)
+                        if (document.activeElement !== element) {
+                            element.value = data[key]; // Update the input's value
+                        }
+                    }
+                }
+            });
         });
+
+
+
 
 
         function updateSettings() {
