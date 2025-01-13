@@ -132,18 +132,28 @@ node_ids:
   DI_Spg2_iFl_SAFan1_OFF: "ns=6;s=::DI_Spg2:iFl_SAFan1_OFF"
   DI_Spg2_iFl_SAFan1_TRIP: "ns=6;s=::DI_Spg2:iFl_SAFan1_TRIP"
 
+  DI_Spg2_iFl_SAFan2_TRIP: "ns=6;s=::DI_Spg2:iFl_SAFan2_TRIP"
+
   DI_Spg2_iFl_RDF1_ON: "ns=6;s=::DI_Spg2:iFl_RDF1_ON"
   DI_Spg2_iFl_RDF1_OFF: "ns=6;s=::DI_Spg2:iFl_RDF1_OFF"
   DI_Spg2_iFl_RDF1_TRIP: "ns=6;s=::DI_Spg2:iFl_RDF1_TRIP"
+
+  DI_Spg2_iFl_RDF2_TRIP: "ns=6;s=::DI_Spg2:iFl_RDF2_TRIP"
 
   DI_Spg2_iFl_DCF1_ON: "ns=6;s=::DI_Spg2:iFl_DCF1_ON"
   DI_Spg2_iFl_DCF1_OFF: "ns=6;s=::DI_Spg2:iFl_DCF1_OFF"
   DI_Spg2_iFl_DCF1_TRIP: "ns=6;s=::DI_Spg2:iFl_DCF1_TRIP"
 
+  DI_Spg2_iFl_DCF2_TRIP: "ns=6;s=::DI_Spg2:iFl_DCF2_TRIP"
+
   DI_Spg2_iFl_ScrewCompactor1_ON: "ns=6;s=::DI_Spg2:iFl_ScrewCompactor1_ON"
   DI_Spg2_iFl_ScrewCompactor1_OFF: "ns=6;s=::DI_Spg2:iFl_ScrewCompactor1_OFF"
   DI_Spg2_iFl_ScrewCompactor1_TRIP: "ns=6;s=::DI_Spg2:iFl_ScrewCompactor1_TRIP"
 
+  DI_Spg2_iFl_ScrewCompactor2_TRIP: "ns=6;s=::DI_Spg2:iFl_ScrewCompactor2_TRIP"
+
   DI_Spg2_iFl_WasherPump1_ON: "ns=6;s=::DI_Spg2:iFl_WasherPump1_ON"
   DI_Spg2_iFl_WasherPump1_OFF: "ns=6;s=::DI_Spg2:iFl_WasherPump1_OFF"
   DI_Spg2_iFl_WasherPump1_TRIP: "ns=6;s=::DI_Spg2:iFl_WasherPump1_TRIP"
+
+  DI_Spg2_iFl_WasherPump2_TRIP: "ns=6;s=::DI_Spg2:iFl_WasherPump2_TRIP"
