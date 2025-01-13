@@ -3,9 +3,13 @@
 {% block title %}Spinning 2{% endblock %}
 
 {% block content %}
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
     <style>
         /* Disable text selection */
@@ -231,40 +235,40 @@
 
             <div
                 style="position:absolute; left:268px; top:248px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_DPG_RDF">{{ msg.payload['Spg2_iVa_DPG_RDF'] }}</span> Pa
+                <span id="spg2_iVa_DPG_RDF">0</span> Pa
             </div>
 
             <div
                 style="position:absolute; left:500px; top:280px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_UPSS_Output_RAF">{{ msg.payload['Spg2_iVa_UPSS_Output_RAF'] }}</span> %
+                <span id="spg2_iVa_UPSS_Output_RAF">0</span> %
             </div>
 
             <div
                 style="position:absolute; left:1140px; top:355px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_WTC_Output">{{ msg.payload['Spg2_iVa_WTC_Output'] }}</span> %
+                <span id="spg2_iVa_WTC_Output">0</span> %
             </div>
 
             <div
                 style="position:absolute; left:1205px; top:215px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_Act_WoT">{{ msg.payload['Spg2_iVa_Act_WoT'] }}</span> °C
+                <span id="spg2_iVa_Act_WoT">0</span> °C
             </div>
 
             <div
                 style="position:absolute; left:1220px; top:470px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_UPSS_Output_SAF">{{ msg.payload['Spg2_iVa_UPSS_Output_SAF'] }}</span> %
+                <span id="spg2_iVa_UPSS_Output_SAF">0</span> %
             </div>
 
             <div
                 style="position:absolute; left:1282px; top:539px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_Act_RH">{{ msg.payload['Spg2_iVa_Act_RH'] }}</span>
+                <span id="spg2_iVa_Act_RH">0</span>
             </div>
 
             <div
                 style="position:absolute; left:1282px; top:583px; border:2px solid black; padding:0px 15px 0px 20px; border-radius:5px">
-                <span id="spg2_iVa_Act_Temp">{{ msg.payload['Spg2_iVa_Act_Temp'] }}</span>
+                <span id="spg2_iVa_Act_Temp">0</span>
             </div>
 
-            <div
+            <!-- <div
                 style="position:absolute; left:630px; top:166px; border:2px solid black; padding: 4px; border-radius:5px">
                 <span id="random2">{{ msg.payload['Spg2_iVa_Act_Temp'] }}</span>
             </div>
@@ -277,19 +281,32 @@
             <div
                 style="position:absolute; left:736px; top:356px; border:2px solid black; padding: 4px; border-radius:5px">
                 <span id="random2">{{ msg.payload['Spg2_iVa_Act_Temp'] }}</span>
-            </div>
+            </div> -->
 
             <p style="position:absolute; left:1224px; top:533px;"><b>%R.H</b></p>
             <p style="position:absolute; left:1238px; top:580px;"><b>°C</b></p>
 
         </div>
 
-        <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+        <!-- <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script> -->
 
         <script>
-            const socket = io.connect('http://' + document.domain + ':' + location.port);
+            // Establish a socket connection
+            const socket = io();
+
+            // Update values in real-time
+            socket.on('update', function (data) {
+                document.getElementById('spg2_iVa_DPG_RDF').textContent = data['Spg2_iVa_DPG_RDF'] || '0';
+                document.getElementById('spg2_iVa_UPSS_Output_RAF').textContent = data['Spg2_iVa_UPSS_Output_RAF'] || '0';
+                document.getElementById('spg2_iVa_WTC_Output').textContent = data['Spg2_iVa_WTC_Output'] || '0';
+                document.getElementById('spg2_iVa_Act_WoT').textContent = data['Spg2_iVa_Act_WoT'] || '0';
+                document.getElementById('spg2_iVa_UPSS_Output_SAF').textContent = data['Spg2_iVa_UPSS_Output_SAF'] || '0';
+                document.getElementById('spg2_iVa_Act_RH').textContent = data['Spg2_iVa_Act_RH'] || '0';
+                document.getElementById('spg2_iVa_Act_Temp').textContent = data['Spg2_iVa_Act_Temp'] || '0';
+            });
+            
+
+            // const socket = io.connect('http://' + document.domain + ':' + location.port);
 
             // Mapping Node IDs to button IDs
             const nodeMappings = {
@@ -353,19 +370,6 @@
                     fanImage.src = "{{ url_for('static', filename='images/fan000.gif') }}";
                 }
             }
-
-            const socket = io();
-
-            // Listen for 'update' events from the server
-            socket.on('update', (data) => {
-                // Update the values on the page
-                for (const [key, value] of Object.entries(data)) {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        element.textContent = value; // Update the text content with the new value
-                    }
-                }
-            });
 
             // Update fan image whenever data changes
             socket.on('update', function (data) {

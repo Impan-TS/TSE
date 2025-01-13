@@ -1,73 +1,127 @@
+# alarms:
+# - code: 64
+#   message: Room Humidity No Signal - Spinning 2
+#   nodeids:
+#   - DI_Spg2_iFl_RetAFan1_TRIP
+#   - DI_Spg2_iFl_RetAFan2_TRIP
+#   severity: 1
+#   status: Not Acknowledged
+#   time: null
+# - code: 102
+#   message: Overflow
+#   nodeids:
+#   - DI_Spg2_iFl_SAFan1_TRIP
+#   severity: Low
+#   status: Not Acknowledged
+#   time: null
+# - code: 103
+#   message: Low battery
+#   nodeids:
+#   - DI_Spg2_iFl_SAFan1_TRIP
+#   severity: Medium
+#   status: Not Acknowledged
+#   time: null
+# - code: 107
+#   message: Pump malfunction
+#   nodeids:
+#   - DI_Spg2_iFl_WasherPump1_TRIP
+#   severity: High
+#   status: Not Acknowledged
+#   time: null
+
 alarms:
-  - Alarm: 12
-    Name: 12
-    Message: Return Air Fan-1 VFD Fault - Spinning 2
-    Code: 12
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 13
-    Name: 13
-    Message: Return Air Fan-2 VFD Fault - Spinning 2
-    Code: 13
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 14
-    Name: 14
-    Message: Supply Air Fan-1 VFD Fault - Spinning 2
-    Code: 14
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 15
-    Name: 15
-    Message: Supply Air Fan-2 VFD Fault - Spinning 2
-    Code: 15
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 16
-    Name: 16
-    Message: Washer Pump-1 VFD Fault - Spinning 2
-    Code: 16
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 17
-    Name: 17
-    Message: Washer Pump-2 VFD Fault - Spinning 2
-    Code: 17
-    Severity: 1
-    Behavior: Edge Alarm
-  - Alarm: 18
-    Name: 18
-    Message: Rotary Drum Filter-1 TRIP - Spinning 2
-    Code: 18
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 19
-    Name: 19
-    Message: Rotary Drum Filter-2 TRIP - Spinning 2
-    Code: 19
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 20
-    Name: 20
-    Message: Dust Collector-1 TRIP - Spinning 2
-    Code: 20
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 21
-    Name: 21
-    Message: Dust Collector-2 TRIP - Spinning 2
-    Code: 21
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 22
-    Name: 22
-    Message: Cyclone with Screw Compactor-1 TRIP - Spinning 2
-    Code: 22
-    Severity: 1
-    Behavior: Persistent Alarm
-  - Alarm: 23
-    Name: 23
-    Message: Cyclone with Screw Compactor-2 TRIP - Spinning 2
-    Code: 23
-    Severity: 1
-    Behavior: Persistent Alarm
+  - code: 12
+    message: Return Air Fan-1 VFD Fault - Spinning 2
+    nodeids:
+      - iFl_RetAFan2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 13
+    message: Return Air Fan-2 VFD Fault - Spinning 2
+    nodeids:
+      - iFl_RetAFan2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 14
+    message: Supply Air Fan-1 VFD Fault - Spinning 2
+    nodeids:
+      - DI_Spg2_iFl_SAFan1_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 15
+    message: Supply Air Fan-2 VFD Fault - Spinning 2
+    nodeids:
+      - iFl_SAFan2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 16
+    message: Washer Pump-1  VFD Fault - Spinning 2
+    nodeids:
+      - iFl_WasherPump1_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 17
+    message: Washer Pump-2  VFD Fault - Spinning 2
+    nodeids:
+      - iFl_WasherPump2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 18
+    message: Rotary Drum Filter-1 TRIP - Spinning 2
+    nodeids:
+      - iFl_RDF1_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 19
+    message: Rotary Drum Filter-2 TRIP - Spinning 2
+    nodeids:
+      - iFl_RDF2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 20
+    message: Dust Collector-1 TRIP - Spinning 2
+    nodeids:
+      - iFl_DCF1_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 21
+    message: Dust Collector-2 TRIP - Spinning 2
+    nodeids:
+      - iFl_DCF2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 22
+    message: Cyclone with Screw Compactor-1 TRIP - Spinning 2
+    nodeids:
+      - iFl_ScrewCompactor1_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null
+
+  - code: 23
+    message: Cyclone with Screw Compactor-2 TRIP - Spinning 2
+    nodeids:
+      - iFl_ScrewCompactor2_TRIP
+    severity: 1
+    status: Not Acknowledged
+    time: null

@@ -9,6 +9,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- /* refreshing page */
+    <meta http-equiv="refresh" content="10">  -->
+    
     <title>Alarm List</title>
     <style>
         /* General Styles */
@@ -18,7 +22,6 @@
             padding: 0;
             background-color: #f4f4f9;
             margin-top: 80px;
-            /* Added top margin */
         }
 
         h1 {
@@ -29,32 +32,24 @@
         .alarm-table {
             width: 80%;
             margin: 20px auto;
-            border-collapse: seperate;
+            border-collapse: separate;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
             border-spacing: 0;
-            /* Rounded corners */
             overflow: hidden;
-            /* Ensures rounded borders display correctly */
             border: 1px solid #0c609d;
-            /* Outer border color */
         }
-
 
         .alarm-table th,
         .alarm-table td {
-            /* border: 1px solid #ddd; Internal cell borders */
             padding: 12px;
             text-align: left;
-            /* Data stays left-aligned */
         }
 
         .alarm-table th {
             background-color: #0c609d;
             color: white;
             text-transform: uppercase;
-            /* text-align: center; */
-            /* Center-align table headers */
         }
 
         .alarm-table tr.even {
@@ -65,46 +60,17 @@
             background-color: white;
         }
 
-        /* .alarm-table tr:hover {
-            background-color: #ddd;
-        } */
-
-        .alarm-time {
-            font-weight: bold;
-            color: #555;
-        }
-
-        /* .close-button {
-            display: block;
-            width: 100px;
-            margin: 20px auto;
-            padding: 10px;
-            text-align: center;
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .close-button:hover {
-            background-color: #c9302c;
-        } */
-
         .alert-icon {
-            font: bold;
+            font-weight: bold;
             color: red;
             font-size: 22px;
-            /* Adjust size as needed */
         }
 
         button:disabled {
             background-color: #cccccc;
-            /* Light gray background */
             color: #666666;
-            /* Dim text color */
             cursor: not-allowed;
-            /* Show 'not allowed' cursor */
             opacity: 0.6;
-            /* Slightly faded look */
         }
     </style>
 </head>
@@ -122,85 +88,64 @@
             </tr>
         </thead>
         <tbody id="alarm-list-body">
-            <!-- Alarm rows will be dynamically inserted here -->
+            {% for alarm in alarms %}
+            <tr class="{% if loop.index is even %}even{% else %}odd{% endif %}">
+                <td>{{ alarm.time }}</td>
+                <td>{{ alarm.message }}</td>
+                <td>{{ alarm.code }}</td>
+                <td>{{ alarm.severity }}</td>
+                <td>
+                    {% if alarm.status == "Acknowledged" %}
+                        <span style="color:green;">✅</span>
+                    {% else %}
+                        <span class="alert-icon">&#x26A0;</span>
+                    {% endif %}
+                    <button onclick="acknowledgeAlarm('{{ alarm.code }}')"
+                            style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;"
+                            {% if alarm.status == "Acknowledged" %}disabled{% endif %}>
+                        Acknowledge
+                    </button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align:center;">No active alarms</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
-    <!-- <button class="close-button" onclick="closeAlarms()">Close</button> -->
 
     <script>
-        function fetchAlarms() {
-            fetch("/alarms")
-                .then(response => response.json())
-                .then(data => {
-                    const alarmBody = document.getElementById("alarm-list-body");
-                    alarmBody.innerHTML = ""; // Clear existing rows
 
-                    if (data.length === 0) {
-                        alarmBody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No active alarms</td></tr>";
-                    } else {
-                        data.forEach((alarm, index) => {
-                            const rowClass = (index % 2 === 0) ? "even" : "odd";
-                            const acknowledged = alarm.acknowledged
-                                ? `<span style="color:green;">✅</span>`
-                                : `<span class="alert-icon">&#x26A0;</span>`; // Red triangle alert icon
+        // setInterval(function() {
+        //     window.location.reload();
+        // }, 1000); // 1000 milliseconds = 1 seconds
 
-                            const row = `
-                            <tr class="${rowClass}">
-        <td>${alarm.time}</td>
-        <td>${alarm.message} (${alarm.name})</td>
-        <td>${alarm.code}</td>
-        <td>${alarm.severity}</td>
-        <td style="vertical-align: top;">
-            ${acknowledged}
-            <button onclick="acknowledgeAlarm('${alarm.alarm}')"
-                    style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 6px; font-size: 10px; margin-left: 7px; cursor: pointer;"
-                    ${alarm.acknowledged ? "disabled" : ""}>
-                Acknowledge
-            </button>
-        </td>
-    </tr>
-`;
-                            alarmBody.insertAdjacentHTML("beforeend", row);
-                        });
-                    }
-                })
-                .catch(error => console.error("Error fetching alarms:", error));
-        }
-
-        function acknowledgeAlarm(alarmId) {
+        function acknowledgeAlarm(alarmCode) {
             fetch("/acknowledge", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ alarm: alarmId })
+                body: JSON.stringify({ code: alarmCode })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Alarm acknowledged successfully!");
-                        fetchAlarms(); // Refresh the alarm list
-                    } else {
-                        alert("Failed to acknowledge alarm.");
-                    }
-                })
-                .catch(error => console.error("Error acknowledging alarm:", error));
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Alarm acknowledged successfully!");
+                    // Disable the button after acknowledgement
+                    const button = document.querySelector(`button[onclick="acknowledgeAlarm('${alarmCode}')"]`);
+                    button.disabled = true;
+                    // Optionally update the status visually
+                    const statusCell = button.closest("tr").querySelector("td:nth-child(5)");
+                    statusCell.innerHTML = '<span style="color:green;">✅</span>';
+                } else {
+                    alert("Failed to acknowledge alarm.");
+                }
+            })
+            .catch(error => console.error("Error acknowledging alarm:", error));
         }
-
-        // Fetch alarms on page load
-        fetchAlarms();
-
-        // Refresh alarms every 5 seconds
-        setInterval(fetchAlarms, 5000);
-
-
-
-        // Close button functionality
-        // function closeAlarms() {
-        //     window.history.back();
-        // }
-
     </script>
+
 </body>
 
 </html>
-
 {% endblock %}

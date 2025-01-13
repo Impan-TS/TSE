@@ -98,45 +98,15 @@ def load_node_ids():
         return data.get("node_ids", {})
 
 
-# def read_values_periodically():
-#     global latest_values
-#     while True:
-#         try:
-#             client.connect()  # Connect to the OPC UA server
-            
-#             # Load Node IDs from YAML file
-#             node_ids = load_node_ids()
-            
-#             for name, node_id in node_ids.items():
-#                 try:
-#                     node = client.get_node(node_id)
-#                     latest_values[name] = node.get_value()  # Read the value
-#                 except Exception as e:
-#                     print(f"Error reading node {name}: {e}")
-            
-#             # Emit the latest values to all connected clients
-#             socketio.emit('update', latest_values)
-            
-#             socketio.emit('gauge_update', {
-#                 "Temperature": latest_values.get("Temperature", 0),
-#                 "Humidity": latest_values.get("Humidity", 0)
-#             })
-            
-#             client.disconnect()  # Disconnect from the server
-#             time.sleep(1)  # Wait for 1 second before the next read
-#         except Exception as e:
-#             print(f"Error reading values: {str(e)}")
-#             time.sleep(1)  # Wait before retrying in case of error
-
 def read_values_periodically():
     global latest_values
     while True:
         try:
             client.connect()  # Connect to the OPC UA server
-            
+
             # Load Node IDs from YAML file
             node_ids = load_node_ids()
-            
+
             for name, node_id in node_ids.items():
                 try:
                     node = client.get_node(node_id)
@@ -148,29 +118,113 @@ def read_values_periodically():
                         latest_values[name] = raw_value
                 except Exception as e:
                     print(f"Error reading node {name}: {e}")
-            
+
             # Emit the latest values to all connected clients
             socketio.emit('update', latest_values)
-            
-            # socketio.emit('gauge_update', {
-            #     "Temperature": latest_values.get("Temperature", 0),
-            #     "Humidity": latest_values.get("Humidity", 0)
-            # })
-            
+
             client.disconnect()  # Disconnect from the server
             time.sleep(1)  # Wait for 1 second before the next read
         except Exception as e:
             print(f"Error reading values: {str(e)}")
             time.sleep(1)  # Wait before retrying in case of error
 
+# # Load alarms from YAML
+# def load_alarms():
+#     yaml_path = os.path.join(os.path.dirname(__file__), "alarms.yaml")
+#     with open(yaml_path, "r") as f:
+#         data = yaml.safe_load(f)
+#         return data.get("alarms", {})
 
+#Alarms 
+# Define a relative path to the YAML file
+def get_yaml_path():
+    return os.path.join(os.path.dirname(__file__), 'alarms.yaml')
 
-# Load alarms from YAML
-def load_alarms():
-    yaml_path = os.path.join(os.path.dirname(__file__), "alarms.yaml")
+# Load Node IDs from the YAML file
+def load_node_ids():
+    yaml_path = os.path.join(os.path.dirname(__file__), "nodeid.yaml")
     with open(yaml_path, "r") as f:
         data = yaml.safe_load(f)
-        return data.get("alarms", {})
+        return data.get("node_ids", {})
+
+# Connect to the OPC UA server and get the trip status
+def get_trip_status_from_nodeid(nodeid):
+    try:
+        node = client.get_node(nodeid)
+        trip_status = node.get_value()  # Assuming node holds a boolean value for the trip status
+        return trip_status
+    except Exception as e:
+        print(f"Error fetching trip status from node {nodeid}: {e}")
+        return False
+
+# Load alarms from YAML and update trip status with current time if trip is true
+def load_alarms():
+    try:
+        yaml_path = get_yaml_path()  # Get the path dynamically
+        with open(yaml_path, "r") as f:
+            data = yaml.safe_load(f)
+            alarms = data.get("alarms", [])
+
+            # Load Node IDs from the file
+            node_ids = load_node_ids()
+
+            # Update trip status and time based on OPC UA NodeID for each variable name in nodeids list
+            for alarm in alarms:
+                alarm['trip'] = False  # Default trip status
+                for node_name in alarm.get('nodeids', []):
+                    nodeid = node_ids.get(node_name)
+                    if nodeid:
+                        trip_status = get_trip_status_from_nodeid(nodeid)
+                        alarm['trip'] = alarm['trip'] or trip_status  # Set to True if any trip is True
+
+                # If the trip is true, capture the current time
+                if alarm['trip']:
+                    alarm['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            # Filter alarms with trip = True
+            alarms_with_trip = [alarm for alarm in alarms if alarm.get("trip") is True]
+            return alarms_with_trip
+    except Exception as e:
+        print(f"Error loading alarms: {e}")
+        return []
+
+@app.route("/alarms")
+def get_alarms():
+    alarms = load_alarms()
+    return jsonify(alarms)
+
+@app.route("/alarmslist")
+def alarmslist():
+    alarms = load_alarms()
+    return render_template("iot/alarmslist.html", alarms=alarms)
+
+@app.route("/acknowledge", methods=["POST"])
+def acknowledge_alarm():
+    data = request.json
+    alarm_code = data.get("code")
+
+    # Find the alarm and update its status
+    alarms = load_alarms()
+    for alarm in alarms:
+        if alarm['code'] == alarm_code:
+            alarm['status'] = 'Acknowledged'
+            break
+    
+    # Optionally, save the updated alarms back to the YAML file
+    try:
+        yaml_path = get_yaml_path()  # Use dynamic path to save back the file
+        with open(yaml_path, "w") as f:
+            yaml.dump({"alarms": alarms}, f)
+    except Exception as e:
+        print(f"Error updating YAML file: {e}")
+    
+    return jsonify({"success": True})
+
+@app.route("/debug")
+def debug_alarms():
+    alarms = load_alarms()
+    return jsonify(alarms)
+
 
 
 
@@ -429,12 +483,30 @@ template_mapping = {
     "Pump Min Set": "Settings/spinning2_pm.html",
 }
 
+# @app.route('/load_template/<submodule_option>')
+# def load_template(submodule_option):
+#     if submodule_option in template_mapping:
+#         template_path = template_mapping[submodule_option]
+#         msg = {
+#             'payload': latest_values,
+#             'node_ids': load_node_ids()  # Include node_ids from the YAML file
+#         }
+#         # Include node IDs as part of the context
+#         return render_template(template_path, msg=msg)
+#     return "Template not found", 404
+
 @app.route('/load_template/<submodule_option>')
 def load_template(submodule_option):
     if submodule_option in template_mapping:
         template_path = template_mapping[submodule_option]
+        msg = {
+            'payload': latest_values,
+            'node_ids': load_node_ids()  # Include node_ids from the YAML file
+        }
+        # Emit the latest values before rendering the template
+        socketio.emit('update', latest_values)
         # Include node IDs as part of the context
-        return render_template(template_path, msg={"payload": latest_values, "node_ids": load_node_ids()})
+        return render_template(template_path, msg=msg)
     return "Template not found", 404
 
 
@@ -479,31 +551,31 @@ def load_template(submodule_option):
 
 
 
-@app.route("/acknowledge", methods=["POST"])
-def acknowledge_alarm():
-    """Acknowledge an alarm."""
-    global alarms_data
-    data = request.json
-    alarm_id = data.get("alarm")
+# @app.route("/acknowledge", methods=["POST"])
+# def acknowledge_alarm():
+#     """Acknowledge an alarm."""
+#     global alarms_data
+#     data = request.json
+#     alarm_id = data.get("alarm")
 
-    if alarm_id in alarms_data:
-        alarms_data[alarm_id]["acknowledged"] = True
-        return jsonify({"success": True, "message": "Alarm acknowledged"})
-    return jsonify({"success": False, "message": "Alarm not found"}), 404
+#     if alarm_id in alarms_data:
+#         alarms_data[alarm_id]["acknowledged"] = True
+#         return jsonify({"success": True, "message": "Alarm acknowledged"})
+#     return jsonify({"success": False, "message": "Alarm not found"}), 404
 
-@app.route('/write/<node_id>/<int:value>', methods=['POST'])
-def write_value(node_id, value):
-    try:
-        node = client.get_node(node_id)
-        node.set_value(value)
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+# @app.route('/write/<node_id>/<int:value>', methods=['POST'])
+# def write_value(node_id, value):
+#     try:
+#         node = client.get_node(node_id)
+#         node.set_value(value)
+#         return jsonify({"success": True})
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)})
 
 
-@app.route('/alarmslist')
-def alarmslist():
-    return render_template('iot/alarmslist.html')  # Render the HTML template
+# @app.route('/alarmslist')
+# def alarmslist():
+#     return render_template('iot/alarmslist.html')  # Render the HTML template
 
 
 # @app.route('/')
@@ -579,6 +651,11 @@ def load_role_submodules():
     with open(yaml_path, "r") as f:
         data = yaml.safe_load(f)
     return data.get("roles", {})
+
+# Inject latest_values globally into all templates
+# @app.context_processor
+# def inject_latest_values():
+#     return {'latest_values': latest_values}
     
 
 # Inject submodules and client name into templates for consistent access
@@ -596,7 +673,6 @@ def inject_context():
         'allowed_submodules': allowed_submodules,
         'dashboard_name': dashboard_name  # Pass None or actual value
     }
-
 
 @app.route('/<submodule>')
 def render_submodule(submodule):
@@ -676,13 +752,19 @@ def index():
 #     msg = {"payload": latest_values}
 #     return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
 
-@app.route('/do')
-def do():
+@app.route('/sp')
+def sp():
     msg = {
         'payload': latest_values,
         'node_ids': load_node_ids()  # Include node_ids from the YAML file
     }
-    return render_template('Settings/spinning2_do.html', msg=msg)  # Render the HTML template
+    return render_template('Settings/spinning2_sp.html', msg=msg)  # Render the HTML template
+
+@socketio.on('connect')
+def handle_connect():
+    # Send the latest values immediately upon connection
+    emit('update', latest_values)
+
 
 # @app.route('/ai')
 # def ai():
@@ -992,6 +1074,7 @@ def delete_settings():
 
     
     #-----------------------------------
+
 
 if __name__ == '__main__':
     # Start the background thread to read values periodically

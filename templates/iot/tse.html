@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TSE Control System{% endblock %}</title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
 
     <style>
@@ -808,10 +809,17 @@
     </div>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
     <script>
 
         function loadTemplate(submoduleOption) {
+            socket.on('update', function (data) {
+                // Update the displayed values every time new data is received
+                document.getElementById('Spg2_iVa_Act_RH').innerText = data['Spg2_iVa_Act_RH'];
+                document.getElementById('Spg2_iVa_Act_Temp').innerText = data['Spg2_iVa_Act_Temp'];
+            });
+
             fetch(`/load_template/${submoduleOption}`)
                 .then(response => response.text())
                 .then(data => {
@@ -1331,7 +1339,9 @@
 
         // Run this on page load to retain the states
         document.addEventListener('DOMContentLoaded', loadSubmoduleStates);
+
     </script>
+
 
 </body>
 
