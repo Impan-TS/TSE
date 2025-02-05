@@ -283,22 +283,43 @@
         // Set up Socket.IO connection
         const socket = io();
 
+        // socket.on('update', function (data) {
+        //     // Iterate through the keys in the data object
+        //     Object.keys(data).forEach((key) => {
+        //         const element = document.getElementById(key); // Find element by id
+        //         if (element) {
+        //             if (element.tagName === 'SPAN') { // Update value-box (span) elements
+        //                 element.innerText = data[key]; // Update the span's text content
+        //             } else if (element.tagName === 'INPUT') { // Update set-box (input) elements
+        //                 // Only update the input value if it's not focused (being edited)
+        //                 if (document.activeElement !== element) {
+        //                     element.value = data[key]; // Update the input's value
+        //                 }
+        //             }
+        //         }
+        //     });
+        // });
+
         socket.on('update', function (data) {
-            // Iterate through the keys in the data object
-            Object.keys(data).forEach((key) => {
-                const element = document.getElementById(key); // Find element by id
-                if (element) {
-                    if (element.tagName === 'SPAN') { // Update value-box (span) elements
-                        element.innerText = data[key]; // Update the span's text content
-                    } else if (element.tagName === 'INPUT') { // Update set-box (input) elements
-                        // Only update the input value if it's not focused (being edited)
-                        if (document.activeElement !== element) {
-                            element.value = data[key]; // Update the input's value
-                        }
-                    }
+    Object.keys(data).forEach((key) => {
+        const element = document.getElementById(key);
+        if (element) {
+            if (element.classList.contains('value')) {
+                element.innerText = data[key]; // Ensure real-time update for blue box values
+            } else if (element.tagName === 'INPUT' && element.type === 'number') {
+                if (document.activeElement !== element) {
+                    element.value = data[key]; // Update set-box inputs
                 }
-            });
-        });
+            } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+                element.checked = data[key]; // Ensure real-time update for auto/manual switch
+                const textElement = document.getElementById(element.id + '-text');
+                if (textElement) {
+                    textElement.textContent = data[key] ? 'Manual' : 'Auto';
+                }
+            }
+        }
+    });
+});
 
         function updateSwitchModes() {
             const switches = [

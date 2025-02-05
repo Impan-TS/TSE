@@ -9,10 +9,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- /* refreshing page */
-    <meta http-equiv="refresh" content="10">  -->
-    
     <title>Alarm List</title>
     <style>
         /* General Styles */
@@ -89,18 +85,20 @@
         </thead>
         <tbody id="alarm-list-body">
             {% for alarm in alarms %}
-            <tr class="{% if loop.index is even %}even{% else %}odd{% endif %}">
+            <tr class="{% if loop.index is even %}even{% else %}odd{% endif %}" id="alarm-row-{{ alarm.code }}">
                 <td>{{ alarm.time }}</td>
                 <td>{{ alarm.message }}</td>
                 <td>{{ alarm.code }}</td>
                 <td>{{ alarm.severity }}</td>
                 <td>
-                    {% if alarm.status == "Acknowledged" %}
-                        <span style="color:green;">✅</span>
-                    {% else %}
-                        <span class="alert-icon">&#x26A0;</span>
-                    {% endif %}
-                    <button onclick="acknowledgeAlarm('{{ alarm.code }}')"
+                    <span id="status-{{ alarm.code }}">
+                        {% if alarm.status == "Acknowledged" %}
+                            <span style="color:green;">✅</span>
+                        {% else %}
+                            <span class="alert-icon">&#x26A0;</span>
+                        {% endif %}
+                    </span>
+                    <button id="button-{{ alarm.code }}" onclick="acknowledgeAlarm('{{ alarm.code }}')"
                             style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;"
                             {% if alarm.status == "Acknowledged" %}disabled{% endif %}>
                         Acknowledge
@@ -108,44 +106,80 @@
                 </td>
             </tr>
             {% else %}
-            <tr>
+            <tr id="no-alarms-row">
                 <td colspan="5" style="text-align:center;">No active alarms</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script>
+        const socket = io();
 
-        // setInterval(function() {
-        //     window.location.reload();
-        // }, 1000); // 1000 milliseconds = 1 seconds
 
-        function acknowledgeAlarm(alarmCode) {
+        
+        // Toggle alarm status based on trip condition
+        function toggleAlarmStatus(alarmCode) {
+            const button = document.getElementById('button-' + alarmCode);
+            const newTripStatus = button.textContent.includes('Not Acknowledged') ? false : true;
+
             fetch("/acknowledge", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: alarmCode })
+                body: JSON.stringify({ code: alarmCode, trip: newTripStatus })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Alarm acknowledged successfully!");
-                    // Disable the button after acknowledgement
-                    const button = document.querySelector(`button[onclick="acknowledgeAlarm('${alarmCode}')"]`);
-                    button.disabled = true;
-                    // Optionally update the status visually
-                    const statusCell = button.closest("tr").querySelector("td:nth-child(5)");
-                    statusCell.innerHTML = '<span style="color:green;">✅</span>';
+                    button.textContent = newTripStatus ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
+                    button.style.backgroundColor = newTripStatus ? '#f44336' : '#4CAF50';
                 } else {
-                    alert("Failed to acknowledge alarm.");
+                    alert("Failed to toggle alarm status.");
                 }
             })
-            .catch(error => console.error("Error acknowledging alarm:", error));
+            .catch(error => console.error("Error toggling alarm status:", error));
         }
+
+        // Listen for new alarms via socket.io
+        socket.on('alarm_update', function(alarms) {
+            const tbody = document.getElementById('alarm-list-body');
+            const noAlarmsRow = document.getElementById('no-alarms-row');
+
+            // Remove "No active alarms" row if present
+            if (noAlarmsRow) noAlarmsRow.remove();
+
+            alarms.forEach(alarm => {
+                const existingRow = document.getElementById('alarm-row-' + alarm.code);
+
+                // If this alarm doesn't already exist in the table, create a new row
+                if (!existingRow) {
+                    const row = document.createElement('tr');
+                    row.id = 'alarm-row-' + alarm.code;
+                    row.className = tbody.children.length % 2 === 0 ? 'even' : 'odd';
+                    row.innerHTML =     ` 
+                        <td>${alarm.time || 'N/A'}</td>
+                        <td>${alarm.message}</td>
+                        <td>${alarm.code}</td>
+                        <td>${alarm.severity}</td>
+                        <td>
+                            <button id="button-${alarm.code}" onclick="toggleAlarmStatus('${alarm.code}')"
+                                style="background-color: ${alarm.trip ? '#f44336' : '#4CAF50'}; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;">
+                                ${alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged'}
+                            </button>
+                        </td>
+                        `;
+                    tbody.prepend(row); // Add at the top
+                } else {
+                    const button = document.getElementById('button-' + alarm.code);
+                    // If the alarm trip status changes, update the button to reflect that
+                    button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
+                    button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
+                }
+            });
+        });
+
     </script>
-
 </body>
-
 </html>
 {% endblock %}

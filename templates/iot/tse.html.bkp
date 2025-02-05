@@ -544,10 +544,9 @@
         /* Apply the blur to the background when the modal is open */
         body.modal-open::before {
             content: '';
-            position: fixed;
-            /* Changed to fixed to cover the whole screen */
-            top: 61px;
-            left: 167px;
+            position: absolute;
+            top: 0;
+            left: 0;
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
@@ -817,25 +816,22 @@
         function loadTemplate(submoduleOption) {
 
             socket.on('update', function (data) {
+                // Iterate through the keys in the data object
                 Object.keys(data).forEach((key) => {
-                    const element = document.getElementById(key);
+                    const element = document.getElementById(key); // Find element by id
                     if (element) {
-                        if (element.classList.contains('value')) {
-                            element.innerText = data[key]; // Ensure real-time update for blue box values
-                        } else if (element.tagName === 'INPUT' && element.type === 'number') {
+                        if (element.tagName === 'SPAN') { // Update value-box (span) elements
+                            element.innerText = data[key]; // Update the span's text content
+                        } else if (element.tagName === 'INPUT') { // Update set-box (input) elements
+                            // Only update the input value if it's not focused (being edited)
                             if (document.activeElement !== element) {
-                                element.value = data[key]; // Update set-box inputs
-                            }
-                        } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
-                            element.checked = data[key]; // Ensure real-time update for auto/manual switch
-                            const textElement = document.getElementById(element.id + '-text');
-                            if (textElement) {
-                                textElement.textContent = data[key] ? 'Manual' : 'Auto';
+                                element.value = data[key]; // Update the input's value
                             }
                         }
                     }
                 });
             });
+
 
 
 
@@ -1069,49 +1065,33 @@
         // // Call the function periodically to check for new alarms
         // setInterval(fetchAlarmCount, 5000);
 
-        // alarm Notification
-
-        // Fetch and update alarm count
-
-        let previousAlarmCount = 0; // Track the previous alarm count
-        let alarmCountVisible = false; // Track if the alarm count is currently visible
+        let previousAlarms = [];
 
         function fetchAlarmCount() {
             fetch("/alarms")
                 .then(response => response.json())
                 .then(data => {
-                    const alarmCount = data.filter(a => a.trip === true).length;
-
                     const alarmCountElement = document.getElementById("alarm-count");
+                    const alarmCount = data.length;
 
-                    // Update only if the count has changed
-                    if (alarmCount !== previousAlarmCount) {
-                        previousAlarmCount = alarmCount;
-
-                        if (alarmCount > 0 && !alarmCountVisible) {
-                            alarmCountVisible = true;
-                            alarmCountElement.style.display = "inline-block"; // Make the count visible
-                            alarmCountElement.innerText = alarmCount; // Update the count
-                        }
+                    if (alarmCount > 0) {
+                        alarmCountElement.style.display = "inline-block";
+                        alarmCountElement.innerText = alarmCount;
+                    } else {
+                        alarmCountElement.style.display = "none";
                     }
-                })
-                .catch(error => {
-                    console.error("Error fetching alarms:", error);
+
+                    const newAlarms = data.filter(alarm => !previousAlarms.some(a => a.name === alarm.name));
+                    if (newAlarms.length > 0) {
+                        showSimplePopups(newAlarms);
+                    }
+
+                    previousAlarms = data;
                 });
         }
 
-        // Periodically fetch alarm count every 1 second
-        setInterval(fetchAlarmCount, 1000);
-
-        let alarmModalOpen = false;  // Flag to track if the modal is open
-        let refreshInterval;         // Variable to store the interval ID
-
         function showAlarmslist() {
-            // If modal is already open, don't reload the content again
-            if (!alarmModalOpen) {
-                document.getElementById("alarm-modal-body").innerHTML = "<p>Loading alarms...</p>"; // Loading message
-                alarmModalOpen = true;  // Set flag to true when modal is opened
-            }
+            document.getElementById("alarm-count").innerText = 0;
 
             fetch("/alarms")
                 .then(response => response.json())
@@ -1119,58 +1099,34 @@
                     let alarmMessage = "";
 
                     if (data.length === 0) {
-                        alarmMessage = "<p>No alarms yet.</p>";
-                        // Continue refreshing if there are no alarms
-                        startAutoRefresh();
+                        alarmMessage = "<p>No alarm notifications yet.</p>";
                     } else {
                         alarmMessage = data.map((a, index) => {
                             const className = (index % 2 === 0) ? 'even' : 'odd';
                             return `
-                <p class="${className}">
-                    <span class="alarm-time">${a.time}</span>
-                    ${a.message} 
-                </p>`;
+                        <p class="${className}">
+                            <span class="alarm-time">${a.time}</span>
+                            ${a.message} (${a.name})
+                        </p>`;
                         }).join("");
-                        // Stop refreshing once alarms are shown
-                        stopAutoRefresh();
                     }
 
                     document.getElementById("alarm-modal-body").innerHTML = alarmMessage;
                     document.getElementById("alarmModal").style.display = "flex";
                     document.body.classList.add("modal-open");
-                })
-                .catch(error => {
-                    document.getElementById("alarm-modal-body").innerHTML = "<p>Error loading alarms.</p>";
-                    console.error("Error fetching alarms:", error);
                 });
         }
 
-        // Start auto-refresh interval
-        function startAutoRefresh() {
-            if (!refreshInterval) {
-                refreshInterval = setInterval(() => {
-                    if (alarmModalOpen) {
-                        showAlarmslist();  // Refresh the alarm list if modal is open
-                    }
-                }, 1000);
-            }
-        }
-
-        // Stop auto-refresh interval
-        function stopAutoRefresh() {
-            clearInterval(refreshInterval);
-            refreshInterval = null;  // Reset the interval variable
-        }
-
-        // Close the modal and stop auto-refresh
         function closeModal() {
             document.getElementById("alarmModal").style.display = "none";
             document.body.classList.remove("modal-open");
-            alarmModalOpen = false;  // Reset the modal open flag
 
-            // Stop the auto-refresh interval
-            stopAutoRefresh();
+            const alarmCountElement = document.getElementById("alarm-count");
+            alarmCountElement.style.display = "none";
+            alarmCountElement.innerText = "0";
         }
+
+        setInterval(fetchAlarmCount, 5000);
 
         var iframe = document.getElementById('reportIframe');
         iframe.style.display = 'none';

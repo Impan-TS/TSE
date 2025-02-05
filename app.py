@@ -193,38 +193,53 @@ def get_alarms():
     alarms = load_alarms()
     return jsonify(alarms)
 
+# @app.route("/alarmslist")
+# def alarmslist():
+#     alarms = load_alarms()
+#     return render_template("iot/alarmslist.html", alarms=alarms)
+
 @app.route("/alarmslist")
 def alarmslist():
-    alarms = load_alarms()
-    return render_template("iot/alarmslist.html", alarms=alarms)
+    return render_template("iot/alarmslist.html")
+
+# Emit alarms to all connected clients in real time
+def emit_alarms():
+    while True:
+        alarms = load_alarms()
+        socketio.emit('alarm_update', alarms)
+        time.sleep(1)  # Emit every second to ensure real-time updates
 
 @app.route("/acknowledge", methods=["POST"])
 def acknowledge_alarm():
     data = request.json
     alarm_code = data.get("code")
 
-    # Find the alarm and update its status
-    alarms = load_alarms()
-    for alarm in alarms:
-        if alarm['code'] == alarm_code:
-            alarm['status'] = 'Acknowledged'
-            break
-    
-    # Optionally, save the updated alarms back to the YAML file
     try:
-        yaml_path = get_yaml_path()  # Use dynamic path to save back the file
+        yaml_path = get_yaml_path()
+        with open(yaml_path, "r") as f:
+            alarms_data = yaml.safe_load(f)
+            all_alarms = alarms_data.get("alarms", [])
+        
+        # Update the specific alarm's status
+        for alarm in all_alarms:
+            if alarm["code"] == alarm_code:
+                alarm["status"] = "Acknowledged"
+                break
+
+        # Save the updated alarms back to the YAML file
         with open(yaml_path, "w") as f:
-            yaml.dump({"alarms": alarms}, f)
+            yaml.dump({"alarms": all_alarms}, f)
+
+        return jsonify({"success": True})
+
     except Exception as e:
         print(f"Error updating YAML file: {e}")
-    
-    return jsonify({"success": True})
+        return jsonify({"success": False, "error": str(e)})
 
 @app.route("/debug")
 def debug_alarms():
     alarms = load_alarms()
     return jsonify(alarms)
-
 
 
 
@@ -1081,5 +1096,11 @@ if __name__ == '__main__':
     thread = threading.Thread(target=read_values_periodically)
     thread.daemon = True  # Daemonize thread
     thread.start()
+
+    # Start the background thread to emit alarms
+    alarm_thread = threading.Thread(target=emit_alarms)
+    alarm_thread.daemon = True
+    alarm_thread.start()
+    
     # app.run(host="127.0.0.1", port=7005)
     socketio.run(app, host='127.0.0.1', port=7005, debug=True)
