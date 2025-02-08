@@ -73,6 +73,19 @@
             padding-right: 10px;
         }
 
+        .set-box input {
+            width: 100%;
+            height: 40px;
+            /* padding: 10px; */
+            background: #4caf50;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #333;
+            border-radius: 5px;
+            line-height: 40px;
+        }
+
 
         /* New rule to change the background color of M VALUE row */
         .m-value-row .value {
@@ -121,6 +134,20 @@
                 height: 35px;
             }
         }
+
+        .set-box input:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.8);
+        }
+
+        .dialog-footer {
+            text-align: right;
+            background: #e3f4ff;
+        }
+
+        .dialog-footer button {
+            margin-left: 10px;
+        }
     </style>
 
 </head>
@@ -140,16 +167,24 @@
         </div>
         <div class="row-container">
             <div class="parameter">ON-DELAY(s)</div>
-            <div class="value" id="Spg2_iTime_Start_Pump">{{ msg.payload.Spg2_iTime_Start_Pump | round(1) }}</div>
+            <div class="set-box"><input type="number" id="Spg2_iTime_Start_Pump"
+                    value="{{ msg.payload['Spg2_iTime_Start_Pump'] | round(1) }}"
+                    data-nodeid="{{ msg.node_ids['Spg2_iTime_Start_Pump'] }}" />
+            </div>
         </div>
 
-        <!-- Row 2 -->
-        <div class="row-container">
-            <!-- Added class here -->
-            <div class="parameter">OFF-DELAYS(s)</div>
-            <div class="value" id="Spg2_iTime_Stop_Pump">{{ msg.payload.Spg2_iTime_Stop_Pump | round(1) }}</div>
+    <!-- Row 2 -->
+    <div class="row-container">
+        <!-- Added class here -->
+        <div class="parameter">OFF-DELAYS(s)</div>
+        <div class="set-box"><input type="number" id="Spg2_iTime_Stop_Pump"
+                value="{{ msg.payload['Spg2_iTime_Stop_Pump'] | round(1) }}"
+                data-nodeid="{{ msg.node_ids['Spg2_iTime_Stop_Pump'] }}" />
         </div>
+    </div>
 
+    <div class="dialog-footer">
+        <button class="btn btn-success" onclick="updateSettings()">Update</button>
     </div>
 
 
@@ -178,25 +213,47 @@
         // });
 
         socket.on('update', function (data) {
-    Object.keys(data).forEach((key) => {
-        const element = document.getElementById(key);
-        if (element) {
-            if (element.classList.contains('value')) {
-                element.innerText = data[key]; // Ensure real-time update for blue box values
-            } else if (element.tagName === 'INPUT' && element.type === 'number') {
-                if (document.activeElement !== element) {
-                    element.value = data[key]; // Update set-box inputs
+            Object.keys(data).forEach((key) => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.classList.contains('value')) {
+                        element.innerText = data[key]; // Ensure real-time update for blue box values
+                    } else if (element.tagName === 'INPUT' && element.type === 'number') {
+                        if (document.activeElement !== element) {
+                            element.value = data[key]; // Update set-box inputs
+                        }
+                    } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+                        element.checked = data[key]; // Ensure real-time update for auto/manual switch
+                        const textElement = document.getElementById(element.id + '-text');
+                        if (textElement) {
+                            textElement.textContent = data[key] ? 'Manual' : 'Auto';
+                        }
+                    }
                 }
-            } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
-                element.checked = data[key]; // Ensure real-time update for auto/manual switch
-                const textElement = document.getElementById(element.id + '-text');
-                if (textElement) {
-                    textElement.textContent = data[key] ? 'Manual' : 'Auto';
-                }
-            }
+            });
+        });
+
+        function updateSettings() {
+            const setpoints = {
+                Spg2_iTime_Start_Pump: document.getElementById('Spg2_iTime_Start_Pump').value,
+                Spg2_iTime_Stop_Pump: document.getElementById('Spg2_iTime_Stop_Pump').value
+            };
+
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.alert('Settings updated successfully!');
+                    } else {
+                        window.alert('Failed to update settings.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
         }
-    });
-});
 
         function closeDialog() {
             const dialogBox = document.querySelector('.dialog-box');

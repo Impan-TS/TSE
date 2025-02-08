@@ -418,6 +418,8 @@ def write():
                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
             elif node_data_type == ua.VariantType.Int32:
                 dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+            elif node_data_type == ua.VariantType.UInt16:
+                dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.UInt16))
             elif node_data_type == ua.VariantType.Float:
                 dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
             else:
@@ -464,6 +466,8 @@ def writes():
                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
             elif node_data_type == ua.VariantType.Int32:
                 dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+            elif node_data_type == ua.VariantType.UInt16:
+                dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.UInt16))
             elif node_data_type == ua.VariantType.Float:
                 dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
             else:

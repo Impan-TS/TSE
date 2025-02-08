@@ -796,7 +796,7 @@
     </div>
 
     <div>
-        <iframe id="trendsIframe" src="http://127.0.0.1:7005/trends" style="display: none;"></iframe>
+        <iframe id="trendsIframe" src="http://127.0.0.1:3000/d/cecge17v2n9xcf/new-dashboard?orgId=1&from=now-6h&to=now&timezone=browser" style="display: none;"></iframe>
     </div>
 
     <div class="content">
@@ -913,9 +913,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Updated successfully!');
+                        window.alert('Updated successfully!');
                     } else {
-                        alert(`Failed to update settings: ${data.error}`);
+                        window.alert(`Failed to update settings: ${data.error}`);
                     }
                 })
                 .catch(error => console.error('Error updating settings:', error));
@@ -1101,7 +1101,7 @@
         }
 
         // Periodically fetch alarm count every 1 second
-        setInterval(fetchAlarmCount, 1000);
+        setInterval(fetchAlarmCount, 100);
 
         let alarmModalOpen = false;  // Flag to track if the modal is open
         let refreshInterval;         // Variable to store the interval ID
@@ -1152,7 +1152,7 @@
                     if (alarmModalOpen) {
                         showAlarmslist();  // Refresh the alarm list if modal is open
                     }
-                }, 1000);
+                }, 100);
             }
         }
 
