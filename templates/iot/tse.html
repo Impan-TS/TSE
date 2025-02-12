@@ -135,6 +135,13 @@
             /* Darker background for the active button */
         }
 
+        .module-button.active,
+        .submodule-button.active {
+            background-color: #003e6d;
+            /* Darker background for the active button */
+        }
+
+
         .title-bar {
             position: fixed;
             top: 0;
@@ -571,9 +578,7 @@
         }
 
         /* Optional: Style for the modal content */
-        .modal {
-            /* Modal specific styles */
-        }
+
 
         /* Simple popup styling */
         /* .simple-popup {
@@ -725,6 +730,7 @@
         <button id="departments" class="module-button">
             <i class="fa-solid fa-building"></i> Departments
         </button>
+
         <div id="departmentsSubmodules" class="submodule-container">
             {% for submodule, template in submodules.items() %}
             <button class="submodule-button">
@@ -796,7 +802,9 @@
     </div>
 
     <div>
-        <iframe id="trendsIframe" src="http://127.0.0.1:3000/d/cecge17v2n9xcf/new-dashboard?orgId=1&from=now-6h&to=now&timezone=browser" style="display: none;"></iframe>
+        <iframe id="trendsIframe"
+            src="http://127.0.0.1:3000/d/cecge17v2n9xcf/new-dashboard?orgId=1&from=now-6h&to=now&timezone=browser"
+            style="display: none;"></iframe>
     </div>
 
     <div class="content">
@@ -850,14 +858,13 @@
                 .catch(error => console.error('Error loading template:', error));
         }
 
-        function bindDynamicEvents() {
-            // Remove existing listeners before adding new ones to prevent duplication
-            const successButton = document.querySelector('.btn-success');
-            const dangerButton = document.querySelector('.btn-danger');
 
+
+        function bindDynamicEvents() {
+            const successButton = document.querySelector('.btn-success');
             if (successButton) {
-                successButton.removeEventListener('click', updateSettings);
-                successButton.addEventListener('click', updateSettings);
+                successButton.replaceWith(successButton.cloneNode(true));
+                document.querySelector('.btn-success').addEventListener('click', updateSettings);
             }
 
             if (dangerButton) {
@@ -882,44 +889,143 @@
             });
         }
 
-        function updateSettings() {
-            const setpoints = {};
+        function updateSettings(event) {
+    event.preventDefault();  // Prevent any default form submission behavior
 
-            document.querySelectorAll("input[data-nodeid]").forEach(input => {
-                const nodeid = input.getAttribute("data-nodeid");
-                const datatype = input.getAttribute("data-datatype");
-                let value = input.value;
+    const setpoints = {};
+    let isValid = true; // Flag to check if all inputs are valid
 
-                if (nodeid) {
-                    if (datatype === "boolean") {
-                        // Validate boolean input (either 0 or 1)
-                        if (value !== "0" && value !== "1") {
-                            alert("Please enter either 0 or 1 for boolean values.");
-                            return;  // Stop execution if invalid
-                        }
-                        value = value === "1";  // Convert to boolean
-                    } else {
-                        value = parseFloat(value); // Convert numeric values
-                    }
-                    setpoints[nodeid] = value;
-                }
-            });
+    document.querySelectorAll("input[data-nodeid]").forEach(input => {
+        const nodeid = input.getAttribute("data-nodeid");
+        const datatype = input.getAttribute("data-datatype");
+        let value = input.value;
 
-            fetch('/write', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(setpoints),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.alert('Updated successfully!');
-                    } else {
-                        window.alert(`Failed to update settings: ${data.error}`);
-                    }
-                })
-                .catch(error => console.error('Error updating settings:', error));
+        // Find the row/column name for the parameter
+        const row = input.closest('.row-container'); // Find the closest row container
+        const parameter = row ? row.querySelector('.parameter')?.innerText : 'Unknown parameter';
+
+        // Check if it's an "INTEGRAL TN" input and apply different validation
+        if (parameter.includes("Integration Time")) {
+            // Validate input to be between 0 and 1000 for INTEGRAL TN inputs
+            if (value < 0 || value > 1000) {
+                showErrorMessage(`❌ Invalid input for ${parameter}! Please enter a value between 0 and 1000.`);
+                isValid = false; // Set the flag to false when validation fails
+                return;  // Exit function if input is invalid
+            }
+        } else {
+            // Validate input to be between 0 and 100 for other inputs
+            if (value < 0 || value > 100) {
+                showErrorMessage(`❌ Invalid input for ${parameter}! Please enter a value between 0 and 100.`);
+                isValid = false; // Set the flag to false when validation fails
+                return;  // Exit function if input is invalid
+            }
         }
+
+        if (nodeid) {
+            if (datatype === "boolean") {
+                if (value !== "0" && value !== "1") {
+                    showErrorMessage(`❌ Invalid boolean input for ${parameter}! Please enter either 0 or 1.`);
+                    isValid = false; // Set the flag to false when validation fails
+                    return;
+                }
+                value = value === "1";
+            } else {
+                value = parseFloat(value);
+            }
+            setpoints[nodeid] = value;
+        }
+    });
+
+    // If validation fails, stop the rest of the function
+    if (!isValid) return;
+
+    // Continue with the fetch only if inputs are valid
+    fetch('/write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(setpoints),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (!document.getElementById('update-popup')) {
+                    const popup = document.createElement('div');
+                    popup.id = 'update-popup';
+                    popup.innerText = '✅ Updated Successfully!';
+
+                    // Styled Popup
+                    popup.style.position = 'fixed';
+                    popup.style.top = '13%';
+                    popup.style.left = '55%';
+                    popup.style.transform = 'translate(-50%, -50%)';
+                    popup.style.background = '#005fa3';
+                    popup.style.color = 'white'; // White text
+                    popup.style.padding = '8px 28px';
+                    popup.style.borderRadius = '4px'; // Rounded corners
+                    popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)'; // Subtle shadow
+                    popup.style.fontSize = '12px';
+                    popup.style.fontWeight = 'bold';
+                    popup.style.textAlign = 'center';
+                    popup.style.zIndex = '1000';
+                    popup.style.opacity = '0';
+                    popup.style.transition = 'opacity 0.5s ease-in-out';
+
+                    document.body.appendChild(popup);
+
+                    // Fade in effect
+                    setTimeout(() => {
+                        popup.style.opacity = '1';
+                    }, 10);
+
+                    // Fade out effect and remove
+                    setTimeout(() => {
+                        popup.style.opacity = '0';
+                        setTimeout(() => popup.remove(), 500);
+                    }, 2000);
+                }
+            } else {
+                showErrorMessage(`❌ Failed to update settings: ${data.error}`);
+            }
+        })
+        .catch(error => console.error('Error updating settings:', error));
+}
+
+function showErrorMessage(message) {
+    const errorPopup = document.createElement('div');
+    errorPopup.id = 'error-popup';
+    errorPopup.innerText = message;
+
+    // Styled error message
+    errorPopup.style.position = 'fixed';
+    errorPopup.style.top = '13%';
+    errorPopup.style.left = '55%';
+    errorPopup.style.transform = 'translate(-50%, -50%)';
+    errorPopup.style.background = '#ff4d4d'; // Red background for error
+    errorPopup.style.color = 'white';
+    errorPopup.style.padding = '8px 28px';
+    errorPopup.style.borderRadius = '4px';
+    errorPopup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+    errorPopup.style.fontSize = '12px';
+    errorPopup.style.fontWeight = 'bold';
+    errorPopup.style.textAlign = 'center';
+    errorPopup.style.zIndex = '1000';
+    errorPopup.style.opacity = '0';
+    errorPopup.style.transition = 'opacity 0.5s ease-in-out';
+
+    document.body.appendChild(errorPopup);
+
+    // Fade in effect
+    setTimeout(() => {
+        errorPopup.style.opacity = '1';
+    }, 10);
+
+    // Fade out effect and remove after 3 seconds
+    setTimeout(() => {
+        errorPopup.style.opacity = '0';
+        setTimeout(() => errorPopup.remove(), 500);
+    }, 3000);
+}
+
 
         function closeDialog() {
             const mainContent = document.getElementById('main-content');
@@ -1187,12 +1293,71 @@
             // Show the selected iframe
             document.getElementById(iframeId).style.display = 'block';
         }
-
         document.addEventListener("DOMContentLoaded", function () {
             const moduleButtons = document.querySelectorAll(".module-button");
+            const submoduleButtons = document.querySelectorAll(".submodule-button");
             const submoduleContainers = document.querySelectorAll(".submodule-container");
             const sidebarOptions = document.querySelectorAll('.sidebar-option');
 
+            // Add event listener to module buttons
+            moduleButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    // Prevent the dropdown from closing when clicked
+                    event.stopPropagation();
+
+                    // Remove 'active' class from all module buttons
+                    moduleButtons.forEach(btn => btn.classList.remove("active"));
+
+                    // Add 'active' class to the clicked button
+                    this.classList.add("active");
+
+                    // Toggle dropdown visibility
+                    const associatedDropdown = this.nextElementSibling;
+
+                    // Close other dropdowns except the current one
+                    submoduleContainers.forEach(container => {
+                        if (container !== associatedDropdown) {
+                            container.style.display = "none";
+                        }
+                    });
+
+                    // Toggle visibility of the current dropdown
+                    if (associatedDropdown) {
+                        associatedDropdown.style.display =
+                            associatedDropdown.style.display === "block" ? "none" : "block";
+                    }
+                });
+            });
+
+            // Add event listener to submodule buttons
+            submoduleButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    // Remove 'active' class from all submodule buttons
+                    submoduleButtons.forEach(btn => btn.classList.remove("active"));
+
+                    // Add 'active' class to the clicked button
+                    this.classList.add("active");
+                });
+            });
+
+            // Prevent closing dropdown when clicking inside it
+            submoduleContainers.forEach(container => {
+                container.addEventListener("click", function (event) {
+                    event.stopPropagation(); // Ensure clicks inside the container don't propagate
+                });
+            });
+
+            // Prevent closing dropdown when navigating to a new route
+            document.querySelectorAll("a").forEach(anchor => {
+                anchor.addEventListener("click", function () {
+                    const associatedDropdown = this.closest(".submodule-container");
+                    if (associatedDropdown) {
+                        associatedDropdown.style.display = "block"; // Keep the dropdown open
+                    }
+                });
+            });
+
+            // Handle sidebar option clicks with AJAX to load content
             sidebarOptions.forEach(option => {
                 option.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -1218,43 +1383,9 @@
                 });
             });
 
-            // Toggle dropdown visibility
-            moduleButtons.forEach(button => {
-                button.addEventListener("click", function (event) {
-                    event.stopPropagation(); // Prevent the document click event from firing
-
-                    // Get the corresponding submodule container
-                    const associatedDropdown = this.nextElementSibling;
-
-                    // Close other dropdowns except the current one
-                    submoduleContainers.forEach(container => {
-                        if (container !== associatedDropdown) {
-                            container.style.display = "none";
-                        }
-                    });
-
-                    // Toggle visibility of the current dropdown
-                    if (associatedDropdown) {
-                        associatedDropdown.style.display =
-                            associatedDropdown.style.display === "block" ? "none" : "block";
-                    }
-                });
-            });
-
-            // Close dropdowns when clicking anywhere outside
-            document.addEventListener("click", function () {
-                submoduleContainers.forEach(container => {
-                    container.style.display = "none";
-                });
-            });
-
-            // Prevent closing dropdown when clicking inside it
-            submoduleContainers.forEach(container => {
-                container.addEventListener("click", function (event) {
-                    event.stopPropagation(); // Ensure clicks inside the container don't propagate
-                });
-            });
         });
+
+
 
         function showTooltip() {
             var tooltip = document.getElementById('profile-tooltip');
@@ -1293,9 +1424,9 @@
             });
 
             // Close the dropdown when clicking outside of it
-            $(document).on("click", function () {
-                $(".submodule-container").slideUp();
-            });
+            // $(document).on("click", function () {
+            //     $(".submodule-container").slideUp();
+            // });
 
             // Check if the URL matches 127.0.0.1:7005 and hide all submodule containers
             if (window.location.href === "http://127.0.0.1:7005/") {
@@ -1313,57 +1444,70 @@
             );
         });
 
-        // Function to toggle submodule visibility
         function toggleSubmodules(submoduleId, iconElement) {
             const submodule = document.getElementById(submoduleId);
             const isVisible = submodule.style.display === "block";
 
-            // Toggle visibility
+            // Toggle visibility only when clicking on the icon
             submodule.style.display = isVisible ? "none" : "block";
-
-            // Store the state in localStorage
-            localStorage.setItem(submoduleId, submodule.style.display);
 
             // Toggle the icon based on visibility
             iconElement.classList.toggle("fa-chevron-down", isVisible);
             iconElement.classList.toggle("fa-chevron-up", !isVisible);
         }
 
-        // Restore dropdown visibility from localStorage on page load
-        window.onload = function () {
-            const submoduleContainers = document.querySelectorAll('.submodule-container');
-            submoduleContainers.forEach(container => {
-                const submoduleId = container.id;
-                const savedState = localStorage.getItem(submoduleId);
-                if (savedState) {
-                    container.style.display = savedState;
+
+
+        // Preserve dropdown state on page reload
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".dropdown-icon").forEach(icon => {
+                const submoduleId = icon.getAttribute("onclick").match(/'([^']+)'/)[1];
+                const submoduleContainer = document.getElementById(submoduleId);
+
+                if (sessionStorage.getItem(submoduleId) === "open") {
+                    submoduleContainer.style.display = "block";
+                    icon.classList.remove("fa-chevron-down");
+                    icon.classList.add("fa-chevron-up");
                 }
             });
+        });
 
-            // Update icons based on saved visibility states
-            const icons = document.querySelectorAll('.dropdown-icon');
-            icons.forEach(icon => {
-                const submoduleId = icon.parentElement.nextElementSibling.id;
-                const isVisible = localStorage.getItem(submoduleId) === "block";
-                icon.classList.toggle("fa-chevron-down", !isVisible);
-                icon.classList.toggle("fa-chevron-up", isVisible);
-            });
-        };
+
+        // Restore dropdown visibility from localStorage on page load
+        // window.onload = function () {
+        //     const submoduleContainers = document.querySelectorAll('.submodule-container');
+        //     submoduleContainers.forEach(container => {
+        //         const submoduleId = container.id;
+        //         const savedState = localStorage.getItem(submoduleId);
+        //         if (savedState) {
+        //             container.style.display = savedState;
+        //         }
+        //     });
+
+        //     // Update icons based on saved visibility states
+        //     const icons = document.querySelectorAll('.dropdown-icon');
+        //     icons.forEach(icon => {
+        //         const submoduleId = icon.parentElement.nextElementSibling.id;
+        //         const isVisible = localStorage.getItem(submoduleId) === "block";
+        //         icon.classList.toggle("fa-chevron-down", !isVisible);
+        //         icon.classList.toggle("fa-chevron-up", isVisible);
+        //     });
+        // };
 
         // Load submodule states from localStorage on page load
-        function loadSubmoduleStates() {
-            const submodules = document.querySelectorAll('.submodule-container');
-            submodules.forEach(submodule => {
-                const submoduleId = submodule.id;
-                const savedState = localStorage.getItem(submoduleId);
-                if (savedState) {
-                    submodule.style.display = savedState;
-                }
-            });
-        }
+        // function loadSubmoduleStates() {
+        //     const submodules = document.querySelectorAll('.submodule-container');
+        //     submodules.forEach(submodule => {
+        //         const submoduleId = submodule.id;
+        //         const savedState = localStorage.getItem(submoduleId);
+        //         if (savedState) {
+        //             submodule.style.display = savedState;
+        //         }
+        //     });
+        // }
 
         // Call the function to load states on page load
-        loadSubmoduleStates();
+        // loadSubmoduleStates();
 
         // Add event listeners for the modules
         document.getElementById("departments").addEventListener("click", function (event) {

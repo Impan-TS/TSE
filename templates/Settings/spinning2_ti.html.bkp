@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <style>
         .dialog-box {
-            max-width: 50%;
+            max-width: 25%;
             width: auto;
             border: 1px solid #333;
             border-radius: 10px;
@@ -73,7 +73,6 @@
             padding-right: 10px;
         }
 
-
         .set-box input {
             width: 100%;
             height: 40px;
@@ -86,6 +85,7 @@
             border-radius: 5px;
             line-height: 40px;
         }
+
 
         /* New rule to change the background color of M VALUE row */
         .m-value-row .value {
@@ -135,7 +135,6 @@
             }
         }
 
-
         .set-box input:focus {
             outline: none;
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.8);
@@ -159,67 +158,33 @@
         <button class="close-icon" onclick="closeDialog()">&times;</button>
 
         <!-- Header -->
-        <div class="header">CONTROLLERS</div>
+        <div class="header">TIMERS</div>
 
         <!-- Row 1 -->
         <div class="row-container">
             <div class="parameter">PARAMETER</div>
-            <div class="parameter">CL Room Humidity</div>
-            <div class="parameter">CL Room Temp</div>
-            <div class="parameter">CL SA Temp</div>
+            <div class="parameter">PUMP</div>
         </div>
         <div class="row-container">
-            <div class="parameter">PROCESS VALUE</div>
-            <div class="value" id="Spg2_iVa_Act_RH">{{ msg.payload.Spg2_iVa_Act_RH | round(1) }}</div>
-            <div class="value" id="Spg2_iVa_Act_Temp">{{ msg.payload.Spg2_iVa_Act_Temp | round(1) }}</div>
-            <div class="value" id="Spg2_iVa_Act_WoT">{{ msg.payload.Spg2_iVa_Act_WoT | round(1) }}</div>
+            <div class="parameter">ON-DELAY(s)</div>
+            <div class="set-box"><input type="number" id="Spg2_iTime_Start_Pump"
+                    value="{{ msg.payload['Spg2_iTime_Start_Pump'] | round(1) }}"
+                    data-nodeid="{{ msg.node_ids['Spg2_iTime_Start_Pump'] }}" />
+            </div>
         </div>
 
-        <div class="row-container m-value-row">
-            <!-- Added class here -->
-            <div class="parameter">SET POINT</div>
-            <div class="set-box"><input type="number" id="Spg2_iMi_Set_RH"
-                    value="{{ msg.payload['Spg2_iMi_Set_RH'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_RH'] }}" /></div>
-            <div class="set-box"><input type="number" id="Spg2_iMi_Set_Temp"
-                    value="{{ msg.payload['Spg2_iMi_Set_Temp'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iMi_Set_Temp'] }}" /></div>
-            <div class="set-box"><input type="number" id="Spg2_iVa_Set_Temp_WoT"
-                    value="{{ msg.payload['Spg2_iVa_Set_Temp_WoT'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_iVa_Set_Temp_WoT'] }}" /></div>
+    <!-- Row 2 -->
+    <div class="row-container">
+        <!-- Added class here -->
+        <div class="parameter">OFF-DELAYS(s)</div>
+        <div class="set-box"><input type="number" id="Spg2_iTime_Stop_Pump"
+                value="{{ msg.payload['Spg2_iTime_Stop_Pump'] | round(1) }}"
+                data-nodeid="{{ msg.node_ids['Spg2_iTime_Stop_Pump'] }}" />
         </div>
+    </div>
 
-        <div class="row-container m-value-row">
-            <!-- Added class here -->
-            <div class="parameter">P.GAIN</div>
-            <div class="set-box"><input type="number" id="Spg2_Humidity_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_Humidity_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Humidity_Pid_Para_Gain'] }}" /></div>
-            <div class="set-box"><input type="number" id="Spg2_Temp_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_Temp_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Temp_Pid_Para_Gain'] }}" /></div>
-            <div class="set-box"><input type="number" id="Spg2_Damper_Pid_Para_Gain"
-                    value="{{ msg.payload['Spg2_Damper_Pid_Para_Gain'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Damper_Pid_Para_Gain'] }}" /></div>
-        </div>
-
-        <div class="row-container m-value-row">
-            <!-- Added class here -->
-            <div class="parameter">Integration Time</div>
-            <div class="set-box"><input type="number" id="Spg2_Humidity_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_Humidity_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Humidity_Pid_Para_IntegrationTime'] }}" /></div>
-            <div class="set-box"><input type="number" id="Spg2_Temp_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_Temp_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Temp_Pid_Para_IntegrationTime'] }}" /></div>
-            <div class="set-box"><input type="number" id="Spg2_Damper_Pid_Para_IntegrationTime"
-                    value="{{ msg.payload['Spg2_Damper_Pid_Para_IntegrationTime'] | round(1) }}" data-nodeid="{{ msg.node_ids['Spg2_Damper_Pid_Para_IntegrationTime'] }}" /></div>
-        </div>
-
-        <div class="row-container">
-            <!-- Added class here -->
-            <div class="parameter">OUTPUT(Y)</div>
-            <div class="value" id="Spg2_iVa_Humid_Pid_Out">{{ msg.payload.Spg2_iVa_Humid_Pid_Out | round(1) }}</div>
-            <div class="value" id="Spg2_iVa_Temp_Pid_Output">{{ msg.payload.Spg2_iVa_Temp_Pid_Output | round(1) }}</div>
-            <div class="value" id="Spg2_iVa_Damper_Pid_Output">{{ msg.payload.Spg2_iVa_Damper_Pid_Output | round(1) }}</div>
-        </div>
-
-        <div class="dialog-footer">
-            <button class="btn btn-success" onclick="updateSettings()">Update</button>
-        </div>
-
+    <div class="dialog-footer">
+        <button class="btn btn-success" onclick="updateSettings()">Update</button>
     </div>
 
 
@@ -248,38 +213,30 @@
         // });
 
         socket.on('update', function (data) {
-    Object.keys(data).forEach((key) => {
-        const element = document.getElementById(key);
-        if (element) {
-            if (element.classList.contains('value')) {
-                element.innerText = data[key]; // Ensure real-time update for blue box values
-            } else if (element.tagName === 'INPUT' && element.type === 'number') {
-                if (document.activeElement !== element) {
-                    element.value = data[key]; // Update set-box inputs
+            Object.keys(data).forEach((key) => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.classList.contains('value')) {
+                        element.innerText = data[key]; // Ensure real-time update for blue box values
+                    } else if (element.tagName === 'INPUT' && element.type === 'number') {
+                        if (document.activeElement !== element) {
+                            element.value = data[key]; // Update set-box inputs
+                        }
+                    } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
+                        element.checked = data[key]; // Ensure real-time update for auto/manual switch
+                        const textElement = document.getElementById(element.id + '-text');
+                        if (textElement) {
+                            textElement.textContent = data[key] ? 'Manual' : 'Auto';
+                        }
+                    }
                 }
-            } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
-                element.checked = data[key]; // Ensure real-time update for auto/manual switch
-                const textElement = document.getElementById(element.id + '-text');
-                if (textElement) {
-                    textElement.textContent = data[key] ? 'Manual' : 'Auto';
-                }
-            }
-        }
-    });
-});
-        
+            });
+        });
+
         function updateSettings() {
             const setpoints = {
-                Spg2_iMi_Set_RH: document.getElementById('Spg2_iMi_Set_RH').value,
-                Spg2_iMi_Set_Temp: document.getElementById('Spg2_iMi_Set_Temp').value,
-                Spg2_iVa_Set_Temp_WoT: document.getElementById('Spg2_iVa_Set_Temp_WoT').value,
-                Spg2_Humidity_Pid_Para_Gain: document.getElementById('Spg2_Humidity_Pid_Para_Gain').value,
-                Spg2_Temp_Pid_Para_Gain: document.getElementById('Spg2_Temp_Pid_Para_Gain').value,
-                Spg2_Damper_Pid_Para_Gain: document.getElementById('Spg2_Damper_Pid_Para_Gain').value,
-                Spg2_Humidity_Pid_Para_IntegrationTime: document.getElementById('Spg2_Humidity_Pid_Para_IntegrationTime').value,
-                Spg2_Temp_Pid_Para_IntegrationTime: document.getElementById('Spg2_Temp_Pid_Para_IntegrationTime').value,
-                Spg2_Damper_Pid_Para_IntegrationTime: document.getElementById('Spg2_Damper_Pid_Para_IntegrationTime').value,
-
+                Spg2_iTime_Start_Pump: document.getElementById('Spg2_iTime_Start_Pump').value,
+                Spg2_iTime_Stop_Pump: document.getElementById('Spg2_iTime_Stop_Pump').value
             };
 
             fetch('/write', {
@@ -290,9 +247,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Settings updated successfully!');
+                        window.alert('Settings updated successfully!');
                     } else {
-                        alert('Failed to update settings.');
+                        window.alert('Failed to update settings.');
                     }
                 })
                 .catch(error => console.error('Error:', error));

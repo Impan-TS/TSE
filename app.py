@@ -779,6 +779,14 @@ def sp():
     }
     return render_template('Settings/spinning2_sp.html', msg=msg)  # Render the HTML template
 
+@app.route('/ti')
+def ti():
+    msg = {
+        'payload': latest_values,
+        'node_ids': load_node_ids()  # Include node_ids from the YAML file
+    }
+    return render_template('Settings/spinning2_ti.html', msg=msg)  # Render the HTML template
+
 @socketio.on('connect')
 def handle_connect():
     # Send the latest values immediately upon connection

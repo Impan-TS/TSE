@@ -893,16 +893,25 @@
             event.preventDefault();  // Prevent any default form submission behavior
 
             const setpoints = {};
+            let isValid = true; // Flag to check if all inputs are valid
 
             document.querySelectorAll("input[data-nodeid]").forEach(input => {
                 const nodeid = input.getAttribute("data-nodeid");
                 const datatype = input.getAttribute("data-datatype");
                 let value = input.value;
 
+                // Validate input to be between 0 and 100
+                if (value < 0 || value > 100) {
+                    showErrorMessage("❌ Invalid input! Please enter a value between 0 and 100.");
+                    isValid = false; // Set the flag to false when validation fails
+                    return;  // Exit function if input is invalid
+                }
+
                 if (nodeid) {
                     if (datatype === "boolean") {
                         if (value !== "0" && value !== "1") {
-                            alert("Please enter either 0 or 1 for boolean values.");
+                            showErrorMessage("❌ Please enter either 0 or 1 for boolean values.");
+                            isValid = false; // Set the flag to false when validation fails
                             return;
                         }
                         value = value === "1";
@@ -913,6 +922,10 @@
                 }
             });
 
+            // If validation fails, stop the rest of the function
+            if (!isValid) return;
+
+            // Continue with the fetch only if inputs are valid
             fetch('/write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -957,11 +970,50 @@
                             }, 2000);
                         }
                     } else {
-                        alert(`❌ Failed to update settings: ${data.error}`);
+                        showErrorMessage(`❌ Failed to update settings: ${data.error}`);
                     }
                 })
                 .catch(error => console.error('Error updating settings:', error));
         }
+
+        function showErrorMessage(message) {
+            const errorPopup = document.createElement('div');
+            errorPopup.id = 'error-popup';
+            errorPopup.innerText = message;
+
+            // Styled error message
+            errorPopup.style.position = 'fixed';
+            errorPopup.style.top = '13%';
+            errorPopup.style.left = '55%';
+            errorPopup.style.transform = 'translate(-50%, -50%)';
+            errorPopup.style.background = '#ff4d4d'; // Red background for error
+            errorPopup.style.color = 'white';
+            errorPopup.style.padding = '8px 28px';
+            errorPopup.style.borderRadius = '4px';
+            errorPopup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+            errorPopup.style.fontSize = '12px';
+            errorPopup.style.fontWeight = 'bold';
+            errorPopup.style.textAlign = 'center';
+            errorPopup.style.zIndex = '1000';
+            errorPopup.style.opacity = '0';
+            errorPopup.style.transition = 'opacity 0.5s ease-in-out';
+
+            document.body.appendChild(errorPopup);
+
+            // Fade in effect
+            setTimeout(() => {
+                errorPopup.style.opacity = '1';
+            }, 10);
+
+            // Fade out effect and remove after 3 seconds
+            setTimeout(() => {
+                errorPopup.style.opacity = '0';
+                setTimeout(() => errorPopup.remove(), 500);
+            }, 3000);
+        }
+
+
+
 
 
         function closeDialog() {

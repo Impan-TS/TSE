@@ -93,14 +93,14 @@
                 <td>
                     <span id="status-{{ alarm.code }}">
                         {% if alarm.status == "Acknowledged" %}
-                            <span style="color:green;">✅</span>
+                        <span style="color:green;">✅</span>
                         {% else %}
-                            <span class="alert-icon">&#x26A0;</span>
+                        <span class="alert-icon">&#x26A0;</span>
                         {% endif %}
                     </span>
                     <button id="button-{{ alarm.code }}" onclick="acknowledgeAlarm('{{ alarm.code }}')"
-                            style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;"
-                            {% if alarm.status == "Acknowledged" %}disabled{% endif %}>
+                        style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;"
+                        {% if alarm.status == "Acknowledged" %}disabled{% endif %}>
                         Acknowledge
                     </button>
                 </td>
@@ -202,30 +202,30 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ code: alarmCode, trip: newTripStatus })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    // Revert the button state if the server fails to update
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        // Revert the button state if the server fails to update
+                        alarm.trip = !newTripStatus; // Revert trip status
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
+                        button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
+                        button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
+                        alert("Failed to toggle alarm status. Reverting changes.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error toggling alarm status:", error);
+                    // Revert the button state if there's an error
                     alarm.trip = !newTripStatus; // Revert trip status
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
                     button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
                     button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
-                    alert("Failed to toggle alarm status. Reverting changes.");
-                }
-            })
-            .catch(error => {
-                console.error("Error toggling alarm status:", error);
-                // Revert the button state if there's an error
-                alarm.trip = !newTripStatus; // Revert trip status
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
-                button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
-                button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
-                alert("An error occurred. Reverting changes.");
-            });
+                    alert("An error occurred. Reverting changes.");
+                });
         }
 
         // Listen for new alarms via socket.io
-        socket.on('alarm_update', function(alarms) {
+        socket.on('alarm_update', function (alarms) {
             alarms.forEach(alarm => {
                 const alarmWithTimestamp = {
                     ...alarm,
@@ -243,8 +243,9 @@
         // Initial render from localStorage
         renderAlarmHistory();
     </script>
-    
-    
+
+
 </body>
+
 </html>
 {% endblock %}
