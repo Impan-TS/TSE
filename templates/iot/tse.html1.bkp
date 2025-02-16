@@ -706,27 +706,6 @@
         </button>
         <div id="homeSubmodules" class="submodule-container"></div>
 
-        <!-- <button id="departments" class="module-button">
-                <i class="fa-solid fa-building"></i> Departments
-            </button> -->
-
-        <!-- <div id="departmentsSubmodules" class="submodule-container">
-                {% for submodule in submodules %}
-                <button class="submodule-button"
-                    onclick="window.location.href='/{{ submodule | lower | replace(' ', '') }}'">
-                    {{ submodule }}
-                    <i class="fa-solid fa-chevron-down dropdown-icon"></i>
-                </button>
-                {% endfor %}
-    
-                <div id="dropdownSubmodules" class="submodule-container">
-                    {% for submodule in allowed_submodules %}
-                    <button class="submodule-button bg"><i class="fa-solid fa-gear settings-icon"></i>{{ submodule
-                        }}</button>
-                    {% endfor %}
-                </div>
-            </div> -->
-
         <button id="departments" class="module-button">
             <i class="fa-solid fa-building"></i> Departments
         </button>
@@ -889,6 +868,12 @@
             });
         }
 
+        document.querySelectorAll("input[data-nodeid]").forEach(input => {
+            input.addEventListener("input", function () {
+                tempSetpoints[this.getAttribute("data-nodeid")] = this.value;
+            });
+        });
+
         function updateSettings(event) {
             event.preventDefault();  // Prevent any default form submission behavior
 
@@ -900,17 +885,39 @@
                 const datatype = input.getAttribute("data-datatype");
                 let value = input.value;
 
-                // Validate input to be between 0 and 100
-                if (value < 0 || value > 100) {
-                    showErrorMessage("❌ Invalid input! Please enter a value between 0 and 100.");
-                    isValid = false; // Set the flag to false when validation fails
-                    return;  // Exit function if input is invalid
+                // Find the row/column name for the parameter
+                const row = input.closest('.row-container'); // Find the closest row container
+                const parameter = row ?.querySelector('.parameter') ?.innerText || 'Unknown parameter';
+                const parameters = row ?.querySelector('.parameters') ?.innerText || 'Unknown parameters';
+
+                // Check if it's an "INTEGRAL TN" input and apply different validation
+                if (parameter.includes("Integration Time")) {
+                    // Validate input to be between 0 and 1000 for INTEGRAL TN inputs
+                    if (value < 0 || value > 1000) {
+                        showErrorMessage(`❌ Invalid input for ${parameter}! Please enter a value between 0 and 1000.`);
+                        isValid = false; // Set the flag to false when validation fails
+                        return;  // Exit function if input is invalid
+                    }
+                } else if (parameters.includes("M VALUE")) {
+                    // Validate input to be 0 or 1 for "M VALUE"
+                    if (value < 0 || value > 1) {
+                        showErrorMessage(`❌ Invalid input for ${parameters}! Please enter a value of 0 or 1.`);
+                        isValid = false; // Set the flag to false when validation fails
+                        return;  // Exit function if input is invalid
+                    }
+                } else {
+                    // Validate input to be between 0 and 100 for other inputs
+                    if (value < 0 || value > 100) {
+                        showErrorMessage(`❌ Invalid input for ${parameter}! Please enter a value between 0 and 100.`);
+                        isValid = false; // Set the flag to false when validation fails
+                        return;  // Exit function if input is invalid
+                    }
                 }
 
                 if (nodeid) {
                     if (datatype === "boolean") {
                         if (value !== "0" && value !== "1") {
-                            showErrorMessage("❌ Please enter either 0 or 1 for boolean values.");
+                            showErrorMessage(`❌ Invalid boolean input for ${parameter}! Please enter either 0 or 1.`);
                             isValid = false; // Set the flag to false when validation fails
                             return;
                         }
@@ -976,6 +983,7 @@
                 .catch(error => console.error('Error updating settings:', error));
         }
 
+
         function showErrorMessage(message) {
             const errorPopup = document.createElement('div');
             errorPopup.id = 'error-popup';
@@ -1011,9 +1019,6 @@
                 setTimeout(() => errorPopup.remove(), 500);
             }, 3000);
         }
-
-
-
 
 
         function closeDialog() {
@@ -1498,11 +1503,49 @@
         // Call the function to load states on page load
         // loadSubmoduleStates();
 
+        // // Add event listeners for the modules
+        // document.getElementById("departments").addEventListener("click", function (event) {
+        //     event.preventDefault(); // Prevent page reload
+        //     const submoduleContainer = document.getElementById("departmentsSubmodules");
+
+        //     // Toggle visibility
+        //     const isVisible = submoduleContainer.style.display === "block";
+        //     submoduleContainer.style.display = isVisible ? "none" : "block";
+
+        //     // Store state in localStorage
+        //     localStorage.setItem("departmentsSubmodulesOpen", !isVisible);
+        // });
+
+        // // Restore state on page load
+        // document.addEventListener("DOMContentLoaded", function () {
+        //     const submoduleContainer = document.getElementById("departmentsSubmodules");
+        //     if (localStorage.getItem("departmentsSubmodulesOpen") === "true") {
+        //         submoduleContainer.style.display = "block";
+        //     }
+        // });
+
         // Add event listeners for the modules
         document.getElementById("departments").addEventListener("click", function (event) {
             event.preventDefault(); // Prevent page reload
-            toggleSubmodules("departmentsSubmodules", this.querySelector(".dropdown-icon"));
+            const submoduleContainer = document.getElementById("departmentsSubmodules");
+
+            // Toggle visibility
+            const isVisible = submoduleContainer.style.display === "block";
+            submoduleContainer.style.display = isVisible ? "none" : "block";
+
+            // Store state in sessionStorage
+            sessionStorage.setItem("departmentsSubmodulesOpen", !isVisible);
         });
+
+        // Restore state on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            const submoduleContainer = document.getElementById("departmentsSubmodules");
+            if (sessionStorage.getItem("departmentsSubmodulesOpen") === "true") {
+                submoduleContainer.style.display = "block";
+            }
+        });
+
+
 
         document.getElementById("alarms").addEventListener("click", function (event) {
             event.preventDefault(); // Prevent page reload

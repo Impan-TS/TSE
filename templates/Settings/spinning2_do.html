@@ -64,6 +64,20 @@
             color: black;
         }
 
+        .parameters {
+            width: 100%;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            font-size: 11px;
+            font-weight: 530;
+            font-family: 'Times New Roman', 'Georgia', serif;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background-color: #c9f6ff;
+            color: black;
+        }
+
         .value {
             background-color: #007bff;
             color: white;
@@ -88,6 +102,7 @@
         }
 
         .parameter,
+        .parameters,
         .value,
         .set-box input {
             font-family: 'Lato', sans-serif;
@@ -209,7 +224,7 @@
 
         <!-- Row 2 -->
         <div class="row-container m-value-row">
-            <div class="parameter">M VALUE</div>
+            <div class="parameters">M VALUE</div>
             <div class="set-box">
                 <input type="number" id="Spg2_iMi_DO_Man" value="{{ 1 if msg.payload.Spg2_iMi_DO_Man else 0 }}" min="0"
                     max="1" step="1" oninput="validateInput(this)"
@@ -253,21 +268,21 @@
 
     <script>
 
-        // Set up Socket.IO connection
         const socket = io();
+        let tempSetpoints = {}; // Store temporary input values
 
         socket.on('update', function (data) {
             Object.keys(data).forEach((key) => {
                 const element = document.getElementById(key);
                 if (element) {
                     if (element.classList.contains('value')) {
-                        element.innerText = data[key]; // Ensure real-time update for blue box values
+                        element.innerText = data[key];
                     } else if (element.tagName === 'INPUT' && element.type === 'number') {
-                        if (document.activeElement !== element) {
-                            element.value = data[key]; // Update set-box inputs
+                        if (!(key in tempSetpoints)) {
+                            element.value = data[key];
                         }
                     } else if (element.tagName === 'INPUT' && element.type === 'checkbox') {
-                        element.checked = data[key]; // Ensure real-time update for auto/manual switch
+                        element.checked = data[key];
                         const textElement = document.getElementById(element.id + '-text');
                         if (textElement) {
                             textElement.textContent = data[key] ? 'Manual' : 'Auto';
@@ -276,6 +291,7 @@
                 }
             });
         });
+
 
         // Dynamically update switch modes based on node values
         function updateSwitchModes() {
