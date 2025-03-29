@@ -6,225 +6,251 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Output</title>
     <!-- Include Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="static\css\font.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Lato:wght@400;700&display=swap"
-        rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Lato:wght@400;700&display=swap"
+        rel="stylesheet"> -->
 
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
+        
+        .btn-success {
+            color: #fff;
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+            border-radius: 3px;
+            border-style:solid;
+            box-shadow: none;
+            }
+            .btn-success:focus,
+            .btn-success.focus {
+            color: #fff;
+            background-color: #449d44;
+            border-color: #255625;
+            }
+            .btn-success:hover {
+            color: #fff;
+            background-color: #449d44;
+            border-color: #398439;
+            }
 
-        /* Styles for the dialog and inputs */
-        .dialog-box {
-            max-width: 35%;
-            width: auto;
-            border: 1px solid #333;
-            border-radius: 10px;
-            background-color: #e3f4ff;
-            padding: 20px;
-            margin: 0 auto;
-            box-sizing: border-box;
-            position: relative;
-            font-family: 'Lato', sans-serif;
-        }
+            .btn-danger {
+            color: #fff;
+            background-color: #d9534f;
+            border-color: #d43f3a;
+            border-style: solid;
+            box-shadow: none;
+            border-radius: 3px;
+            }
+            .btn-danger:focus,
+            .btn-danger.focus {
+            color: #fff;
+            background-color: #c9302c;
+            border-color: #761c19;
+            }
+            .btn-danger:hover {
+            color: #fff;
+            background-color: #c9302c;
+            border-color: #ac2925;
+            }
 
-        .header {
-            background-color: #0c609d;
-            color: white;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            width: 100%;
-            font-family: 'Roboto', sans-serif;
-        }
 
-        .row-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 8px;
-            margin-bottom: 8px;
-        }
 
-        .parameter {
-            width: 100%;
-            height: 40px;
-            text-align: center;
-            line-height: 40px;
-            font-size: 11px;
-            font-weight: 530;
-            font-family: 'Times New Roman', 'Georgia', serif;
-            border: 2px solid #333;
-            border-radius: 5px;
-            background-color: #c9f6ff;
-            color: black;
-        }
+/* Styles for the dialog and inputs */
+.dialog-box {
+    max-width: 30%;
+    width: auto;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #e3f4ff;
+    padding: 10px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    position: relative;
+    top: -20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+}
 
-        .parameters {
-            width: 100%;
-            height: 40px;
-            text-align: center;
-            line-height: 40px;
-            font-size: 11px;
-            font-weight: 530;
-            font-family: 'Times New Roman', 'Georgia', serif;
-            border: 2px solid #333;
-            border-radius: 5px;
-            background-color: #c9f6ff;
-            color: black;
-        }
+.header {
+    background-color: #0c609d;
+    color: white;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+}
 
-        .value {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-            text-align: center;
-            border: 2px solid #333;
-            border-radius: 5px;
-            line-height: 40px;
-            padding-right: 10px;
-        }
+.row-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 5px;
+    margin-bottom: 5px;
+}
 
-        .set-box input {
-            width: 100%;
-            height: 40px;
-            background: #4caf50;
-            color: white;
-            font-weight: 600;
-            text-align: center;
-            border: 2px solid #333;
-            border-radius: 5px;
-            line-height: 40px;
-        }
+.parameter {
+    width: 100%;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    font-size: 10px;
+    font-weight: 530;
+    font-family: 'Times New Roman', 'Georgia', serif;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background-color: #c9f6ff;
+    color: black;
+}
 
-        .parameter,
-        .parameters,
-        .value,
-        .set-box input {
-            font-family: 'Lato', sans-serif;
-        }
+.parameters {
+    width: 100%;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    font-size: 10px;
+    font-weight: 530;
+    font-family: 'Times New Roman', 'Georgia', serif;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background-color: #c9f6ff;
+    color: black;
+}
 
-        .m-value-row .value {
-            background-color: #28a745;
-            color: white;
-        }
+.value {
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #333;
+    border-radius: 4px;
+    line-height: 30px;
+    padding-right: 6px;
+}
 
-        .close-icon {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 18px;
-            height: 18px;
-            padding: 2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #dc3545;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, background-color 0.2s;
-        }
+.set-box input {
+    width: 100%;
+    height: 30px;
+    background: #4caf50;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #333;
+    border-radius: 4px;
+    line-height: 30px;
+}
 
-        .close-icon:hover {
-            background-color: #a71d2a;
-            transform: scale(1.1);
-        }
+.parameter,
+.parameters,
+.value,
+.set-box input {
+    font-family: 'Lato', sans-serif;
+}
 
-        .set-box input:focus {
-            outline: none;
-            box-shadow: 0 0 5px rgba(76, 175, 80, 0.8);
-        }
+.m-value-row .value {
+    background-color: #28a745;
+    color: white;
+}
 
-        .dialog-footer {
-            text-align: right;
-            background: #e3f4ff;
-        }
+.set-box input:focus {
+    outline: none;
+    box-shadow: 0 0 3px rgba(76, 175, 80, 0.8);
+}
 
-        .dialog-footer button {
-            margin-left: 10px;
-        }
+.dialog-footer {
+    text-align: right;
+    background: #e3f4ff;
+}
 
-        /* Styling for toggle switch */
-        .switch {
-            margin-top: 6px;
-            position: relative;
-            display: inline-block;
-            width: 42px;
-            height: 24px;
-        }
+.dialog-footer button {
+    margin-left: 6px;
+}
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+/* Styling for toggle switch */
+.switch-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
 
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #7dcbff;
-            transition: 0.4s;
-            border-radius: 34px;
-        }
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+    margin-right: 3px;
+}
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.4s;
-        }
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
 
-        input:checked+.slider {
-            background-color: #0c609d;
-        }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #7dcbff;
+    transition: 0.3s;
+    border-radius: 34px;
+}
 
-        input:checked+.slider:before {
-            transform: translateX(16px);
-        }
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+}
+
+input:checked+.slider {
+    background-color: #0c609d;
+}
+
+input:checked+.slider:before {
+    transform: translateX(14px);
+}
+
+.mode-text {
+    font-size: 9px;
+    white-space: nowrap;
+}
     </style>
 </head>
 
 <body>
     <div class="dialog-box mt-5">
-        <!-- Close Button -->
-        <button class="close-icon" onclick="closeDialog()">&times;</button>
 
         <!-- Header -->
         <div class="header">DIGITAL OUTPUTS</div>
 
         <!-- Row 1 -->
         <div class="row-container">
-            <div class="parameter">PARAMETER</div>
-            <div class="parameter">Washer Pump-1</div>
-            <div class="parameter">Washer Pump-2</div>
+            <div class="parameter" style= " background-color: rgb(0, 86, 128); color:white">PARAMETER</div>
+            <div class="parameter" style= " background-color: rgb(0, 86, 128); color:white">Washer Pump-1</div>
+            <div class="parameter" style= " background-color: rgb(0, 86, 128); color:white">Washer Pump-2</div>
         </div>
         <div class="row-container">
-            <div class="parameter">VALUE</div>
+            <div class="parameter" style="background-color: rgb(20,105,46); color:white">VALUE</div>
             <div class="value" id="Spg2_DO_Pump_Act">{{ 1 if msg.payload.Spg2_DO_Pump_Act else 0 }}</div>
             <div class="value" id="Spg2_DO_Pump_Act2">{{ 1 if msg.payload.Spg2_DO_Pump_Act2 else 0 }}</div>
         </div>
 
         <!-- Row 2 -->
         <div class="row-container m-value-row">
-            <div class="parameters">M VALUE</div>
+            <div class="parameters" style="background-color: rgb(20,105,46); color:white">M VALUE</div>
             <div class="set-box">
                 <input type="number" id="Spg2_iMi_DO_Man" value="{{ 1 if msg.payload.Spg2_iMi_DO_Man else 0 }}" min="0"
                     max="1" step="1" oninput="validateInput(this)"
@@ -239,27 +265,32 @@
 
         <!-- Row 3: MODE Row with Toggle Switches -->
         <div class="row-container">
-            <div class="parameter">MODE</div>
+            <div class="parameter" style="background-color: rgb(20,105,46); color:white">MODE</div>
             <div class="parameter">
-                <label class="switch">
-                    <input type="checkbox" id="mode1" {{ 'checked' if msg.payload.Spg2_iFl_Start_DO_B else '' }}
-                        onchange="updateModeText(this, 'mode1-text', 'Spg2_iFl_Start_DO_B')">
-                    <span class="slider"></span>
-                </label>
-                <span id="mode1-text">{{ 'Manual' if msg.payload.Spg2_iFl_Start_DO_B else 'Auto' }}</span>
+                <div class="switch-container">
+                    <label class="switch">
+                        <input type="checkbox" id="mode1" {{ 'checked' if msg.payload.Spg2_iFl_Start_DO_B else '' }}
+                            onchange="updateModeText(this, 'mode1-text', 'Spg2_iFl_Start_DO_B')">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="mode1-text" class="mode-text">{{ 'Manual' if msg.payload.Spg2_iFl_Start_DO_B else 'Auto' }}</span>
+                </div>
             </div>
 
             <div class="parameter">
-                <label class="switch">
-                    <input type="checkbox" id="mode2" {{ 'checked' if msg.payload.Spg2_iFl_Start_DO_B2 else '' }}
-                        onchange="updateModeText(this, 'mode2-text', 'Spg2_iFl_Start_DO_B2')">
-                    <span class="slider"></span>
-                </label>
-                <span id="mode2-text">{{ 'Manual' if msg.payload.Spg2_iFl_Start_DO_B2 else 'Auto' }}</span>
+                <div class="switch-container">
+                    <label class="switch">
+                        <input type="checkbox" id="mode2" {{ 'checked' if msg.payload.Spg2_iFl_Start_DO_B2 else '' }}
+                            onchange="updateModeText(this, 'mode2-text', 'Spg2_iFl_Start_DO_B2')">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="mode2-text" class="mode-text">{{ 'Manual' if msg.payload.Spg2_iFl_Start_DO_B2 else 'Auto' }}</span>
+                </div>
             </div>
         </div>
 
         <div class="dialog-footer">
+            <button class="btn btn-danger" onclick="closeDialog()">Close</button>
             <button class="btn btn-success" onclick="updateSettings()">Update</button>
         </div>
     </div>
@@ -267,7 +298,6 @@
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
 
     <script>
-
         const socket = io();
         let tempSetpoints = {}; // Store temporary input values
 
@@ -292,29 +322,57 @@
             });
         });
 
+        function updateModeText(checkbox, textId, key) {
+            const textElement = document.getElementById(textId);
+            textElement.textContent = checkbox.checked ? 'Manual' : 'Auto';
+            
+            // Send the updated mode to the server
+            const update = {};
+            update[key] = checkbox.checked;
+            
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(update),
+            }).catch(error => console.error('Error:', error));
+        }
+
+        function updateSettings() {
+            const setpoints = {
+                Spg2_iMi_DO_Man: document.getElementById('Spg2_iMi_DO_Man').value,
+                Spg2_iMi_DO_Man2: document.getElementById('Spg2_iMi_DO_Man2').value,
+            };
+
+            fetch('/write', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(setpoints),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.success ? 'Settings updated successfully!' : 'Failed to update settings.');
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function closeDialog() {
+            document.querySelector('.dialog-box').style.display = 'none';
+        }
 
         // Dynamically update switch modes based on node values
         function updateSwitchModes() {
-            const mode1 = document.getElementById('mode1');
-            const mode2 = document.getElementById('mode2');
-            const mode1Text = document.getElementById('mode1-text');
-            const mode2Text = document.getElementById('mode2-text');
+            const switches = [
+                { id: 'mode1', key: 'Spg2_iFl_Start_DO_B', textId: 'mode1-text' },
+                { id: 'mode2', key: 'Spg2_iFl_Start_DO_B2', textId: 'mode2-text' }
+            ];
 
-            if (msg.payload.Spg2_iFl_Start_DO_B === true) {
-                mode1.checked = true;
-                mode1Text.textContent = 'Manual';
-            } else {
-                mode1.checked = false;
-                mode1Text.textContent = 'Auto';
-            }
-
-            if (msg.payload.Spg2_iFl_Start_DO_B2 === true) {
-                mode2.checked = true;
-                mode2Text.textContent = 'Manual';
-            } else {
-                mode2.checked = false;
-                mode2Text.textContent = 'Auto';
-            }
+            switches.forEach(switchObj => {
+                const element = document.getElementById(switchObj.id);
+                const textElement = document.getElementById(switchObj.textId);
+                if (element && textElement) {
+                    textElement.textContent = element.checked ? 'Manual' : 'Auto';
+                }
+            });
         }
 
         function validateInput(input) {

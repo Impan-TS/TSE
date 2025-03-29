@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TSE Control System{% endblock %}</title>
+    <link rel="stylesheet" href="static\css\font.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
@@ -61,6 +62,27 @@
             outline: none;
             cursor: pointer;
             font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            border-bottom: 0.2px solid black;
+            position: relative;
+            font-style: Roboto Mono;
+        }
+
+        .module-buttons {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: linear-gradient(rgba(0, 51, 102, 0.9) 0%, rgba(173, 216, 230, 0.6) 98%);
+            color: rgb(238, 238, 255);
+            padding-left: 15px;
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 13px;
             font-weight: bold;
             transition: background-color 0.3s ease;
             border-bottom: 0.2px solid black;
@@ -701,7 +723,7 @@
 
 
     <div class="sidebar">
-        <button id="home" class="module-button" onclick="window.location.href='/dashboard'">
+        <button id="home" class="module-button" onclick="window.location.href = 'dashboard';closeDropdown()">
             <i class="fa-solid fa-house"></i> Home
         </button>
         <div id="homeSubmodules" class="submodule-container"></div>
@@ -713,15 +735,16 @@
         <div id="departmentsSubmodules" class="submodule-container">
             {% for submodule, template in submodules.items() %}
             <button class="submodule-button">
-                <a href="{{ url_for('render_submodule', submodule=submodule) }}">
-                    {{ submodule }}
+                <a href="{{ url_for('render_submodule', submodule=submodule) }}"
+                    onclick="toggleSubmodules('{{ submodule | replace(' ', '_') }}Submodules', '{{ submodule }}', this)">
+                    &nbsp;&nbsp;&nbsp; {{ submodule }}
                 </a>
                 <i class="fa-solid fa-chevron-down dropdown-icon"
-                    onclick="toggleSubmodules('{{ submodule | replace(' ', '_') }}Submodules', this)"></i>
+                    onclick="toggleSubmodules('{{ submodule | replace(' ', '_') }}Submodules', '{{ submodule }}', this)"
+                    style="display: none;" data-submodule="{{ submodule }}"></i>
             </button>
 
             <div id="{{ submodule | replace(' ', '_') }}Submodules" class="submodule-container">
-                <!-- Conditionally display the Dashboard button -->
                 {% if dashboard_name %}
                 <button class="submodule-button bg">
                     <i class="fa-solid fa-home" style="font-size: 9px; margin-left: 5px; padding-right: 5px;"></i>
@@ -730,17 +753,71 @@
                 {% endif %}
 
 
-                <!-- Add submodule options here -->
-                {% for submodule_option in allowed_submodules %}
+
+
+
+                <div >
+                <!-- testing as db not working -->
+                <button class="submodule-button bg" onclick="loadTemplate('Set Point')">
+                   &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Set Point
+                </button>
+                <button class="submodule-button bg" onclick="loadTemplate('Analog Input')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Analog Input
+                </button><button class="submodule-button bg" onclick="loadTemplate('Digital Input')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Digital Input
+                </button><button class="submodule-button bg" onclick="loadTemplate('Analog Output')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Analog Output
+                </button><button class="submodule-button bg" onclick="loadTemplate('Controllers')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Controllers
+                </button><button class="submodule-button bg" onclick="loadTemplate('Digital Output')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Digital Output
+                </button>
+                <button class="submodule-button bg" onclick="loadTemplate('Pump Min Set')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Pump Min Set
+                </button>
+                <button class="submodule-button bg" onclick="loadTemplate('Preset Values')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Preset Values
+                </button><button class="submodule-button bg" onclick="loadTemplate('Timer')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> Timer
+                </button>
+                <button class="submodule-button bg" onclick="loadTemplate('UPSS')">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-gear settings-icon"></i> UPSS
+                </button>
+            </div>
+                  <!-- testing as db not working -->
+
+
+
+
+
+
+                {% if session['role'] == 'Operator' %}
+                <button class="submodule-button bg" onclick="loadTemplate('Set Point')">
+                    <i class="fa-solid fa-gear settings-icon"></i> Set Point
+                </button>
+                
+                {% elif session['role'] == 'Manager' %}
+                {% for submodule_option in session['allowed_submodules'] if submodule_option != "Pump Min Set" %}
                 <button class="submodule-button bg" onclick="loadTemplate('{{ submodule_option }}')">
                     <i class="fa-solid fa-gear settings-icon"></i> {{ submodule_option }}
                 </button>
                 {% endfor %}
+
+                {% elif session['role'] %}
+                {% for submodule_option in session['allowed_submodules'] %}
+                <button class="submodule-button bg" onclick="loadTemplate('{{ submodule_option }}')">
+                    <i class="fa-solid fa-gear settings-icon"></i> {{ submodule_option }}
+                </button>
+                {% endfor %}
+
+                {% endif %}
             </div>
             {% endfor %}
         </div>
 
-        <button id="alarms" class="module-button" onclick="window.location.href='/alarmslist'">
+
+
+        <button id="alarms" class="module-button" onclick="window.location.href='/alarmslist';closeDropdown()">
             <i class="fa-solid fa-triangle-exclamation"></i> Alarms
         </button>
         <div id="alarmsSubmodules" class="submodule-container"></div>
@@ -750,16 +827,16 @@
             <i class="fa-solid fa-file"></i> Analytics
         </button>
         <div id="reportsSubmodules" class="submodule-container">
-            <button class="submodule-button" onclick="showIframe('trendsIframe')">Trends</button>
-            <button class="submodule-button" onclick="showIframe('reportIframe')">Reports</button>
+            <button class="submodule-button" onclick="showIframe('trendsIframe');closeTemplate()">Trends</button>
+            <button class="submodule-button" onclick="showIframe('reportIframe');closeTemplate()">Reports</button>
         </div>
 
-        <button id="inputs" class="module-button" onclick="window.location.href='/input'">
+        {% if session['role'] == 'Tse' %}
+        <button id="inputs" class="module-button" onclick="window.location.href='/input';closeDropdown()">
             <i class="fa-solid fa-file"></i> Input
         </button>
 
-        {% if session['role'] == 'Tsee' %}
-        <button id="usermanagement" class="module-button">
+        <button id="usermanagement" class="module-buttons">
             <i class="fa-solid fa-user-cog"></i> User Management
         </button>
         <div id="usermanagementSubmodules" class="submodule-container">
@@ -782,7 +859,7 @@
 
     <div>
         <iframe id="trendsIframe"
-            src="http://127.0.0.1:3000/d/cecge17v2n9xcf/new-dashboard?orgId=1&from=now-6h&to=now&timezone=browser"
+            src="http://127.0.0.1:3000/dashboards"
             style="display: none;"></iframe>
     </div>
 
@@ -800,6 +877,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
     <script>
+
+        function closeTemplate() {
+            // Remove the blur effect from the background
+            document.body.classList.remove('blur-active');
+
+            // Clear the template content
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = '';
+
+            // Clean up any socket listeners to prevent memory leaks
+            // This assumes you want to remove the 'update' listener when closing the template
+            if (socket && socket.off) {
+                socket.off('update');
+            }
+
+            // Notify the server that the template was closed (if needed)
+            fetch('/close_template', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .catch(error => console.error('Error notifying server about template closure:', error));
+
+            // Return to the main view or perform other necessary actions
+            // For example, you might want to show a different view or reset some state
+            console.log('Template closed successfully');
+        }
 
         function loadTemplate(submoduleOption) {
 
@@ -881,8 +986,8 @@
 
                 // Find the row/column name for the parameter
                 const row = input.closest('.row-container'); // Find the closest row container
-                const parameter = row ?.querySelector('.parameter') ?.innerText || 'Unknown parameter';
-                const parameters = row ?.querySelector('.parameters') ?.innerText || 'Unknown parameters';
+                const parameter = row?.querySelector('.parameter')?.innerText || 'Unknown parameter';
+                const parameters = row?.querySelector('.parameters')?.innerText || 'Unknown parameters';
 
                 // Check if it's an "INTEGRAL TN" input and apply different validation
                 if (parameter.includes("Integration Time")) {
@@ -1281,7 +1386,8 @@
             // Show the selected iframe
             document.getElementById(iframeId).style.display = 'block';
         }
-        document.addEventListener("DOMContentLoaded", function () {
+
+        document.addEventListener("DOMContentLoaded", function () {                  //changes
             const moduleButtons = document.querySelectorAll(".module-button");
             const submoduleButtons = document.querySelectorAll(".submodule-button");
             const submoduleContainers = document.querySelectorAll(".submodule-container");
@@ -1432,22 +1538,57 @@
             );
         });
 
-        function toggleSubmodules(submoduleId, iconElement) {
+        function toggleSubmodules(submoduleId, submoduleName, iconElement) {                     //changes
             const submodule = document.getElementById(submoduleId);
             const isVisible = submodule.style.display === "block";
+            submoduleName = submoduleName;
+            // console.log(submoduleName);
+            // console.log(iconElement);
+            sessionStorage.setItem("submoduleSettingsId", submoduleId);
+            // Store ID, not the element
+            sessionStorage.setItem("isSettings", isVisible);
+            sessionStorage.setItem("submoduleName", isVisible);
+            sessionStorage.setItem("iconElement", iconElement);
+
+            // const oo = sessionStorage.getItem("iconElement");
+            // console.log(oo)
 
             // Toggle visibility only when clicking on the icon
-            submodule.style.display = isVisible ? "none" : "block";
+            submodule.style.display = !isVisible ? "block" : "none";
+            const icons = document.getElementsByClassName('fa-solid fa-chevron-down dropdown-icon');
+
+
 
             // Toggle the icon based on visibility
-            iconElement.classList.toggle("fa-chevron-down", isVisible);
+            // iconElement.classList.toggle("fa-chevron-down", isVisible);
             iconElement.classList.toggle("fa-chevron-up", !isVisible);
+
         }
 
 
 
         // Preserve dropdown state on page reload
         document.addEventListener("DOMContentLoaded", function () {
+            console.log(window.location.href);
+
+            settingsId = sessionStorage.getItem("submoduleSettingsId");
+            set = sessionStorage.getItem("isSettings");
+            
+            const settingsElement = document.getElementById(settingsId);
+        
+            // console.log("Settings Element:", settingsElement);
+            // console.log(sessionStorage.getItem('allowed_submodules'));
+            // console.log(set);
+            
+            if (set == "false") {
+                settingsElement.style.display = "block";
+            }
+            else if (set == "true") {
+                settingsElement.style.display = "none";
+            }
+
+
+            //changes
             document.querySelectorAll(".dropdown-icon").forEach(icon => {
                 const submoduleId = icon.getAttribute("onclick").match(/'([^']+)'/)[1];
                 const submoduleContainer = document.getElementById(submoduleId);
@@ -1458,6 +1599,7 @@
                     icon.classList.add("fa-chevron-up");
                 }
             });
+
         });
 
 
@@ -1519,7 +1661,7 @@
         // });
 
         // Add event listeners for the modules
-        document.getElementById("departments").addEventListener("click", function (event) {
+        document.getElementById("departments").addEventListener("click", function (event) {          //changes
             event.preventDefault(); // Prevent page reload
             const submoduleContainer = document.getElementById("departmentsSubmodules");
 
@@ -1531,6 +1673,16 @@
             sessionStorage.setItem("departmentsSubmodulesOpen", !isVisible);
         });
 
+        function closeDropdown(url) {
+
+            sessionStorage.setItem("departmentsSubmodulesOpen", false);
+            const submoduleContainer = document.getElementById("departmentsSubmodules");
+            if (sessionStorage.getItem("departmentsSubmodulesOpen") === "true") {
+                submoduleContainer.style.display = "block";
+            }
+        }
+
+
         // Restore state on page load
         document.addEventListener("DOMContentLoaded", function () {
             const submoduleContainer = document.getElementById("departmentsSubmodules");
@@ -1538,6 +1690,8 @@
                 submoduleContainer.style.display = "block";
             }
         });
+
+
 
 
 
