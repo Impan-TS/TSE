@@ -28,13 +28,13 @@ SECRET_KEY = Fernet.generate_key()  # Save this securely, use the same key acros
 cipher = Fernet(SECRET_KEY)
 
 # Database configuration
-DB_SERVER = 'DESKTOP-SQ1S6QN'
-DB_DATABASE = 'tse_database'
-DB_USER = 'tse'
-DB_PASSWORD = 'tse@123'
+DB_SERVER = 'DESKTOP-BSC7DMC\SQLEXPRESS'
+DB_DATABASE = 'tse_data'
+DB_USER = 'sa'
+DB_PASSWORD = 'tiger'
 
 # Connection string
-connection_string = f'DRIVER={{ODBC Driver 11 for SQL Server}};SERVER={DB_SERVER};DATABASE={DB_DATABASE};UID={DB_USER};PWD={DB_PASSWORD}'
+connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={DB_SERVER};DATABASE={DB_DATABASE};UID={DB_USER};PWD={DB_PASSWORD}'
 
 # Function to create a connection
 def create_connection():
@@ -54,14 +54,14 @@ def connect_to_db():
     conn_str = 'DRIVER={SQL Server};SERVER=' + DB_SERVER + ';DATABASE=' + DB_DATABASE + ';UID=' + DB_USER + ';PWD=' + DB_PASSWORD
     return pyodbc.connect(conn_str)
 
-# Define allowed submodules per role
-ROLE_SUBMODULES = {
-    "Operator": ["Set Point"],
-    "Manager": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
-                 "Preset Values", "Timer", "Controllers", "UPSS"],
-    "Tse": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
-             "Preset Values", "Timer", "Controllers", "UPSS", "Pump Min Set"]
-}
+# # Define allowed submodules per role
+# ROLE_SUBMODULES = {
+#     "Operator": ["Set Point"],
+#     "Manager": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
+#                  "Preset Values", "Timer", "Controllers", "UPSS"],
+#     "Tse": ["Set Point", "Digital Input", "Digital Output", "Analog Input", "Analog Output", 
+#              "Preset Values", "Timer", "Controllers", "UPSS", "Pump Min Set"]
+# }
 
 def validate_user(username, password):
     conn = create_connection()
@@ -182,7 +182,7 @@ def load_alarms():
                     alarm['time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
             # Filter alarms with trip = True
-            alarms_with_trip = [alarm for alarm in alarms ]
+            alarms_with_trip = [alarm for alarm in alarms if alarm.get("trip") is True]
             return alarms_with_trip
     except Exception as e:
         print(f"Error loading alarms: {e}")
@@ -745,11 +745,12 @@ def user_login():
         
         user_role = validate_user(username, password)
         if user_role:
+            ROLE_SUBMODULES = load_role_submodules()  # Load roles dynamically
             session['userloggedin'] = True
             session['username'] = username
             session['role'] = user_role
-            # Ensure only "Set Point" is assigned to Operators
-            session['allowed_submodules'] = ["Set Point"] if user_role == "Operator" else ROLE_SUBMODULES.get(user_role, [])
+            session['allowed_submodules'] = ROLE_SUBMODULES.get(user_role, [])
+            session['last_login'] = datetime.now().strftime('%d/%m/%Y %H:%M:%S')  # Store current timestamp
             return redirect(url_for('dashboard'))
         else:
             flash("Invalid credentials, please try again.", 'danger')
@@ -769,7 +770,6 @@ def index():
 # def di():
 #     msg = {"payload": latest_values}
 #     return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
-
 
 @app.route('/sp')
 def sp():
@@ -884,7 +884,7 @@ def user_management():
             users.append({
                 "username": row[1],
                 "password": decrypted_password,  # Decrypted password
-                "role": table[:]  # Remove the trailing "r" for display
+                "role": table[:-1]  # Remove the trailing "r" for display
             })
     conn.close()
     return render_template('iot/user_management.html', users=users)
@@ -906,8 +906,7 @@ def edit_user():
         conn.commit()
 
     # Insert user into the new role table
-    # new_table = new_role + "r"
-    new_table = new_role
+    new_table = new_role + "r"
     cursor.execute(f"INSERT INTO {new_table} (username, password) VALUES (?, ?)", (username, new_password))
     conn.commit()
     conn.close()

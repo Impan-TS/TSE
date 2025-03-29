@@ -9,7 +9,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="static\css\font.css">
     <title>Alarm List</title>
     <style>
         /* General Styles */
@@ -124,7 +123,6 @@
         function addToAlarmHistory(alarm) {
             // Avoid duplicate entries by code
             alarmHistory = alarmHistory.filter(item => item.code !== alarm.code);
-           
             alarmHistory.unshift(alarm);
             if (alarmHistory.length > 20) {
                 alarmHistory.pop();
@@ -133,14 +131,14 @@
         }
 
         // Render alarm history table
-        function renderAlarmHistory(tripValue) {
+        function renderAlarmHistory() {
             const tbody = document.getElementById('alarm-list-body');
             tbody.innerHTML = ""; // Clear the table before re-rendering
 
             if (alarmHistory.length === 0) {
                 const noAlarmsRow = document.createElement('tr');
                 noAlarmsRow.id = 'no-alarms-row';
-                noAlarmsRow.innerHTML = `<td colspan="5" style="text-align:center;">No active alarms</td>`;
+                noAlarmsRow.innerHTML = `<td colspan="5">No active alarms</td>`;
                 tbody.appendChild(noAlarmsRow);
                 return;
             }
@@ -153,7 +151,6 @@
                     row = document.createElement('tr');
                     row.className = index % 2 === 0 ? 'even' : 'odd';
                     row.id = 'alarm-row-' + alarm.code;
-                    const isTripped = Boolean(alarm.trip);
                     row.innerHTML = `
                         <td>${alarm.time || 'N/A'}</td>
                         <td>${alarm.message}</td>
@@ -162,13 +159,11 @@
                         <td>
                             <button id="button-${alarm.code}" onclick="toggleAlarmStatus('${alarm.code}', event)"
                                 style="background-color: ${alarm.trip ? '#f44336' : '#4CAF50'}; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;">
-                                ${lastTripValue ? '⚠️ Not Acknowledged' : '✔️ Acknowledged'}
+                                ${alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged'}
                             </button>
                         </td>
                     `;
                     tbody.appendChild(row);
-                    // console.log(lastTripValue);
-                    
                 } else {
                     // Update the existing row with the new alarm status
                     const button = document.getElementById('button-' + alarm.code);
@@ -180,115 +175,73 @@
 
         // Toggle alarm status based on trip condition
         function toggleAlarmStatus(alarmCode, event) {
-  event.preventDefault();
-  
-  const button = document.getElementById('button-' + alarmCode);
-  const alarm = alarmHistory.find(alarm => Number(alarm.code) === Number(alarmCode));
-  
-  console.log(alarmCode);
-  console.log(alarmHistory);
-  console.log(typeof alarmCode, typeof alarmHistory[0].code);
-  
-  if (!alarm) {
-    console.error("Alarm not found in history.");
-    return;
-  }
-  
-  // If the alarm is already acknowledged, don't allow toggling back
-  if (!alarm.trip) {
-    console.log("Alarm already acknowledged");
-    return; // Exit the function if already acknowledged
-  }
-  
-  // Set to acknowledged (false means acknowledged)
-  const newTripStatus = false;
-  
-  // Update alarm status in localStorage
-  alarm.trip = newTripStatus;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory));
-  
-  // Update button text and color based on the new trip status
-  button.textContent = '✔️ Acknowledged';
-  button.style.backgroundColor = '#4CAF50';
-  
-  // Disable the button immediately
-  button.disabled = true;
-  button.style.cursor = 'not-allowed';
-  button.style.opacity = '0.6';
-  
-  // Send the updated status to the server
-  fetch("/acknowledge", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      code: alarmCode,
-      trip: newTripStatus
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (!data.success) {
-      // Revert the button state if the server fails to update
-      alarm.trip = true; // Revert to unacknowledged
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory));
-      
-      button.textContent = '⚠️ Not Acknowledged';
-      button.style.backgroundColor = '#f44336';
-      
-      // Re-enable the button
-      button.disabled = false;
-      button.style.cursor = 'pointer';
-      button.style.opacity = '1';
-      
-      alert("Failed to acknowledge alarm. Reverting changes.");
-    }
-  })
-  .catch(error => {
-    console.error("Error acknowledging alarm:", error);
-    
-    // Revert the button state if there's an error
-    alarm.trip = true; // Revert to unacknowledged
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory));
-    
-    button.textContent = '⚠️ Not Acknowledged';
-    button.style.backgroundColor = '#f44336';
-    
-    // Re-enable the button
-    button.disabled = false;
-    button.style.cursor = 'pointer';
-    button.style.opacity = '1';
-    
-    alert("An error occurred. Reverting changes.");
-  });
-}
+            event.preventDefault();
+
+            const button = document.getElementById('button-' + alarmCode);
+            const alarm = alarmHistory.find(alarm => alarm.code === alarmCode);
+
+            if (!alarm) {
+                console.error("Alarm not found in history.");
+                return;
+            }
+
+            // Toggle the trip status
+            const newTripStatus = !alarm.trip;
+
+            // Update alarm status in localStorage
+            alarm.trip = newTripStatus;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory));
+
+            // Update button text and color based on the new trip status
+            button.textContent = newTripStatus ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
+            button.style.backgroundColor = newTripStatus ? '#f44336' : '#4CAF50';
+
+            // Send the updated status to the server
+            fetch("/acknowledge", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: alarmCode, trip: newTripStatus })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        // Revert the button state if the server fails to update
+                        alarm.trip = !newTripStatus; // Revert trip status
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
+                        button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
+                        button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
+                        alert("Failed to toggle alarm status. Reverting changes.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error toggling alarm status:", error);
+                    // Revert the button state if there's an error
+                    alarm.trip = !newTripStatus; // Revert trip status
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
+                    button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
+                    button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
+                    alert("An error occurred. Reverting changes.");
+                });
+        }
 
         // Listen for new alarms via socket.io
-        let lastTripValue; // Declare outside
+        socket.on('alarm_update', function (alarms) {
+            alarms.forEach(alarm => {
+                const alarmWithTimestamp = {
+                    ...alarm,
+                    time: alarm.time || new Date().toLocaleString()
+                };
 
-socket.on('alarm_update', function (alarms) {
-    alarms.forEach(alarm => {
-        const alarmWithTimestamp = {
-            ...alarm,
-            time: alarm.time || new Date().toLocaleString()
-        };
-        lastTripValue = alarmWithTimestamp.trip; // Update the last trip value
-        // if(!alarmWithTimestamp){
-        // console.log("haha");
-        // }
-        // else{
-        //     console.log("hehe");
-        // }
-        console.log(lastTripValue);
-        if(lastTripValue==true){   addToAlarmHistory(alarmWithTimestamp);}
-    });
-   
-    
-    // Now you can use lastTripValue outside the loop
-    renderAlarmHistory(lastTripValue);
-});
+                // Add alarm to history and update the localStorage
+                addToAlarmHistory(alarmWithTimestamp);
+            });
 
+            // Render the updated alarm history
+            renderAlarmHistory();
+        });
+
+        // Initial render from localStorage
+        renderAlarmHistory();
     </script>
 
 

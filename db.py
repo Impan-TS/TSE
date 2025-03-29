@@ -2,61 +2,43 @@ import pyodbc
 import bcrypt
 
 # Database configuration
-DB_SERVER = 'DESKTOP-SQ1S6QN'
-DB_DATABASE = 'tse_database'
-DB_USER = 'tse'
-DB_PASSWORD = 'tse@123'
+DB_SERVER = 'DESKTOP-BSC7DMC\SQLEXPRESS'
+DB_DATABASE = 'tse_data'
+DB_USER = 'sa'
+DB_PASSWORD = 'tiger'
 
 # Connection string
-connection_string = f'DRIVER={{ODBC Driver 11 for SQL Server}};SERVER={DB_SERVER};DATABASE={DB_DATABASE};UID={DB_USER};PWD={DB_PASSWORD}'
+connection_string = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={DB_SERVER};DATABASE={DB_DATABASE};UID={DB_USER};PWD={DB_PASSWORD}'
 
-# SQL commands to create tables with existence checks
+# SQL commands to create tables
 create_operator_table_query = '''
-IF OBJECT_ID('Operator', 'U') IS NULL
-BEGIN
-    CREATE TABLE Operator (
-       id INT PRIMARY KEY IDENTITY(1,1),
-       username VARCHAR(100) NOT NULL,
-       password VARCHAR(255) NOT NULL
-    );
-END
+CREATE TABLE Operator (
+   id INT PRIMARY KEY IDENTITY(1,1),
+   username VARCHAR(100) NOT NULL,
+   password VARCHAR(100) NOT NULL
+);
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'unique_Operator_username')
-BEGIN
-    ALTER TABLE Operator ADD CONSTRAINT unique_Operator_username UNIQUE (username);
-END
+ALTER TABLE Operator ADD CONSTRAINT unique_operator_username UNIQUE (username);
 '''
 
 create_manager_table_query = '''
-IF OBJECT_ID('Manager', 'U') IS NULL
-BEGIN
-    CREATE TABLE Manager (
-       id INT PRIMARY KEY IDENTITY(1,1),
-       username VARCHAR(100) NOT NULL,
-       password VARCHAR(255) NOT NULL
-    );
-END
+CREATE TABLE Manager (
+   id INT PRIMARY KEY IDENTITY(1,1),
+   username VARCHAR(100) NOT NULL,
+   password VARCHAR(100) NOT NULL
+);
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'unique_Manager_username')
-BEGIN
-    ALTER TABLE Manager ADD CONSTRAINT unique_Manager_username UNIQUE (username);
-END
+ALTER TABLE Manager ADD CONSTRAINT unique_manager_username UNIQUE (username);
 '''
 
 create_tse_table_query = '''
-IF OBJECT_ID('Tse', 'U') IS NULL
-BEGIN
-    CREATE TABLE Tse (
-       id INT PRIMARY KEY IDENTITY(1,1),
-       username VARCHAR(100) NOT NULL,
-       password VARCHAR(255) NOT NULL
-    );
-END
+CREATE TABLE Tse (
+   id INT PRIMARY KEY IDENTITY(1,1),
+   username VARCHAR(100) NOT NULL,
+   password VARCHAR(100) NOT NULL
+);
 
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'unique_Tse_username')
-BEGIN
-    ALTER TABLE Tse ADD CONSTRAINT unique_Tse_username UNIQUE (username);
-END
+ALTER TABLE Tse ADD CONSTRAINT unique_tse_username UNIQUE (username);
 '''
 
 # Function to execute SQL queries
@@ -81,30 +63,11 @@ execute_query(create_operator_table_query)
 execute_query(create_manager_table_query)
 execute_query(create_tse_table_query)
 
-# Function to insert users with hashed passwords
+# Insert data with hashed passwords
 def insert_user(table, username, plain_password):
-    try:
-        conn = pyodbc.connect(connection_string)
-        cursor = conn.cursor()
-
-        # Check if the username already exists
-        cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE username = ?", (username,))
-        if cursor.fetchone()[0] > 0:
-            print(f"User '{username}' already exists in {table}. Skipping insert.")
-            return
-
-        # Hash the password and insert the user
-        hashed_password = bcrypt.hashpw(plain_password.encode('utf-8'), bcrypt.gensalt())
-        insert_query = f"INSERT INTO {table} (username, password) VALUES (?, ?)"
-        cursor.execute(insert_query, (username, hashed_password.decode('utf-8')))
-        conn.commit()
-        print(f"User '{username}' added successfully to {table}.")
-
-    except Exception as e:
-        print(f"Error inserting user into {table}: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+    hashed_password = bcrypt.hashpw(plain_password.encode('utf-8'), bcrypt.gensalt())
+    insert_query = f"INSERT INTO {table} (username, password) VALUES (?, ?)"
+    execute_query(insert_query, (username, hashed_password.decode('utf-8')))
 
 # Insert sample users
 insert_user('Operator', 'operator', 'operator@123')
