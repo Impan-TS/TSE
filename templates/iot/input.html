@@ -8,41 +8,81 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="static\css\font.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit & Manage Submodules</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"> -->
+    <!-- <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> -->
     <style>
-        .container {
-            margin-top: 60px;
-        }
-
+        /* General container styling */
         .modal {
-
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 1050;
-            /* Make sure it appears above other elements */
-            background-color: #256fc3;
-            padding: 0px;
+            z-index: 1050; /* Ensure it appears above other elements */
+            padding: 0;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 80%;
-            /* Adjust based on requirement */
-            max-width: 500px;
-            /* Optional */
+            width: 80%; /* Adjust based on requirement */
+            max-width: 500px; /* Optional */
             background-color: transparent !important;
             box-shadow: none;
             border: none !important;
             max-height: 550px;
+            opacity: 0; /* Initially hidden */
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; /* Fade in */
+        }
 
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease-in-out, visibility 0s linear 0s;
+        }
+
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 1.75rem auto; /* Adjust top margin as needed */
+            pointer-events: none;
+        }
+
+        .modal.fade .modal-dialog {
+            transition: transform .3s ease-out;
+            transform: translate(0, -50px); /* Initial off-screen position for fade-in */
+        }
+
+        .modal.show .modal-dialog {
+            transform: none; /* Slide in to the center */
+        }
+
+        @media (min-width: 576px) {
+            .modal-dialog {
+                max-width: 500px; /* Or your desired max width */
+                margin: 30px auto; /* Adjust margins for larger screens */
+            }
         }
 
         .modal-content {
-            height: 90%;
-            overflow: overlay !important;
-            max-height: 550px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            pointer-events: auto;
+            background-color: #fff; /* Add a background color */
+            background-clip: padding-box;
+            border: 1px solid rgba(0, 0, 0, 0.2); /* Add a border */
+            border-radius: 0.3rem; /* Add rounded corners */
+            outline: 0;
+            height: auto; /* Remove the fixed height if you want it to adjust */
+            overflow: visible !important; /* Override the modal's overflow */
+            max-height: none !important; /* Override the modal's max-height */
+        }
+
+        .modal-content {
+            height: auto; /* Adjust based on content */
+            overflow-y: auto !important; /* Use overflow-y for vertical scroll */
+            max-height: 550px; /* Keep the max-height */
         }
 
         .modal-backdrop {
@@ -50,13 +90,10 @@
             top: 0;
             left: 0;
             width: 100% !important;
-            backdrop-filter: blur(10px) !important;
-            /* Adds the blur effect */
+            backdrop-filter: blur(10px) !important; /* Adds the blur effect */
             height: 100% !important;
-            background-color: rgba(0, 0, 0, 0.5);
-            /* For semi-transparent backdrop */
-            z-index: 1040;
-            /* Ensure it's behind the modal */
+            background-color: rgba(0, 0, 0, 0.5); /* For semi-transparent backdrop */
+            z-index: 1040; /* Ensure it's behind the modal */
         }
 
         body.modal-open::before {
@@ -64,24 +101,12 @@
         }
 
         .modal-body {
-            text-align: left;
+            position: relative;
+            padding: 1rem;
+            text-align: left; /* Ensure text inside is aligned left */
+            overflow-y: auto; /* Add scroll if content overflows */
+            max-height: calc(100vh - 150px); /* Example max height based on viewport */
         }
-
-        /* .modal-fade {
-            margin-top: 200px;
-            align-content: center;
-            height: 10%;
-            width: 2%;
-        }
-        .modal-dialog {
-            margin-top: 200px;
-            width: 20%;
-        }
-        .modal-content {
-            
-            margin-top: 200px;
-            width: auto;
-        } */
 
         .table-container {
             border-radius: 10px;
@@ -91,6 +116,7 @@
         }
 
         .table {
+            width: 100%;
             border-collapse: collapse;
             margin-bottom: 0;
         }
@@ -100,6 +126,7 @@
             color: white;
             text-align: center;
             border-radius: 0;
+            padding: 8px;
         }
 
         .thead th:first-child {
@@ -114,6 +141,9 @@
             border: none;
             background: none;
             cursor: pointer;
+            padding: 0; /* Remove default button padding */
+            font-size: inherit; /* Inherit font size to control icon size */
+            color: inherit; /* Inherit text color */
         }
 
         .btn-action:hover {
@@ -125,6 +155,7 @@
             text-align: center;
             vertical-align: middle;
             border-right: 1px solid #0c609d;
+            padding: 8px;
             font-weight: 480;
         }
 
@@ -137,42 +168,249 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
         }
 
         .edit-client-section input {
             width: 70%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
         }
 
         .add-department-btn {
-            top: 20px;
-            /* Adjust top position as needed */
             width: 60px;
-            /* Adjust width as needed */
             height: 60px;
-            /* Adjust height as needed */
             font-size: 25px;
-            /* Adjust icon size */
+            background-color: #327fb6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-department-btn:hover {
+            background-color: #286eae;
         }
 
         #updateOrderButton {
             position: relative;
             margin-top: 10px;
-            left: 1035px;
+            /* Adjust left position based on layout */
             background-color: #0c609d;
             color: white;
             border: none;
-            padding: 8px 8px;
-            font-size: 11px;
-            /* font-weight: bold; */
+            padding: 8px 16px;
+            font-size: 14px;
             border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #updateOrderButton:hover {
-            background-color: #007BFF;
+            background-color: #007bff;
         }
 
-</style>
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: calc(0.3rem - 1px);
+            border-top-right-radius: calc(0.3rem - 1px);
+        }
+
+        .modal-title {
+            margin-bottom: 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #f5f5f5;
+        }
+
+        .btn-close {
+            padding: 0.5rem 0.5rem;
+            margin: -0.5rem -0.5rem -0.5rem auto;
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: .5;
+            background-color: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .btn-close:hover {
+            opacity: .75;
+        }
+
+        .modal-footer {
+            display: flex;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0.75rem;
+            border-top: 1px solid #dee2e6;
+            border-bottom-right-radius: calc(0.3rem - 1px);
+            border-bottom-left-radius: calc(0.3rem - 1px);
+        }
+
+        .modal-footer>* {
+            margin: .25rem;
+        }
+
+        .form-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        }
+
+        .form-control::placeholder {
+            color: #6c757d;
+            opacity: 1;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            border-radius: 0.25rem;
+            transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            background-color: #545b62;
+            border-color: #4e555b;
+        }
+
+        .btn-success {
+            color: #fff;
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            color: #fff;
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+
+        .btn-danger {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            color: #fff;
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.2rem;
+        }
+
+        #deleteModal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .modal-content-delete {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #modalContent {
+            margin-bottom: 15px;
+        }
+
+        #modalContent label {
+            margin-left: 5px;
+        }
+
     </style>
 </head>
 

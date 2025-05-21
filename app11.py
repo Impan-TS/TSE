@@ -37,11 +37,6 @@ DB_PASSWORD = 'tse@123'
 # Connection string
 connection_string = f'DRIVER={{ODBC Driver 11 for SQL Server}};SERVER={DB_SERVER};DATABASE={DB_DATABASE};UID={DB_USER};PWD={DB_PASSWORD}'
 
-
-# Define the lock for alarmList.yaml access
-alarm_list_lock = threading.Lock() # <<< NEW: Initialize the lock
-
-
 # Function to create a connection
 def create_connection():
     while True:
@@ -142,6 +137,12 @@ def read_values_periodically():
             time.sleep(1)  # Wait before retrying in case of error
 
 
+# # Load alarms from YAML
+# def load_alarms():
+#     yaml_path = os.path.join(os.path.dirname(__file__), "alarms.yaml")
+#     with open(yaml_path, "r") as f:
+#         data = yaml.safe_load(f)
+#         return data.get("alarms", {})
 
 #Alarms 
 # Define a relative path to the YAML file
@@ -227,62 +228,61 @@ except Exception as e:
     print(f"Failed to initialize last_trip_states: {e}")
 
 def save_alarms_to_list_yaml(current_alarms):
-    with alarm_list_lock: # <<< MODIFIED: Acquire lock
-        try:
-            existing_data = {'alarms': [], 'lastTripStates': {}}
+    try:
+        existing_data = {'alarms': [], 'lastTripStates': {}}
 
-            if os.path.exists(ALARM_LIST_FILE_PATH):
-                with open(ALARM_LIST_FILE_PATH, 'r') as f:
-                    existing_data = yaml.safe_load(f) or {'alarms': [], 'lastTripStates': {}}
+        if os.path.exists(ALARM_LIST_FILE_PATH):
+            with open(ALARM_LIST_FILE_PATH, 'r') as f:
+                existing_data = yaml.safe_load(f) or {'alarms': [], 'lastTripStates': {}}
 
-            alarms_list = existing_data.get('alarms', [])
-            last_trip_states = existing_data.get('lastTripStates', {})
+        alarms_list = existing_data.get('alarms', [])
+        last_trip_states = existing_data.get('lastTripStates', {})
 
-            for alarm in current_alarms:
-                code = str(alarm.get('code'))
-                if code is None:
-                    continue  # Skip if code is missing
-                
-                if 'trip' in alarm and alarm['trip'] is not None:
-                    current_trip = alarm['trip']
-                else:
-                    continue  # or skip, or set a default if needed
+        for alarm in current_alarms:
+            code = str(alarm.get('code'))
+            if code is None:
+                continue  # Skip if code is missing
+            
+            if 'trip' in alarm and alarm['trip'] is not None:
+                current_trip = alarm['trip']
+            else:
+                continue  # or skip, or set a default if needed
 
-                previous_trip = last_trip_states.get(code, False)
+            previous_trip = last_trip_states.get(code, False)
 
-                
+            
 
-                # If trip state changed from False to True, add to alarm list
-                if current_trip and not previous_trip:
-                    alarm['id'] = str(uuid.uuid4())
-                    alarm['status'] = 'Not acknowledged'
-                    alarm['acknowledged'] = False
+            # If trip state changed from False to True, add to alarm list
+            if current_trip and not previous_trip:
+                alarm['id'] = str(uuid.uuid4())
+                alarm['status'] = 'Not acknowledged'
+                alarm['acknowledged'] = False
 
-                    if 'time' in alarm:
-                        try:
-                            dt = datetime.strptime(alarm['time'], "%Y-%m-%d %H:%M:%S")
-                            alarm['time'] = dt.strftime("%-m/%-d/%Y, %-I:%M:%S %p")
-                        except Exception:
-                            pass  # Keep original time format
+                if 'time' in alarm:
+                    try:
+                        dt = datetime.strptime(alarm['time'], "%Y-%m-%d %H:%M:%S")
+                        alarm['time'] = dt.strftime("%-m/%-d/%Y, %-I:%M:%S %p")
+                    except Exception:
+                        pass  # Keep original time format
 
-                    alarms_list.append(alarm)
+                alarms_list.append(alarm)
 
-                # Update the last trip state
-                last_trip_states[code] = current_trip
+            # Update the last trip state
+            last_trip_states[code] = current_trip
 
-            # Save updated data
-            updated_data = {
-                'alarms': alarms_list,
-                'lastTripStates': last_trip_states
-            }
+        # Save updated data
+        updated_data = {
+            'alarms': alarms_list,
+            'lastTripStates': last_trip_states
+        }
 
-            with open(ALARM_LIST_FILE_PATH, 'w') as out_file:
-                yaml.dump(updated_data, out_file, default_flow_style=False)
+        with open(ALARM_LIST_FILE_PATH, 'w') as out_file:
+            yaml.dump(updated_data, out_file, default_flow_style=False)
 
-           # print("Alarms saved and trip states updated.")
+        print("Alarms saved and trip states updated.")
 
-        except Exception as e:
-            print(f"Error saving alarmList.yaml: {e}")
+    except Exception as e:
+        print(f"Error saving alarmList.yaml: {e}")
 
 
 
@@ -294,19 +294,17 @@ def get_alarms():
 @app.route("/notifyAlarms")
 def get_alarms_notification():
     alarms = load_alarms_from_yaml_list()
-    last_10_alarms = alarms[-10:][::-1]  # Get last 10 alarms and reverse the list
-    return jsonify(last_10_alarms)
+    return jsonify(alarms)
 
 
 def load_alarms_from_yaml_list():
-    with alarm_list_lock: # <<< MODIFIED: Acquire lock
-        try:
-            with open(ALARM_LIST_FILE_PATH, 'r') as f:
-                data = yaml.safe_load(f) or {}
-                return data.get('alarms', [])
-        except Exception as e:
-            print(f"Error reading alarmList.yaml: {e}")
-            return []
+    try:
+        with open(ALARM_LIST_FILE_PATH, 'r') as f:
+            data = yaml.safe_load(f) or {}
+            return data.get('alarms', [])
+    except Exception as e:
+        print(f"Error reading alarmList.yaml: {e}")
+        return []
 
 
 @app.route("/alarmslist")
@@ -325,37 +323,63 @@ from flask import request, jsonify
 
 @app.route("/acknowledge", methods=["POST"])
 def acknowledge_alarm():
-    with alarm_list_lock: # <<< MODIFIED: Acquire lock
-        try:
-            alarm_id = request.json.get("id")
-            if not alarm_id:
-                return jsonify({"success": False, "error": "Missing alarm ID"}), 400
+    try:
+        alarm_id = request.json.get("id")
+        if not alarm_id:
+            return jsonify({"success": False, "error": "Missing alarm ID"}), 400
 
-            # Load the full YAML file
-            with open(ALARM_LIST_FILE_PATH, 'r') as f:
-                data = yaml.safe_load(f) or {}
+        # Load the full YAML file
+        with open(ALARM_LIST_FILE_PATH, 'r') as f:
+            data = yaml.safe_load(f) or {}
 
-            alarms = data.get("alarms", [])
-            updated = False
+        alarms = data.get("alarms", [])
+        updated = False
 
-            # Modify only the matched alarm
-            for alarm in alarms:
-                if alarm.get("id") == alarm_id:
-                    alarm["acknowledged"] = True
-                    alarm["status"] = "Acknowledged"
-                    updated = True
-                    break
+        # Modify only the matched alarm
+        for alarm in alarms:
+            if alarm.get("id") == alarm_id:
+                alarm["acknowledged"] = True
+                alarm["status"] = "Acknowledged"
+                updated = True
+                break
 
-            if updated:
-                data["alarms"] = alarms  # Reassign in case it's a view
-                with open(ALARM_LIST_FILE_PATH, 'w') as f:
-                    yaml.dump(data, f, default_flow_style=False)  # ✅ keeps rest of file intact
-                return jsonify({"success": True})
-            else:
-                return jsonify({"success": False, "error": "Alarm ID not found"}), 404
+        if updated:
+            data["alarms"] = alarms  # Reassign in case it's a view
+            with open(ALARM_LIST_FILE_PATH, 'w') as f:
+                yaml.dump(data, f, default_flow_style=False)  # ✅ keeps rest of file intact
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Alarm ID not found"}), 404
 
-        except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# @app.route("/acknowledge", methods=["POST"])
+# def acknowledge_alarm():
+#     data = request.json
+#     alarm_code = data.get("code")
+
+#     try:
+#         yaml_path = get_yaml_path()
+#         with open(yaml_path, "r") as f:
+#             alarms_data = yaml.safe_load(f)
+#             all_alarms = alarms_data.get("alarms", [])
+        
+#         # Update the specific alarm's status
+#         for alarm in all_alarms:
+#             if alarm["code"] == alarm_code:
+#                 alarm["status"] = "Acknowledged"
+#                 break
+
+#         # Save the updated alarms back to the YAML file
+#         with open(yaml_path, "w") as f:
+#             yaml.dump({"alarms": all_alarms}, f)
+
+#         return jsonify({"success": True})
+
+#     except Exception as e:
+#         print(f"Error updating YAML file: {e}")
+#         return jsonify({"success": False, "error": str(e)})
 
 @app.route("/debug")
 def debug_alarms():
@@ -364,6 +388,158 @@ def debug_alarms():
 
 
 
+# def read_values_periodically():
+#     global latest_values
+#     while True:
+#         try:
+#             client.connect()  # Connect to the OPC UA server
+            
+#             # Load Node IDs from YAML file
+#             node_ids = load_node_ids()
+            
+#             for name, node_id in node_ids.items():
+#                 try:
+#                     node = client.get_node(node_id)
+#                     latest_values[name] = node.get_value()  # Read the value
+#                 except Exception as e:
+#                     print(f"Error reading node {name}: {e}")
+            
+#             # Emit the latest values to all connected clients
+#             socketio.emit('update', {
+#                 'temperature': latest_values.get('Temperature', 0),
+#                 'humidity': latest_values.get('Humidity', 0)
+#             })
+            
+#             socketio.emit('gauge_update', {
+#                 'temperature': latest_values.get('Temperature', 0),
+#                 'humidity': latest_values.get('Humidity', 0)
+#             })
+            
+#             client.disconnect()  # Disconnect from the server
+#             time.sleep(1)  # Wait for 1 second before the next read
+#         except Exception as e:
+#             print(f"Error reading values: {str(e)}")
+#             time.sleep(1)  # Wait before retrying in case of error
+
+
+
+# @app.route('/write', methods=['POST'])
+# def write():
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"success": False, "error": "No data provided"}), 400
+
+#     opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
+
+#     try:
+#         opcua_client.connect()  # Ensure connection is established
+
+#         for nodeid, value in data.items():
+#             node = opcua_client.get_node(nodeid)
+#             node_data_type = node.get_data_type_as_variant_type()
+
+#             if node_data_type == ua.VariantType.Boolean:
+#                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+#             elif node_data_type == ua.VariantType.Int32:
+#                 dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+#             elif node_data_type == ua.VariantType.Float:
+#                 dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
+#             else:
+#                 raise ValueError(f"Unsupported data type for node {nodeid}: {node_data_type}")
+
+#             node.set_value(dv)
+
+#         return jsonify({"success": True}), 200
+
+#     except Exception as e:
+#         print(f"Error writing settings: {e}")
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+#     finally:
+#         try:
+#             opcua_client.disconnect()  # Disconnect after operation
+#         except Exception as disconnect_error:
+#             print(f"Error during client disconnect: {disconnect_error}")
+
+
+# @app.route('/write', methods=['POST'])
+# def write():
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"success": False, "error": "No data provided"}), 400
+
+#     node_ids = load_node_ids()  # Load Node IDs from the YAML file
+#     opcua_client = Client(OPC_UA_URL)
+
+#     try:
+#         opcua_client.connect()  # Connect to OPC UA server
+
+#         for parameter, value in data.items():
+#             node_id = node_ids.get(parameter)
+#             if not node_id:
+#                 raise ValueError(f"Node ID for parameter '{parameter}' not found")
+
+#             # Retrieve the node and determine its data type
+#             node = opcua_client.get_node(node_id)
+#             node_data_type = node.get_data_type_as_variant_type()
+
+#             if node_data_type == ua.VariantType.Boolean:
+#                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+#             else:
+#                 raise ValueError(f"Unsupported data type for node {node_id}: {node_data_type}")
+
+#             node.set_value(dv)  # Write the value to the node
+
+#         return jsonify({"success": True}), 200
+
+#     except Exception as e:
+#         print(f"Error writing settings: {e}")
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+#     finally:
+#         try:
+#             opcua_client.disconnect()  # Disconnect from OPC UA server
+#         except Exception as disconnect_error:
+#             print(f"Error during client disconnect: {disconnect_error}")
+
+
+# @app.route('/write', methods=['POST'])
+# def write():
+#     data = request.get_json()
+#     if not data:
+#         return jsonify({"success": False, "error": "No data provided"}), 400
+
+#     opcua_client = Client("opc.tcp://127.0.0.1:4840")  # Replace with your OPC UA server URL
+
+#     try:
+#         opcua_client.connect()  # Ensure connection is established
+
+#         for nodeid, value in data.items():
+#             node = opcua_client.get_node(nodeid)
+#             node_data_type = node.get_data_type_as_variant_type()
+
+#             if node_data_type == ua.VariantType.Boolean:
+#                 dv = ua.DataValue(ua.Variant(bool(value), ua.VariantType.Boolean))
+#             elif node_data_type == ua.VariantType.Int32:
+#                 dv = ua.DataValue(ua.Variant(int(value), ua.VariantType.Int32))
+#             elif node_data_type == ua.VariantType.Float:
+#                 dv = ua.DataValue(ua.Variant(float(value), ua.VariantType.Float))
+#             else:
+#                 raise ValueError(f"Unsupported data type for node {nodeid}: {node_data_type}")
+
+#             node.set_value(dv)
+
+#         return jsonify({"success": True}), 200
+
+#     except Exception as e:
+#         print(f"Error writing settings: {e}")
+#         return jsonify({"success": False, "error": str(e)}), 500
+
+#     finally:
+#         try:
+#             opcua_client.disconnect()  # Disconnect after operation
+#         except Exception as disconnect_error:
+#             print(f"Error during client disconnect: {disconnect_error}")
 
 @app.route('/write', methods=['POST'])
 def write():
@@ -471,7 +647,17 @@ template_mapping = {
     "Pump Min Set": "Settings/spinning2_pm.html",
 }
 
-
+# @app.route('/load_template/<submodule_option>')
+# def load_template(submodule_option):
+#     if submodule_option in template_mapping:
+#         template_path = template_mapping[submodule_option]
+#         msg = {
+#             'payload': latest_values,
+#             'node_ids': load_node_ids()  # Include node_ids from the YAML file
+#         }
+#         # Include node IDs as part of the context
+#         return render_template(template_path, msg=msg)
+#     return "Template not found", 404
 
 @app.route('/load_template/<submodule_option>')
 def load_template(submodule_option):
@@ -488,7 +674,85 @@ def load_template(submodule_option):
     return "Template not found", 404
 
 
+# @app.route('/load_template/<submodule_option>')
+# def load_template(submodule_option):
+#     # Ensure the submodule_option exists in the mapping
+#     if submodule_option in template_mapping:
+#         template_path = template_mapping[submodule_option]
+#         return render_template(
+#             template_path, 
+#             msg={"payload": latest_values, "node_ids": load_node_ids()}
+#         )
+#     return "Template not found", 404
 
+
+
+# # Load alarms and node mappings
+# with open("alarms.yaml") as f:
+#     alarms_data = yaml.safe_load(f)["alarms"]
+
+# # Mock database to store active alarms and acknowledgment status
+# active_alarms = []
+
+# @app.route("/alarms")
+# def get_alarms():
+#     """Fetch active alarms."""
+#     global active_alarms
+#     # Simulate active alarms with acknowledgment status
+#     active_alarms = [
+#         {
+#             "alarm": node,
+#             "name": alarms_data[node]["name"],
+#             "message": alarms_data[node]["message"],
+#             "code": alarms_data[node]["code"],
+#             "severity": alarms_data[node]["severity"],
+#             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+#             "acknowledged": alarms_data[node].get("acknowledged", False)
+#         }
+#         for node in alarms_data if node.endswith("TRIP")
+#     ]
+#     return jsonify(active_alarms)
+
+
+
+# @app.route("/acknowledge", methods=["POST"])
+# def acknowledge_alarm():
+#     """Acknowledge an alarm."""
+#     global alarms_data
+#     data = request.json
+#     alarm_id = data.get("alarm")
+
+#     if alarm_id in alarms_data:
+#         alarms_data[alarm_id]["acknowledged"] = True
+#         return jsonify({"success": True, "message": "Alarm acknowledged"})
+#     return jsonify({"success": False, "message": "Alarm not found"}), 404
+
+# @app.route('/write/<node_id>/<int:value>', methods=['POST'])
+# def write_value(node_id, value):
+#     try:
+#         node = client.get_node(node_id)
+#         node.set_value(value)
+#         return jsonify({"success": True})
+#     except Exception as e:
+#         return jsonify({"success": False, "error": str(e)})
+
+
+# @app.route('/alarmslist')
+# def alarmslist():
+#     return render_template('iot/alarmslist.html')  # Render the HTML template
+
+
+# @app.route('/')
+# def home():
+#     departmentss = load_data()
+#     seen = set()
+#     allowed_submodules = [
+#         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+#         if not (submodule in seen or seen.add(submodule))
+#     ]
+#     return render_template('iot/dashboard.html', departmentss=departmentss,allowed_submodules=allowed_submodules)  # Render the HTML template
+
+# Dynamically fetch roles and submodules
 @app.route('/')
 def home():
     ROLE_SUBMODULES = load_role_submodules()  # Load roles dynamically
@@ -500,6 +764,31 @@ def home():
     ]
     return render_template('iot/dashboard.html', departmentss=departmentss, allowed_submodules=allowed_submodules)
 
+# @app.route('/trends')
+# def trends():
+#     # Remove duplicates while preserving order
+#     seen = set()
+#     allowed_submodules = [
+#         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+#         if not (submodule in seen or seen.add(submodule))
+#     ]
+#     # Load node_ids from the YAML file
+#     with open('nodeid.yaml', 'r') as file:
+#         node_ids = yaml.safe_load(file)
+#     return render_template('iot/trends.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
+
+# @app.route('/dashboard')
+# def dashboard():
+#     # Remove duplicates while preserving order
+#     seen = set()
+#     allowed_submodules = [
+#         submodule for modules in ROLE_SUBMODULES.values() for submodule in modules
+#         if not (submodule in seen or seen.add(submodule))
+#     ]
+#     # Load node_ids from the YAML file
+#     with open('nodeid.yaml', 'r') as file:
+#         node_ids = yaml.safe_load(file)
+#     return render_template('iot/dashboard.html', node_ids=node_ids, allowed_submodules=allowed_submodules)
 
 @app.route('/dashboard')
 def dashboard():
@@ -527,7 +816,13 @@ def load_role_submodules():
         data = yaml.safe_load(f)
     return data.get("roles", {})
 
+# Inject latest_values globally into all templates
+# @app.context_processor
+# def inject_latest_values():
+#     return {'latest_values': latest_values}
+    
 
+# Inject submodules and client name into templates for consistent access
 @app.context_processor
 def inject_context():
     data = load_data()
@@ -569,6 +864,23 @@ def render_submodule(submodule):
     return "Page not found", 404
 
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def user_login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+        
+#         user_role = validate_user(username, password)
+#         if user_role:
+#             session['userloggedin'] = True
+#             session['username'] = username
+#             session['role'] = user_role
+#             session['allowed_submodules'] = ROLE_SUBMODULES[user_role]
+#             session['last_login'] = datetime.now().strftime('%d/%m/%Y %H:%M:%S')  # Store current timestamp
+#             return redirect(url_for('dashboard'))
+#         else:
+#             flash("Invalid credentials, please try again.", 'danger')
+#     return render_template('User management/userlogin.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def user_login():
@@ -593,6 +905,17 @@ def index():
     msg = {'payload': 0}
     return render_template('iot/index.html', msg=msg)  # Render the HTML template
 
+# @app.route('/setpoint')
+# def setpoint():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_setpoint.html', msg=msg)  # Render the HTML template
+
+# @app.route('/di')
+# def di():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_di.html', msg=msg)  # Render the HTML template
+
+
 @app.route('/sp')
 def sp():
     msg = {
@@ -615,6 +938,40 @@ def handle_connect():
     emit('update', latest_values)
 
 
+# @app.route('/ai')
+# def ai():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_ai.html', msg=msg)  # Render the HTML template
+
+# @app.route('/ao')
+# def ao():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_ao.html', msg=msg)  # Render the HTML template
+
+# @app.route('/pv')
+# def pv():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_pv.html', msg=msg)  # Render the HTML template
+
+# @app.route('/ti')
+# def ti():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_ti.html', msg=msg)  # Render the HTML template
+
+# @app.route('/co')
+# def co():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_co.html', msg=msg)  # Render the HTML template
+
+# @app.route('/up')
+# def up():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_up.html', msg=msg)  # Render the HTML template
+
+# @app.route('/pu')
+# def pu():
+#     msg = {"payload": latest_values}
+#     return render_template('Settings/spinning2_pu.html', msg=msg)  # Render the HTML template
 
 
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -894,6 +1251,83 @@ def delete_settings():
    # Define the path to the YAML file - use absolute path for reliability
 ALARM_LIST_FILE_PATH = os.path.join(os.path.dirname(__file__), "alarmList.yaml")
 
+# Function to load alarms from YAML
+# def load_alarms_from_yaml():
+#     try:
+#         if os.path.exists(ALARM_LIST_FILE_PATH):
+#             with open(ALARM_LIST_FILE_PATH, 'r') as file:
+#                 data = yaml.safe_load(file)
+#                 if data is None:
+#                     print(f"File exists but is empty or invalid: {ALARM_LIST_FILE_PATH}")
+#                     return {"alarms": [], "lastTripStates": {}}
+#                 print(f"Successfully loaded data from {ALARM_LIST_FILE_PATH}")
+#                 return data
+#         else:
+#             print(f"File not found: {ALARM_LIST_FILE_PATH}. Creating empty file.")
+#             # If file doesn't exist, create it with empty data
+#             empty_data = {"alarms": [], "lastTripStates": {}}
+#             with open(ALARM_LIST_FILE_PATH, 'w') as file:
+#                 yaml.dump(empty_data, file, default_flow_style=False)
+#             return empty_data
+#     except Exception as e:
+#         print(f"Error loading alarms from YAML: {e}")
+#         return {"alarms": [], "lastTripStates": {}}
+
+# Function to save alarms to YAML
+# def save_alarms_to_yaml(data):
+#     try:
+#         with open(ALARM_LIST_FILE_PATH, 'w') as file:
+#             yaml.dump(data, file, default_flow_style=False)
+#         print(f"Successfully saved data to {ALARM_LIST_FILE_PATH}")
+#         return True
+#     except Exception as e:
+#         print(f"Error saving alarms to YAML: {e}")
+#         return False
+
+#--------------------------------------------------------------------------------------------------------- Route to load alarms
+# @app.route('/alarms/load', methods=['GET'])
+# def load_alarms_endpoint():  # Renamed to avoid conflict with existing load_alarms function
+#     try:
+#         data = load_alarms_from_yaml()
+#         print(f"Loaded {len(data.get('alarms', []))} alarms from {ALARM_LIST_FILE_PATH}")
+#         return jsonify({
+#             "success": True,
+#             "alarms": data.get("alarms", []),
+#             "lastTripStates": data.get("lastTripStates", {})
+#         })
+#     except Exception as e:
+#         print(f"Error in /alarms/load endpoint: {e}")
+#         return jsonify({
+#             "success": False,
+#             "error": str(e)
+#         })
+
+# =----------------------------------------------------------------------------------------------------------------------Route to save alarms
+# @app.route('/alarms/save', methods=['POST'])
+# def save_alarms_endpoint():  # Renamed to avoid conflict with existing save_alarms function
+#     try:
+#         data = request.json
+#         if not data:
+#             print("No data provided in request")
+#             return jsonify({"success": False, "error": "No data provided"})
+            
+#         print(f"Saving  alarms to {ALARM_LIST_FILE_PATH}")
+#         success = true
+#         # success = save_alarms_to_yaml({
+#         #     "alarms": data.get("alarms", []),
+#         #     "lastTripStates": data.get("lastTripStates", {})
+#         # })
+
+#         return jsonify({
+#             "success": success,
+#             "message": "Alarms saved successfully" if success else "Failed to save alarms"
+#         })
+#     except Exception as e:
+#         print(f"Error in /alarms/save endpoint: {e}")
+#         return jsonify({
+#             "success": False,
+#             "error": str(e)
+#         })
 
 if __name__ == '__main__':
     # Start the background thread to read values periodically

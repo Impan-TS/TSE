@@ -12,8 +12,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="static\css\font.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
     <style>
         /* .container {
@@ -100,8 +103,8 @@
             <h2>{{ name }}</h2>
             <div class="sensor-data">
                 <div style="display: flex; justify-content: space-between; width: 100%; font-weight: bold;">
-                    <div>Temperature: <span id="temperature{{ loop.index }}">0.00</span>°C</div>
-                    <div>Humidity: <span id="humidity{{ loop.index }}">0.00</span>%</div>
+                    <div><span id="temperature{{ loop.index }}">0.00</span> °C</div>
+                    <div><span id="humidity{{ loop.index }}">0.00</span> %RH</div>
                 </div>
             </div>
 

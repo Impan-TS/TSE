@@ -9,70 +9,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/font.css">
     <title>Alarm List</title>
     <style>
-        /* General Styles */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            margin-top: 80px;
-        }
+     body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        margin-top: 80px;
+    }
+    h1 {
+        text-align: center;
+        color: #0c609d;
+    }
+    .alarm-table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: separate;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        border-spacing: 0;
+        overflow: hidden;
+        border: 1px solid #0c609d;
+    }
+    .alarm-table th, .alarm-table td {
+        padding: 12px;
+        text-align: left;
+    }
+    .alarm-table th {
+        background-color: #0c609d;
+        color: white;
+        text-transform: uppercase;
+    }
+    .alarm-table tr.even {
+        background-color: #e3f4ff;
+    }
+    .alarm-table tr.odd {
+        background-color: white;
+    }
+    .alert-icon {
+        font-weight: bold;
+        color: red;
+        font-size: 22px;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    .pagination button {
+        margin: 0 5px;
+        padding: 8px 12px;
+        border: 1px solid #0c609d;
+        background-color: white;
+        color: #0c609d;
+        cursor: pointer;
+        border-radius: 3px;
+        transition: background-color 0.3s;
+    }
+    .pagination button:hover {
+        background-color: #e3f4ff;
+    }
+    .pagination button.active {
+        background-color: #0c609d;
+        color: white;
+    }
+    .pagination button:disabled {
+        background-color: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+        border-color: #cccccc;
+    }
+    .page-info {
+        text-align: center;
+        color: #555;
+        margin-bottom: 10px;
+    }
+    .storage-info {
+        text-align: center;
+        padding: 10px;
+        background-color: #e7f3ff;
+        margin: 10px auto;
+        width: 80%;
+        border-radius: 5px;
+        color: #0c609d;
+        font-weight: bold;
+    }
+    .acknowledge-button {
+    background: #fdd;
+    border: 1px solid #f88;
+    color: #a00;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    }
 
-        h1 {
-            text-align: center;
-            color: #0c609d;
-        }
+    .acknowledge-button:hover {
+        background: #faa;
+        /* transform: scale(1.1); */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
 
-        .alarm-table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: separate;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            border-spacing: 0;
-            overflow: hidden;
-            border: 1px solid #0c609d;
-        }
+    .acknowledge-button:active {
+        transform: scale(0.95);
+    }
 
-        .alarm-table th,
-        .alarm-table td {
-            padding: 12px;
-            text-align: left;
-        }
+    .acknowledged-span {
+        color: green;
+        font-weight: bold;
+        /* transition: transform 0.2s; */
+    }
 
-        .alarm-table th {
-            background-color: #0c609d;
-            color: white;
-            text-transform: uppercase;
-        }
+    /* .acknowledged-span:hover {
+        transform: scale(1.1);
+    } */
 
-        .alarm-table tr.even {
-            background-color: #e3f4ff;
-        }
-
-        .alarm-table tr.odd {
-            background-color: white;
-        }
-
-        .alert-icon {
-            font-weight: bold;
-            color: red;
-            font-size: 22px;
-        }
-
-        button:disabled {
-            background-color: #cccccc;
-            color: #666666;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-    </style>
+</style>
 </head>
 
 <body>
     <h1>Alarms List</h1>
+    <div class="storage-info">Alarms are stored in server file: alarmList.yaml</div>
     <table class="alarm-table">
         <thead>
             <tr>
@@ -83,169 +143,150 @@
                 <th>Status</th>
             </tr>
         </thead>
-        <tbody id="alarm-list-body">
-            {% for alarm in alarms %}
-            <tr class="{% if loop.index is even %}even{% else %}odd{% endif %}" id="alarm-row-{{ alarm.code }}">
-                <td>{{ alarm.time }}</td>
-                <td>{{ alarm.message }}</td>
-                <td>{{ alarm.code }}</td>
-                <td>{{ alarm.severity }}</td>
-                <td>
-                    <span id="status-{{ alarm.code }}">
-                        {% if alarm.status == "Acknowledged" %}
-                        <span style="color:green;">✅</span>
-                        {% else %}
-                        <span class="alert-icon">&#x26A0;</span>
-                        {% endif %}
-                    </span>
-                    <button id="button-{{ alarm.code }}" onclick="acknowledgeAlarm('{{ alarm.code }}')"
-                        style="background-color: #0c609d; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;"
-                        {% if alarm.status == "Acknowledged" %}disabled{% endif %}>
-                        Acknowledge
-                    </button>
-                </td>
-            </tr>
-            {% else %}
-            <tr id="no-alarms-row">
-                <td colspan="5" style="text-align:center;">No active alarms</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tbody id="alarm-list-body"></tbody>
     </table>
+    
+    <div class="page-info" id="page-info"></div>
+    <div class="pagination" id="pagination-controls"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
     <script>
-        const socket = io();
-        const STORAGE_KEY = "alarmHistory"; // Key for localStorage
-        let alarmHistory = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const ITEMS_PER_PAGE = 10;
+        let currentPage = 1;
+        let alarmHistory = [];
 
-        // Limit the number of stored alarms to the latest 20
+        const socket = io();
+
         function addToAlarmHistory(alarm) {
-            // Avoid duplicate entries by code
-            alarmHistory = alarmHistory.filter(item => item.code !== alarm.code);
-            alarmHistory.unshift(alarm);
-            if (alarmHistory.length > 20) {
-                alarmHistory.pop();
+            if (!alarm.id) {
+                alarm.id = Date.now() + Math.random().toString(36).substr(2, 9);
             }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Save to localStorage
+            const existing = alarmHistory.find(a => a.id === alarm.id);
+            if (!existing) {
+                alarmHistory.unshift(alarm);
+                if (alarmHistory.length > 100) alarmHistory.pop();
+            }
         }
 
-        // Render alarm history table
-        function renderAlarmHistory() {
-            const tbody = document.getElementById('alarm-list-body');
-            tbody.innerHTML = ""; // Clear the table before re-rendering
+        function renderPagination() {
+            const paginationDiv = document.getElementById('pagination-controls');
+            paginationDiv.innerHTML = '';
+            const totalPages = Math.ceil(alarmHistory.length / ITEMS_PER_PAGE);
+            if (totalPages <= 1) return;
 
-            if (alarmHistory.length === 0) {
-                const noAlarmsRow = document.createElement('tr');
-                noAlarmsRow.id = 'no-alarms-row';
-                noAlarmsRow.innerHTML = `<td colspan="5">No active alarms</td>`;
-                tbody.appendChild(noAlarmsRow);
-                return;
-            }
-
-            alarmHistory.forEach((alarm, index) => {
-                let row = document.getElementById('alarm-row-' + alarm.code);
-
-                // If the alarm row doesn't exist, create it
-                if (!row) {
-                    row = document.createElement('tr');
-                    row.className = index % 2 === 0 ? 'even' : 'odd';
-                    row.id = 'alarm-row-' + alarm.code;
-                    row.innerHTML = `
-                        <td>${alarm.time || 'N/A'}</td>
-                        <td>${alarm.message}</td>
-                        <td>${alarm.code}</td>
-                        <td>${alarm.severity}</td>
-                        <td>
-                            <button id="button-${alarm.code}" onclick="toggleAlarmStatus('${alarm.code}', event)"
-                                style="background-color: ${alarm.trip ? '#f44336' : '#4CAF50'}; color: white; border: none; border-radius: 3px; padding: 6px 12px; font-size: 10px; margin-left: 7px;">
-                                ${alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged'}
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                } else {
-                    // Update the existing row with the new alarm status
-                    const button = document.getElementById('button-' + alarm.code);
-                    button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
-                    button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
+            const prevButton = document.createElement('button');
+            prevButton.innerText = '← Previous';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderAlarmHistory();
                 }
             });
+            paginationDiv.appendChild(prevButton);
+
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+            if (endPage - startPage + 1 < maxButtons && startPage > 1) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.innerText = i;
+                if (i === currentPage) pageButton.classList.add('active');
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderAlarmHistory();
+                });
+                paginationDiv.appendChild(pageButton);
+            }
+
+            const nextButton = document.createElement('button');
+            nextButton.innerText = 'Next →';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderAlarmHistory();
+                }
+            });
+            paginationDiv.appendChild(nextButton);
+
+            const pageInfo = document.getElementById('page-info');
+            const startItem = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+            const endItem = Math.min(currentPage * ITEMS_PER_PAGE, alarmHistory.length);
+            pageInfo.innerText = `Showing ${startItem} to ${endItem} of ${alarmHistory.length} alarms`;
         }
 
-        // Toggle alarm status based on trip condition
-        function toggleAlarmStatus(alarmCode, event) {
-            event.preventDefault();
+        function renderAlarmHistory() {
+            const tbody = document.getElementById('alarm-list-body');
+            tbody.innerHTML = "";
 
-            const button = document.getElementById('button-' + alarmCode);
-            const alarm = alarmHistory.find(alarm => alarm.code === alarmCode);
-
-            if (!alarm) {
-                console.error("Alarm not found in history.");
+            if (alarmHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No active alarms</td></tr>`;
+                document.getElementById('pagination-controls').innerHTML = '';
+                document.getElementById('page-info').innerText = '';
                 return;
             }
 
-            // Toggle the trip status
-            const newTripStatus = !alarm.trip;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, alarmHistory.length);
+            const currentPageAlarms = alarmHistory.slice(startIndex, endIndex);
 
-            // Update alarm status in localStorage
-            alarm.trip = newTripStatus;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory));
+            currentPageAlarms.forEach((alarm, index) => {
+                const row = document.createElement('tr');
+                row.className = index % 2 === 0 ? 'even' : 'odd';
+                const status = alarm.status || "Unacknowledged";
 
-            // Update button text and color based on the new trip status
-            button.textContent = newTripStatus ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
-            button.style.backgroundColor = newTripStatus ? '#f44336' : '#4CAF50';
+                row.innerHTML = `
+                    <td>${alarm.time || 'N/A'}</td>
+                    <td>${alarm.message}</td>
+                    <td>${alarm.code}</td>
+                    <td>${alarm.severity}</td>
+                    <td>
+                        ${status !== "Acknowledged" 
+                            ? `<button onclick="acknowledgeAlarm('${alarm.id}', this)" class="acknowledge-button">${status}</button>` 
+                            : `<span class="acknowledged-span">Acknowledged ✓</span>`}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
 
-            // Send the updated status to the server
+            renderPagination();
+        }
+
+        function acknowledgeAlarm(alarmId, btn) {
+            const alarmIndex = alarmHistory.findIndex(alarm => alarm.id === alarmId);
+            if (alarmIndex === -1) return;
+
             fetch("/acknowledge", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: alarmCode, trip: newTripStatus })
+                body: JSON.stringify({ id: alarmId })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) {
-                        // Revert the button state if the server fails to update
-                        alarm.trip = !newTripStatus; // Revert trip status
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
-                        button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
-                        button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
-                        alert("Failed to toggle alarm status. Reverting changes.");
-                    }
-                })
-                .catch(error => {
-                    console.error("Error toggling alarm status:", error);
-                    // Revert the button state if there's an error
-                    alarm.trip = !newTripStatus; // Revert trip status
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(alarmHistory)); // Revert localStorage
-                    button.textContent = alarm.trip ? '⚠️ Not Acknowledged' : '✔️ Acknowledged';
-                    button.style.backgroundColor = alarm.trip ? '#f44336' : '#4CAF50';
-                    alert("An error occurred. Reverting changes.");
-                });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alarmHistory[alarmIndex].status = "Acknowledged";
+                    renderAlarmHistory();
+                } else {
+                    alert("Failed to acknowledge alarm.");
+                }
+            })
+            .catch(error => console.error("Error acknowledging alarm:", error));
         }
 
-        // Listen for new alarms via socket.io
         socket.on('alarm_update', function (alarms) {
             alarms.forEach(alarm => {
-                const alarmWithTimestamp = {
-                    ...alarm,
-                    time: alarm.time || new Date().toLocaleString()
-                };
-
-                // Add alarm to history and update the localStorage
-                addToAlarmHistory(alarmWithTimestamp);
+                if (alarm.hasOwnProperty("trip")) {
+                    addToAlarmHistory(alarm);
+                }
             });
-
-            // Render the updated alarm history
             renderAlarmHistory();
         });
-
-        // Initial render from localStorage
-        renderAlarmHistory();
     </script>
-
-
 </body>
-
 </html>
 {% endblock %}
